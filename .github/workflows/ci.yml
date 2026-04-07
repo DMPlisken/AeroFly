@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  # --- Python services ---
+  python-services:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [gateway, data-ingestion, search]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aerofly_test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: aerofly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aerofly_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        working-directory: services/${{ matrix.service }}
+        run: pip install -r requirements.txt pytest pytest-asyncio httpx
+      - name: Symlink shared code
+        run: ln -sf ${{ github.workspace }}/shared/python services/${{ matrix.service }}/shared
+      - name: Init database schemas
+        env:
+          PGHOST: localhost
+          PGUSER: aerofly_test
+          PGPASSWORD: test
+          PGDATABASE: aerofly_test
+        run: psql -f infrastructure/postgres/init.sql
+      - name: Run tests
+        working-directory: services/${{ matrix.service }}
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_USER: aerofly_test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: aerofly_test
+          REDIS_HOST: localhost
+        run: pytest tests/ -v
+
+  # --- Frontend ---
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        working-directory: services/frontend
+        run: npm ci
+      - name: Type check
+        working-directory: services/frontend
+        run: npx tsc --noEmit
+      - name: Run tests
+        working-directory: services/frontend
+        run: npx vitest run

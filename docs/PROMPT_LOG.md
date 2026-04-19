@@ -27,3 +27,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Phase 1 start choices (DB schema + all options, open issue) (`develop`)
 
 > 1a; 2d; 3a
+
+### 2026-04-19 — Schema design decisions (ICAO PK, coords phased, bilingual cols, charts in scope, ICAO NOTAM, per-service schemas, smoke test) (`feat/4-db-schema-foundation`)
+
+> 1a; 2c; 3a; 4a; 5c; 6b; 7a
+
+### 2026-04-19 — Run housekeeping after schema work (`feat/4-db-schema-foundation`)
+
+> do housekeeping

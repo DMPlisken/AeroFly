@@ -79,3 +79,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Chart click-to-enlarge + zoom (`develop`)
 
 > Ich brauche für die Bilder Click & Large mit Zoom-Funktionalität.
+
+### 2026-04-19 — Chart viewer should open fit-to-screen (`feat/17-chart-zoom-viewer`)
+
+> Nach dem Click Enlarge soll das erste Bild, also die Einstellung, immer ein Fit Image sein, also so, dass das ganze Bild in den Ausschnitt passt.
+
+### 2026-04-19 — Run housekeeping after chart viewer (`feat/17-chart-zoom-viewer`)
+
+> do housekeeping

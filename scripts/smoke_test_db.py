@@ -18,24 +18,31 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
-# Make `shared.python.*` importable when running from repo root.
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_PROJECT_ROOT))
-sys.path.insert(0, str(_PROJECT_ROOT / "services" / "data-ingestion"))
+# Path setup — works both locally (from repo root) and inside the
+# data-ingestion container (cwd=/app, `shared/` mounted from shared/python).
+_HERE = Path(__file__).resolve().parent
+_PROJECT_ROOT = _HERE.parent
+_IN_CONTAINER = Path("/app/shared").exists() and not (
+    _PROJECT_ROOT / "shared" / "python"
+).exists()
 
-# Alias `shared.*` -> `shared.python.*` so the service models (which import
-# `shared.schemas.enums` as they would inside the container) work locally.
-import shared.python as _shared_pkg  # type: ignore  # noqa: E402
-import shared.python.models as _shared_models  # type: ignore  # noqa: E402
-import shared.python.models.base as _shared_models_base  # type: ignore  # noqa: E402
-import shared.python.schemas as _shared_schemas  # type: ignore  # noqa: E402
-import shared.python.schemas.enums as _shared_schemas_enums  # type: ignore  # noqa: E402
+if _IN_CONTAINER:
+    sys.path.insert(0, "/app")
+else:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+    sys.path.insert(0, str(_PROJECT_ROOT / "services" / "data-ingestion"))
+    # Make `shared.schemas.*` resolve to the repo's `shared.python.schemas.*`.
+    import shared.python as _shared_pkg  # type: ignore  # noqa: E402
+    import shared.python.models as _shared_models  # type: ignore  # noqa: E402
+    import shared.python.models.base as _shared_models_base  # type: ignore  # noqa: E402
+    import shared.python.schemas as _shared_schemas  # type: ignore  # noqa: E402
+    import shared.python.schemas.enums as _shared_schemas_enums  # type: ignore  # noqa: E402
 
-sys.modules.setdefault("shared", _shared_pkg)
-sys.modules.setdefault("shared.schemas", _shared_schemas)
-sys.modules.setdefault("shared.schemas.enums", _shared_schemas_enums)
-sys.modules.setdefault("shared.models", _shared_models)
-sys.modules.setdefault("shared.models.base", _shared_models_base)
+    sys.modules.setdefault("shared", _shared_pkg)
+    sys.modules.setdefault("shared.schemas", _shared_schemas)
+    sys.modules.setdefault("shared.schemas.enums", _shared_schemas_enums)
+    sys.modules.setdefault("shared.models", _shared_models)
+    sys.modules.setdefault("shared.models.base", _shared_models_base)
 
 from app.db import get_session_factory  # noqa: E402
 from app.db.models import (  # noqa: E402
@@ -46,7 +53,7 @@ from app.db.models import (  # noqa: E402
     Notam,
     Runway,
 )
-from shared.python.schemas.enums import (  # noqa: E402
+from shared.schemas.enums import (  # noqa: E402
     AerodromeType,
     ChartType,
     FrequencyType,

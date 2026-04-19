@@ -63,3 +63,15 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Run housekeeping after vertical slice + import (`feat/8-aerodrome-listing`)
 
 > do housepeeping
+
+### 2026-04-19 — Create 6 GitHub issues + start implementation (`develop`)
+
+> Mach ein GitHub-Issue aus: "DFS HTML/chart parser (extract structured runways/frequencies/coords from the existing scraped images) ·  Meilisearch sync · NOTAM integration · chart image display in detail view · authentication · responsive/mobile layout." - Und starte mit der Implementierung in einem neuen Branch.
+
+### 2026-04-19 — Reframe: no auth, charts are the product, close #10 and #14 (`feat/13-chart-image-display`)
+
+> es gibt keine authentifizierung für die bilder und informationen. du kommst ohne login überall hin und die bilder die wir bereits gescraped haben sollten eigentlich völlig ausreichend sein. mehr informationen als wir schon haben gibt es nicht
+
+### 2026-04-19 — Run housekeeping after chart display (`feat/13-chart-image-display`)
+
+> do housekeeping

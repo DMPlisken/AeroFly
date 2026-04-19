@@ -80,6 +80,26 @@ class ChartRead(BaseModel):
     title: str
     title_de: str | None
     source_url: str
+    preview_url: str | None = None  # computed below
+
+    @classmethod
+    def from_orm_with_url(cls, chart) -> "ChartRead":
+        preview_url: str | None = None
+        if chart.local_path:
+            # local_path format: /app/data/aerodromes/<ICAO>/<filename>
+            parts = chart.local_path.rstrip("/").split("/")
+            if len(parts) >= 2:
+                icao = parts[-2]
+                filename = parts[-1]
+                preview_url = f"/api/charts/{icao}/{filename}"
+        return cls(
+            id=chart.id,
+            chart_type=chart.chart_type.value if hasattr(chart.chart_type, "value") else str(chart.chart_type),
+            title=chart.title,
+            title_de=chart.title_de,
+            source_url=chart.source_url,
+            preview_url=preview_url,
+        )
 
 
 class NotamRead(BaseModel):
@@ -103,6 +123,12 @@ class AerodromeDetail(AerodromeBase):
     frequencies: list[FrequencyRead] = []
     charts: list[ChartRead] = []
     notams: list[NotamRead] = []
+
+    @classmethod
+    def from_orm_with_urls(cls, aerodrome) -> "AerodromeDetail":
+        base = cls.model_validate(aerodrome)
+        base.charts = [ChartRead.from_orm_with_url(c) for c in aerodrome.charts]
+        return base
 
 
 # --- Endpoints --- #
@@ -174,4 +200,4 @@ def get_aerodrome(
     row = db.execute(stmt).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail=f"Aerodrome {icao_upper} not found")
-    return AerodromeDetail.model_validate(row)
+    return AerodromeDetail.from_orm_with_urls(row)

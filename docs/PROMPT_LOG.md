@@ -43,3 +43,15 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Run housekeeping after making stack runnable (`chore/6-runnable-dev-env`)
 
 > do housekeeping
+
+### 2026-04-19 — Question: is the empty frontend expected? (`develop`)
+
+> [screenshot: plain page with "AeroFly" heading + one subtitle line] Das ist alles, was ich sehe. Mehr sehe ich nicht, wenn ich das Frontend aufmache. Ist das so richtig? Hast du dir das so gedacht oder sollte da mehr angezeigt werden?
+
+### 2026-04-19 — Pick option C (vertical slice) (`develop`)
+
+> C
+
+### 2026-04-19 — Vertical slice choices: `/aerodromes` prefix, limit/offset, Dashboard landing, real seed data, full DE/EN (`develop`)
+
+> 1a; 2a; 3b; 4c; 5b

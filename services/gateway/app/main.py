@@ -1,8 +1,12 @@
 """AeroFly Gateway — API Gateway, Auth & Routing."""
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import uuid
 
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from app.api.aerodromes import router as aerodromes_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -23,7 +27,23 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Total-Count", "X-Request-ID"],
 )
+
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    """Inject an X-Request-ID header on every response for trace correlation."""
+
+    async def dispatch(self, request: Request, call_next):
+        request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+
+
+app.add_middleware(RequestIDMiddleware)
+
+app.include_router(aerodromes_router)
 
 
 @app.get("/api/health", tags=["health"])

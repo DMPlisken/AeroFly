@@ -51,6 +51,16 @@ This runs `alembic upgrade head` inside each migration-owning container
 - `search.*` — empty (projections land when Meilisearch sync track starts)
 - `gateway.*` — empty (API tables land when Gateway API track starts)
 
+## Seed demo data (10 real German airports)
+
+```bash
+bash scripts/seed-demo-data.sh
+```
+
+Idempotent — rerunning skips aerodromes that already exist. Without this
+step the frontend will show an empty state until the DFS scraper (#1)
+populates the DB.
+
 ## Verify
 
 | URL | What you should see |

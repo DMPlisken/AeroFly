@@ -19,18 +19,18 @@
 
 ### Search & API
 - [ ] Meilisearch index configuration (aerodromes, frequencies, charts)
-- [ ] Gateway REST API — aerodrome CRUD endpoints
-- [ ] Full-text search endpoint (ICAO, name, city, region)
-- [ ] Swagger/OpenAPI documentation
+- [x] Gateway REST API — aerodrome listing + detail endpoints — issue #8 (interim; moves to Search when Meilisearch lands)
+- [x] Full-text prefix search endpoint (ICAO, name, city, region) — issue #8 (ILIKE against Postgres for now)
+- [x] Swagger/OpenAPI documentation — gateway at `/api/docs`, data-ingestion at `/docs`
 - [ ] API authentication (JWT)
 - [ ] Rate limiting
 
 ### Frontend
 - [x] Design Kit creation (`docs/Design-Kits/aerofly-design-kit.html`) — v2.0 dark-first glassmorphism, 22 sections incl. 3 page mockups, issue #2
-- [ ] Aerodrome search page
-- [ ] Aerodrome detail view (map, runways, frequencies, charts)
-- [ ] Bilingual UI (DE/EN)
-- [ ] Responsive layout
+- [x] Aerodrome search page — issue #8, paginated, filterable, Vite proxy to gateway
+- [x] Aerodrome detail view — issue #8 (runways + frequencies live; map, charts, NOTAMs are placeholders awaiting data)
+- [x] Bilingual UI (DE/EN) — issue #8, custom I18nProvider, every string translated, persisted via localStorage
+- [ ] Responsive layout — mobile / tablet breakpoints pending
 
 ## Phase 2: Enhanced Data & Tools (Planned)
 - [ ] Weather integration (METAR/TAF)

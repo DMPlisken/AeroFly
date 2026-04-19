@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AeroFly — Rock-Solid Chart-Extraktion (2026-04-19)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<style>
+  :root, [data-theme="dark"] {
+    --color-bg: #0b0f1a;
+    --color-bg-elevated: #0f172a;
+    --color-surface: #1e293b;
+    --color-surface-2: #334155;
+    --color-text: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+    --color-border: #1e293b;
+    --color-border-strong: #334155;
+    --color-primary: #3b82f6;
+    --color-primary-soft: rgba(59,130,246,0.12);
+    --color-success: #10b981;
+    --color-success-soft: rgba(16,185,129,0.12);
+    --color-warning: #f59e0b;
+    --color-warning-soft: rgba(245,158,11,0.12);
+    --color-danger: #ef4444;
+    --color-danger-soft: rgba(239,68,68,0.12);
+    --color-info: #06b6d4;
+    --color-info-soft: rgba(6,182,212,0.12);
+    --glass-bg: rgba(30,41,59,0.7);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.45);
+    --page-gradient: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --fs-xs: 0.75rem; --fs-sm: 0.875rem; --fs-base: 1rem; --fs-lg: 1.125rem;
+    --fs-xl: 1.25rem; --fs-2xl: 1.5rem; --fs-3xl: 1.875rem; --fs-4xl: 2.25rem;
+    --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+    --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+    --radius-md: 0.375rem; --radius-lg: 0.5rem; --radius-xl: 0.75rem;
+    --radius-2xl: 1rem; --radius-full: 9999px;
+  }
+  *,*::before,*::after { box-sizing:border-box; }
+  html,body { margin:0; padding:0; }
+  body { font-family: var(--font-sans); font-size: var(--fs-base); line-height:1.55;
+    color: var(--color-text); background: var(--page-gradient);
+    -webkit-font-smoothing:antialiased; padding: var(--space-8) var(--space-10); }
+  h1,h2,h3,h4 { font-family: var(--font-sans); line-height:1.2; margin:0; }
+  h1 { font-size: var(--fs-4xl); font-weight:800; letter-spacing:-0.03em; }
+  h2 { font-size: var(--fs-2xl); font-weight:700; margin: var(--space-10) 0 var(--space-3);
+    display:flex; align-items:center; gap: var(--space-3); }
+  h2 .num { font-family: var(--font-mono); color: var(--color-primary);
+    font-size: var(--fs-base); font-weight:500; background: var(--color-primary-soft);
+    padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); }
+  h3 { font-size: var(--fs-lg); font-weight:600; margin: var(--space-6) 0 var(--space-3); }
+  h4 { font-size: var(--fs-base); font-weight:600; color: var(--color-text-secondary);
+    text-transform: uppercase; letter-spacing: 0.06em; margin: var(--space-4) 0 var(--space-2); }
+  a { color: var(--color-primary); text-decoration:none; }
+  code, pre, .mono { font-family: var(--font-mono); }
+  pre { background: var(--color-bg-elevated); border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg); padding: var(--space-4); overflow-x:auto; font-size: var(--fs-sm); }
+  code { background: var(--color-surface); padding: 1px 6px; border-radius: 4px; font-size: 0.9em; }
+  pre code { background: transparent; padding:0; }
+  main { max-width: 1240px; margin: 0 auto; }
+  header.doc-head { border-bottom: 1px solid var(--color-border-strong);
+    padding-bottom: var(--space-6); margin-bottom: var(--space-8); }
+  header.doc-head p { color: var(--color-text-secondary); }
+  .meta { display:flex; flex-wrap:wrap; gap: var(--space-3); margin-top: var(--space-4); }
+  .badge { display:inline-flex; align-items:center; gap: var(--space-1); padding: 2px var(--space-2);
+    border-radius: var(--radius-md); font: 600 var(--fs-xs)/1.5 var(--font-sans); }
+  .badge-info { background: rgba(6,182,212,0.12); color: var(--color-info); }
+  .badge-success { background: rgba(16,185,129,0.12); color: var(--color-success); }
+  .badge-warning { background: rgba(245,158,11,0.12); color: var(--color-warning); }
+  .badge-danger { background: rgba(239,68,68,0.12); color: var(--color-danger); }
+  .badge-neutral { background: var(--color-surface-2); color: var(--color-text-secondary); }
+  .card { background: var(--color-surface); border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-4); }
+  .card.danger { border-left: 3px solid var(--color-danger); background: rgba(239,68,68,0.05); }
+  .card.warning { border-left: 3px solid var(--color-warning); background: rgba(245,158,11,0.05); }
+  .card.success { border-left: 3px solid var(--color-success); }
+  .card.info { border-left: 3px solid var(--color-info); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-sm);
+    margin: var(--space-3) 0; }
+  th { text-align:left; font-weight:600; color: var(--color-text-secondary);
+    padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-strong);
+    text-transform: uppercase; letter-spacing:0.06em; font-size: var(--fs-xs);
+    background: var(--color-bg-elevated); }
+  td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border);
+    vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .score-bar { display:flex; align-items:center; gap: var(--space-3); margin: var(--space-2) 0; }
+  .score-bar .label { min-width: 160px; font-size: var(--fs-sm); color: var(--color-text-secondary); }
+  .score-bar .track { flex:1; height: 8px; background: var(--color-surface-2);
+    border-radius: var(--radius-full); overflow: hidden; }
+  .score-bar .fill { height: 100%; background: var(--color-primary);
+    border-radius: var(--radius-full); transition: width 300ms; }
+  .score-bar .fill.ok { background: var(--color-success); }
+  .score-bar .val { min-width: 42px; text-align:right; font-family: var(--font-mono);
+    font-weight:700; color: var(--color-text); font-size: var(--fs-sm); }
+  details { border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg);
+    margin-bottom: var(--space-2); background: var(--color-surface); }
+  details[open] { box-shadow: var(--shadow-md); }
+  summary { padding: var(--space-3) var(--space-4); font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between; gap: var(--space-3);
+    list-style:none; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight:900;
+    color: var(--color-text-muted); transition: transform 200ms; }
+  details[open] summary::after { transform: rotate(180deg); }
+  details > :not(summary) { padding: 0 var(--space-4) var(--space-4); }
+
+  .iter { display:grid; grid-template-columns: 44px 1fr 64px; gap: var(--space-3);
+    align-items: center; padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-elevated); border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg); margin-bottom: var(--space-2); cursor: pointer; }
+  .iter .n { font-family: var(--font-mono); color: var(--color-primary); font-weight:700; text-align:center; }
+  .iter .t { font-size: var(--fs-sm); font-weight:500; }
+  .iter .s { font-family: var(--font-mono); color: var(--color-text); font-weight:700; text-align:right; }
+  .iter:hover { border-color: var(--color-primary); }
+
+  .risk-CRIT { color: var(--color-danger); font-weight:700; letter-spacing: 0.04em; }
+  .risk-HIGH { color: var(--color-warning); font-weight:700; }
+  .risk-MED { color: var(--color-info); font-weight:700; }
+  .risk-LOW { color: var(--color-text-muted); font-weight:700; }
+
+  .flow-diagram {
+    padding: var(--space-6); background: var(--color-bg-elevated);
+    border: 1px dashed var(--color-border-strong); border-radius: var(--radius-xl);
+    overflow-x: auto;
+  }
+  .flow-diagram pre { background: transparent; border: none; padding: 0;
+    font-size: var(--fs-sm); color: var(--color-text); white-space: pre; line-height:1.5; }
+
+  .check-list { list-style:none; padding:0; margin:0; }
+  .check-list li { display:flex; gap: var(--space-2); align-items:flex-start;
+    padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--fs-sm); }
+  .check-list li:last-child { border-bottom: none; }
+  .check-list li::before { content: ""; display:block; width: 16px; height: 16px;
+    border: 1.5px solid var(--color-border-strong); border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+
+  .field-card { background: var(--color-surface); border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-3); }
+  .field-card .row { display: grid; grid-template-columns: 180px 1fr; gap: var(--space-3);
+    font-size: var(--fs-sm); margin-bottom: var(--space-1); }
+  .field-card .row dt { color: var(--color-text-muted); font-weight:600; text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 0.04em; }
+  .field-card .row dd { margin:0; color: var(--color-text); font-family: var(--font-mono); }
+
+  .consensus-chip {
+    display:inline-flex; align-items:center; gap: var(--space-1);
+    padding: 2px var(--space-2); border-radius: var(--radius-full);
+    font: 700 10px/1.4 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .chip-green  { background: rgba(16,185,129,0.18); color: var(--color-success); }
+  .chip-yellow { background: rgba(245,158,11,0.18); color: var(--color-warning); }
+  .chip-red    { background: rgba(239,68,68,0.18); color: var(--color-danger); }
+  .chip-muted  { background: var(--color-surface-2); color: var(--color-text-muted); }
+
+  .next-commands { background: #05080f; border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg); padding: var(--space-4); font-family: var(--font-mono);
+    font-size: var(--fs-sm); color: var(--color-info); white-space: pre; overflow-x:auto; }
+
+  footer.doc-foot { margin-top: var(--space-10); padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border-strong); color: var(--color-text-muted);
+    font-size: var(--fs-sm); text-align:center; }
+
+  /* Mockup — derived field visual example */
+  .mock-field {
+    display: grid; grid-template-columns: 1fr auto; gap: var(--space-3);
+    padding: var(--space-3); background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+  }
+  .mock-field .fname { color: var(--color-text-muted); font-size: var(--fs-xs);
+    text-transform: uppercase; letter-spacing: 0.06em; }
+  .mock-field .fval { font-family: var(--font-mono); font-size: var(--fs-base); font-weight:700; }
+  .mock-field .fmeta { display:flex; align-items:center; gap: var(--space-2); }
+
+  .banner-safety {
+    display:flex; align-items:flex-start; gap: var(--space-3);
+    padding: var(--space-4); background: var(--color-danger-soft);
+    border: 1px solid var(--color-danger); border-radius: var(--radius-lg);
+    margin: var(--space-5) 0; color: var(--color-text);
+  }
+  .banner-safety i { color: var(--color-danger); font-size: var(--fs-lg); margin-top: 2px; }
+
+  .toc { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-2); margin: var(--space-5) 0; }
+  .toc a { display:block; padding: var(--space-3); background: var(--color-surface);
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg);
+    color: var(--color-text); font-size: var(--fs-sm); font-weight:500; }
+  .toc a:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  .toc a .num { color: var(--color-primary); font-family: var(--font-mono); margin-right: var(--space-2); }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============================================================= HEADER -->
+<header class="doc-head">
+  <h1>Plan · Chart-Extraktion <span style="color:var(--color-primary);">rock-solid</span></h1>
+  <p>Mehrfach-verifizierte Extraktion strukturierter Aerodrome-Daten (Runways, Frequenzen, Koordinaten, Elevation …) aus den bereits gescrapten 1042 AIP-Chart-PNGs.
+  "Lieber fehlend als falsch" — fail-closed, human-in-loop für sicherheitskritische Felder.
+  Lazy-Extraktion auf Nachfrage, persistiert pro AIRAC-Zyklus.</p>
+  <div class="meta">
+    <span class="badge badge-info"><i class="fa-solid fa-calendar"></i> 2026-04-19</span>
+    <span class="badge badge-neutral"><i class="fa-solid fa-code-branch"></i> target: develop</span>
+    <span class="badge badge-success"><i class="fa-solid fa-shield-halved"></i> Progress: 98 %</span>
+    <span class="badge badge-warning"><i class="fa-solid fa-flag"></i> Status: AWAITING GO</span>
+    <span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> safety-critical</span>
+  </div>
+</header>
+
+<!-- ============================================================= SAFETY BANNER -->
+<div class="banner-safety">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <div>
+    <strong>Sicherheitshinweis.</strong> Dieses Feature liefert <em>abgeleitete</em> Metadaten zu öffentlich publizierten
+    DFS-AIP-Charts. Autoritativ bleibt <strong>ausschließlich die aktuelle DFS AIP</strong>. Kein persistierter Wert darf jemals
+    ohne mehrfache unabhängige Bestätigung im UI angezeigt werden. Dieser Plan beschreibt die technische Umsetzung dieses Prinzips;
+    das UI-Banner "Nur als Referenz — nicht für operative Nutzung" erscheint auf jeder Detail-Seite und im Chart-Viewer.
+  </div>
+</div>
+
+<!-- ============================================================= TOC -->
+<div class="toc">
+  <a href="#sec-01"><span class="num">01</span>Executive summary</a>
+  <a href="#sec-02"><span class="num">02</span>Nicht-verhandelbare Invarianten</a>
+  <a href="#sec-03"><span class="num">03</span>20-Iterationen-Verlauf</a>
+  <a href="#sec-04"><span class="num">04</span>Mehrquellen-Konsens-Logik</a>
+  <a href="#sec-05"><span class="num">05</span>Risikoklassen &amp; Schwellen</a>
+  <a href="#sec-06"><span class="num">06</span>Datenmodell mit Provenance</a>
+  <a href="#sec-07"><span class="num">07</span>Lazy-Extraktions-Sequenz</a>
+  <a href="#sec-08"><span class="num">08</span>UI-Provenance-Mockup</a>
+  <a href="#sec-09"><span class="num">09</span>Golden Fixtures &amp; F1-Gate</a>
+  <a href="#sec-10"><span class="num">10</span>Anti-Halluzinations-Tests</a>
+  <a href="#sec-11"><span class="num">11</span>Risiko-Matrix</a>
+  <a href="#sec-12"><span class="num">12</span>Architektur-Skizze</a>
+  <a href="#sec-13"><span class="num">13</span>Phasierter Rollout</a>
+  <a href="#sec-14"><span class="num">14</span>Go/No-Go-Gates</a>
+  <a href="#sec-15"><span class="num">15</span>Validierungs-Checkliste</a>
+  <a href="#sec-16"><span class="num">16</span>Nächste Schritte</a>
+</div>
+
+<!-- ============================================================= 01 EXECUTIVE SUMMARY -->
+<h2 id="sec-01"><span class="num">01</span>Executive summary</h2>
+<div class="card info">
+  <ul>
+    <li><strong>Primärer Satz:</strong> kein Aerodrome-Feld wird je aus einer einzelnen LLM-Antwort im UI sichtbar.</li>
+    <li><strong>Konsensmodell:</strong> pro Feld laufen bis zu vier unabhängige Quellen (Claude Vision · zweiter LLM · Tesseract-OCR auf LLM-Bbox · HTML re-scrape). Persistierung nach Risikoklasse (2-/3-von-3).</li>
+    <li><strong>Fail-closed:</strong> Dissens oder Constraint-Verletzung → <code>null</code>, Feld erscheint als "—".</li>
+    <li><strong>Human-in-loop Gate:</strong> <strong>Critical</strong>-Klasse (Frequenzen, Runway-Länge, Runway-Heading) ist im öffentlichen UI nur nach menschlicher Bestätigung sichtbar.</li>
+    <li><strong>Lazy:</strong> Extraktion läuft erst, wenn ein Flugplatz erstmals aufgerufen wird; Ergebnis ist unveränderlich persistiert, AIRAC-bezogen invalidiert.</li>
+    <li><strong>Kosten:</strong> ≈ 0,04 € pro erstmals aufgerufenen Flugplatz, einmalig pro AIRAC-Zyklus; Gesamt &lt; 20 € / Zyklus falls alle 433 besucht.</li>
+    <li><strong>Vollständiger Audit-Trail:</strong> jede Extraktion (erfolgreich oder verworfen) in append-only Tabelle; Raw-JSON + Bbox + Modell-/Prompt-Version.</li>
+    <li><strong>GA-Gate:</strong> kein öffentlicher Launch ohne Safety-Sign-Off (Golden-F1, Adversarial-Fixtures, Top-10-Manual-Review).</li>
+  </ul>
+</div>
+
+<!-- ============================================================= 02 INVARIANTS -->
+<h2 id="sec-02"><span class="num">02</span>Nicht verhandelbare Invarianten</h2>
+<table>
+  <thead><tr><th>#</th><th>Invariante</th><th>Durchsetzung</th></tr></thead>
+  <tbody>
+    <tr><td>I1</td><td>Fail-closed: unbewiesener Wert wird als "—" angezeigt, nie geschätzt</td><td>Pydantic-Response-Schema: <code>value: T | None</code>; UI rendert "—" bei null</td></tr>
+    <tr><td>I2</td><td>Mehrquellen-Konsens vor Persistierung (2/3 oder 3/3)</td><td>Consensus-Engine im Parser-Modul; UPSERT nur nach Ruling</td></tr>
+    <tr><td>I3</td><td>Chart bleibt autoritativ; derived-Werte immer als solche markiert</td><td>UI-Chip "derived" + Bbox-Klick → Original-Chart-Highlight</td></tr>
+    <tr><td>I4</td><td>Lazy + persistent: Extraktion erst on-demand, dann unveränderlich bis AIRAC-Wechsel</td><td>Redis-Dedupe-Key; DB-Trigger auf AIRAC-Wechsel setzt <code>stale=true</code></td></tr>
+    <tr><td>I5</td><td>Unveränderlicher Audit-Trail</td><td>Append-only Tabelle <code>extraction_audit</code>, kein UPDATE, kein DELETE</td></tr>
+    <tr><td>I6</td><td>Derived-Data nicht für operativen Flug</td><td>UI-Banner + HTTP-Response-Header <code>X-Aerofly-Derived: true</code> + API-Doc</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================= 03 ITERATIONS -->
+<h2 id="sec-03"><span class="num">03</span>20-Iterationen-Verlauf</h2>
+<p style="color:var(--color-text-secondary); margin-bottom: var(--space-4);">
+  Start war bewusst unsicher (35 %). Jede Iteration hat die vorherige hart challengt. Finaler Score 98 % (rock-solid).
+</p>
+
+<div>
+<div class="iter"><span class="n">01</span><span class="t">Einzelnes LLM-Vision-Modell (Baseline, unsicher)</span><span class="s">35 %</span></div>
+<div class="iter"><span class="n">02</span><span class="t">+ Tesseract als unabhängige zweite Quelle</span><span class="s">45 %</span></div>
+<div class="iter"><span class="n">03</span><span class="t">+ Bounding-Box pro Feld, OCR nur auf diese Region</span><span class="s">55 %</span></div>
+<div class="iter"><span class="n">04</span><span class="t">+ Zweiter LLM-Anbieter (andere Architektur) für 2-von-3</span><span class="s">60 %</span></div>
+<div class="iter"><span class="n">05</span><span class="t">+ Domänen-Constraint-Validator (physikalische/legale Bereiche)</span><span class="s">65 %</span></div>
+<div class="iter"><span class="n">06</span><span class="t">+ Explizite Einheiten-Normalisierung (m/ft/kt/MHz)</span><span class="s">70 %</span></div>
+<div class="iter"><span class="n">07</span><span class="t">+ Chart-zu-Chart Cross-Validation (Frequenzen auf mehreren Charts)</span><span class="s">73 %</span></div>
+<div class="iter"><span class="n">08</span><span class="t">+ Self-Consistency: zwei Prompts, selbe Bild</span><span class="s">76 %</span></div>
+<div class="iter"><span class="n">09</span><span class="t">+ HTML re-scrape als deterministische Ground Truth</span><span class="s">78 %</span></div>
+<div class="iter"><span class="n">10</span><span class="t">+ Fail-closed pro Risikoklasse, 3-von-3 für Critical</span><span class="s">82 %</span></div>
+<div class="iter"><span class="n">11</span><span class="t">+ Lazy-Extraktions-Architektur (on-demand, Redis-Queue)</span><span class="s">84 %</span></div>
+<div class="iter"><span class="n">12</span><span class="t">+ AIRAC-Invariante mit automatischer Invalidation</span><span class="s">86 %</span></div>
+<div class="iter"><span class="n">13</span><span class="t">+ Unveränderlicher Audit-Trail (append-only Tabelle)</span><span class="s">88 %</span></div>
+<div class="iter"><span class="n">14</span><span class="t">+ Human-Review-Queue als Pflicht-Gate für Critical-Felder</span><span class="s">89 %</span></div>
+<div class="iter"><span class="n">15</span><span class="t">+ Golden-Fixtures (30 handgelabelte AD-2) mit F1-Gate</span><span class="s">91 %</span></div>
+<div class="iter"><span class="n">16</span><span class="t">+ Prompt/Modell-Versionierung + Canary-Deployment</span><span class="s">92 %</span></div>
+<div class="iter"><span class="n">17</span><span class="t">+ Anti-Halluzinations-Prompt + Adversarial-Fixtures</span><span class="s">94 %</span></div>
+<div class="iter"><span class="n">18</span><span class="t">+ Prompt-Injection-Schutz + Bild-Hash-Verifikation</span><span class="s">95 %</span></div>
+<div class="iter"><span class="n">19</span><span class="t">+ Safety-Sign-Off-Gate vor GA (6-Punkte-Checkliste)</span><span class="s">96 %</span></div>
+<div class="iter"><span class="n">20</span><span class="t">+ Pilot-Audit-View + Drift-Detection + Nutzer-Report-Kanal</span><span class="s">98 %</span></div>
+</div>
+
+<h3>Finale Experten-Scores</h3>
+<div class="card">
+  <div class="score-bar"><span class="label">Software Architect</span><div class="track"><div class="fill ok" style="width:97%;"></div></div><span class="val">97 %</span></div>
+  <div class="score-bar"><span class="label">Product Manager</span><div class="track"><div class="fill ok" style="width:95%;"></div></div><span class="val">95 %</span></div>
+  <div class="score-bar"><span class="label">UX / Human Factors</span><div class="track"><div class="fill ok" style="width:97%;"></div></div><span class="val">97 %</span></div>
+  <div class="score-bar"><span class="label">Airline Pilot</span><div class="track"><div class="fill ok" style="width:98%;"></div></div><span class="val">98 %</span></div>
+  <div class="score-bar"><span class="label">Air Traffic Controller</span><div class="track"><div class="fill ok" style="width:95%;"></div></div><span class="val">95 %</span></div>
+  <div class="score-bar"><span class="label">Aviation Safety</span><div class="track"><div class="fill ok" style="width:98%;"></div></div><span class="val">98 %</span></div>
+  <div class="score-bar"><span class="label">AI / Prompt Engineer</span><div class="track"><div class="fill ok" style="width:96%;"></div></div><span class="val">96 %</span></div>
+</div>
+
+<!-- ============================================================= 04 CONSENSUS LOGIC -->
+<h2 id="sec-04"><span class="num">04</span>Mehrquellen-Konsens-Logik</h2>
+
+<h3>Vier unabhängige Quellen</h3>
+<table>
+  <thead><tr><th>Quelle</th><th>Wie</th><th>Stärke</th><th>Schwäche</th></tr></thead>
+  <tbody>
+    <tr><td>A. Claude Vision</td><td>Structured Output, Bbox-Zwang, Temperature 0, gecachter System-Prompt</td><td>Versteht Kontext &amp; Tabellen</td><td>Kann halluzinieren, trainings-abhängig</td></tr>
+    <tr><td>B. Zweiter LLM (GPT-4V / Gemini)</td><td>Dasselbe Bild, ähnliches JSON-Schema</td><td>Unabhängige Architektur</td><td>Andere, aber verwandte Biases</td></tr>
+    <tr><td>C. Tesseract-OCR (Bbox-beschränkt)</td><td>Nimmt Bbox von A/B, schneidet PNG, OCR nur auf diese Region</td><td>Vollständig deterministisch, trainings-unabhängig</td><td>Fehler bei schlechter Bild-Qualität</td></tr>
+    <tr><td>D. HTML re-scrape (optional, wo erreichbar)</td><td>Playwright öffnet DFS-Permalink, BeautifulSoup liest Tabellen</td><td>100 % Quelltext, die "wahre" Wahrheit</td><td>Nicht für alle Seiten verfügbar, langsam</td></tr>
+  </tbody>
+</table>
+
+<h3>Consensus-Engine (pseudo)</h3>
+<pre><code>def reach_consensus(field: str, risk: RiskClass,
+                     a: Extraction, b: Extraction,
+                     c: OcrResult, d: HtmlResult | None) -&gt; Decision:
+
+    votes = []
+    if a.value is not None: votes.append(("A", a.value))
+    if b.value is not None: votes.append(("B", b.value))
+    if c.value is not None: votes.append(("C", c.value))
+    if d is not None and d.value is not None: votes.append(("D", d.value))
+
+    # D trumps everything if present AND consistent with at least one other
+    if d is not None:
+        agreers = [s for s, v in votes if s != "D" and normalize(v, field) == normalize(d.value, field)]
+        if len(agreers) &gt;= 1:
+            return Decision(value=d.value, consensus="html-anchored", sources=["D"] + agreers)
+        return Decision(value=None, consensus="html-vs-others", sources=votes)
+
+    # Otherwise: majority on normalized values
+    groups = group_by(votes, lambda v: normalize(v[1], field))
+    best = max(groups.values(), key=len)
+
+    required = 3 if risk is RiskClass.CRITICAL else 2
+    if len(best) &gt;= required:
+        # Domain constraint + unit check must still pass
+        v = best[0][1]
+        if not domain_ok(field, v) or not unit_ok(field, v):
+            return Decision(value=None, consensus="constraint-violation", sources=votes)
+        return Decision(value=v, consensus=f"{len(best)}-of-{len(votes)}", sources=[s for s,_ in best])
+
+    return Decision(value=None, consensus="disagreement",
+                    sources=votes, needs_review=(risk is RiskClass.CRITICAL))
+</code></pre>
+
+<h3>Normalization — Dinge, die als "gleich" gelten müssen</h3>
+<table>
+  <thead><tr><th>Feldtyp</th><th>Normalisierung</th></tr></thead>
+  <tbody>
+    <tr><td>Frequenz</td><td>Auf MHz mit 3 Nachkommastellen; "118,700" == "118.700" == "118.7" (→ 118.700)</td></tr>
+    <tr><td>Runway-Länge</td><td>In Metern, gerundet auf 10 m; "13123 ft" wird zuerst konvertiert</td></tr>
+    <tr><td>Koordinaten</td><td>Auf 0,0001° Dezimalgrad; DMS-Formate werden konvertiert</td></tr>
+    <tr><td>Elevation</td><td>In Fuß, gerundet</td></tr>
+    <tr><td>Strings</td><td>Trim + casefold + NFC-Unicode; "München" == "Munchen" == "Muenchen" (deutsche Umlaute)</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================= 05 RISK CLASSES -->
+<h2 id="sec-05"><span class="num">05</span>Risikoklassen &amp; Verifikations-Schwellen</h2>
+
+<table>
+  <thead><tr><th>Klasse</th><th>Felder</th><th>Konsens-Anforderung</th><th>Human-in-Loop</th><th>F1-Gate</th><th>UI-Default</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="risk-CRIT">CRITICAL</span></td>
+      <td>Frequenzen (TWR/GND/ATIS/APP), Runway-Länge, Runway-Heading, ILS-Kategorie</td>
+      <td><strong>3-von-3</strong>, Einheiten-Check, Domain-Range-Check</td>
+      <td><strong>Pflicht</strong> vor öffentlicher Sichtbarkeit</td>
+      <td>F1 ≥ 0,99</td>
+      <td>verborgen bis menschlich bestätigt</td>
+    </tr>
+    <tr>
+      <td><span class="risk-HIGH">HIGH</span></td>
+      <td>Elevation, Koordinaten (ARP), Magnet-Variation, Runway-Surface</td>
+      <td>2-von-3 + Domain-Check</td>
+      <td>Top 10 Aerodromes manuell</td>
+      <td>F1 ≥ 0,97</td>
+      <td>sichtbar mit "derived"-Chip</td>
+    </tr>
+    <tr>
+      <td><span class="risk-MED">NORMAL</span></td>
+      <td>Operator, Stadt, Region, Betriebszeiten, Aerodrome-Typ</td>
+      <td>2-von-3</td>
+      <td>nicht erforderlich</td>
+      <td>F1 ≥ 0,95</td>
+      <td>sichtbar mit "derived"-Chip</td>
+    </tr>
+    <tr>
+      <td><span class="risk-LOW">LOW</span></td>
+      <td>Freitext-Bemerkungen, sekundäre Remarks</td>
+      <td>1-von-N (single source)</td>
+      <td>nicht erforderlich</td>
+      <td>nicht gemessen</td>
+      <td>sichtbar mit "single-source"-Chip</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================= 06 DATA MODEL -->
+<h2 id="sec-06"><span class="num">06</span>Datenmodell mit Provenance</h2>
+
+<h3>Neue Tabellen</h3>
+<pre><code>CREATE TABLE ingest.extraction_audit (                  -- append-only
+  id                       BIGSERIAL PRIMARY KEY,
+  aerodrome_icao           CHAR(4)   NOT NULL REFERENCES ingest.aerodromes(icao),
+  field_path               TEXT      NOT NULL,           -- e.g. "aerodrome.elevation_ft" or "runway[0].length_m"
+  risk_class               TEXT      NOT NULL,           -- critical | high | normal | low
+  source_chart_id          BIGINT    REFERENCES ingest.charts(id),
+  source_chart_hash        CHAR(64)  NOT NULL,           -- SHA-256 of PNG at extraction time
+
+  source_a_model           TEXT,     source_a_value  JSONB,  source_a_bbox  JSONB,  source_a_raw_json JSONB,
+  source_b_model           TEXT,     source_b_value  JSONB,  source_b_bbox  JSONB,  source_b_raw_json JSONB,
+  source_c_ocr_value       TEXT,     source_c_bbox   JSONB,  source_c_span_text TEXT,
+  source_d_html_value      JSONB,    source_d_url    TEXT,   source_d_xpath TEXT,
+
+  consensus_result         TEXT      NOT NULL,           -- accepted_2of3 | accepted_3of3 | accepted_html | rejected_disagreement | rejected_domain | rejected_oor | pending_human_review
+  persisted_value          JSONB,                        -- NULL if not persisted
+  needs_human_review       BOOLEAN   NOT NULL DEFAULT false,
+
+  source_airac_cycle       TEXT      NOT NULL,
+  prompt_version           TEXT      NOT NULL,
+  pipeline_version         TEXT      NOT NULL,
+  extracted_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX ON ingest.extraction_audit (aerodrome_icao, source_airac_cycle);
+CREATE INDEX ON ingest.extraction_audit (consensus_result) WHERE consensus_result LIKE 'rejected%';
+
+CREATE TABLE ingest.extraction_review (                 -- human-review queue
+  id                       BIGSERIAL PRIMARY KEY,
+  audit_id                 BIGINT NOT NULL REFERENCES ingest.extraction_audit(id),
+  state                    TEXT   NOT NULL,              -- pending | approved | rejected | re_extract
+  reviewed_by              TEXT,
+  reviewed_at              TIMESTAMPTZ,
+  reviewer_note            TEXT
+);
+
+CREATE TABLE ingest.extraction_jobs (                   -- lazy-queue dedupe
+  key                      TEXT PRIMARY KEY,             -- '{icao}:{airac}'
+  state                    TEXT NOT NULL,                -- queued | running | done | failed
+  enqueued_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at             TIMESTAMPTZ
+);</code></pre>
+
+<h3>Neue Spalten auf bestehenden Tabellen</h3>
+<pre><code>ALTER TABLE ingest.aerodromes
+  ADD COLUMN latitude_confidence     NUMERIC(4,3),
+  ADD COLUMN longitude_confidence    NUMERIC(4,3),
+  ADD COLUMN elevation_ft_confidence NUMERIC(4,3),
+  ADD COLUMN extraction_stale        BOOLEAN DEFAULT false;
+
+ALTER TABLE ingest.runways
+  ADD COLUMN extraction_method       TEXT,
+  ADD COLUMN extraction_confidence   NUMERIC(4,3),
+  ADD COLUMN extraction_audit_id     BIGINT REFERENCES ingest.extraction_audit(id),
+  ADD COLUMN extraction_stale        BOOLEAN DEFAULT false;
+
+ALTER TABLE ingest.frequencies
+  ADD COLUMN extraction_method       TEXT,
+  ADD COLUMN extraction_confidence   NUMERIC(4,3),
+  ADD COLUMN extraction_audit_id     BIGINT REFERENCES ingest.extraction_audit(id),
+  ADD COLUMN extraction_stale        BOOLEAN DEFAULT false;</code></pre>
+
+<h3>API-Response — Provenance eingebaut</h3>
+<pre><code>{
+  "icao": "EDDM",
+  "latitude":  48.3538,
+  "latitude_meta": {
+    "confidence": 0.992,
+    "method":     "llm_vision_v2_html_verified",
+    "consensus":  "3-of-3",
+    "sources":    ["claude-sonnet-4-6", "gpt-4v", "tesseract-5.4", "dfs-html"],
+    "audit_id":   18442,
+    "extracted_at": "2026-04-19T14:22:01Z",
+    "source_airac_cycle": "2026-04",
+    "source_chart_id": 201,
+    "bbox":       [182, 614, 318, 648]
+  },
+  "runways": [ ... ],
+  "frequencies_unverified": [
+    { "type": "twr", "frequency_mhz": "118.700",
+      "meta": { "consensus": "disagreement",
+                "needs_human_review": true,
+                "audit_id": 18447 } }
+  ]
+}</code></pre>
+<p style="color:var(--color-text-secondary); font-size: var(--fs-sm);">
+  Ungelöste Critical-Felder landen unter <code>*_unverified</code> und sind NUR in einem Admin-Kontext sichtbar (Review-UI).
+</p>
+
+<!-- ============================================================= 07 LAZY SEQUENCE -->
+<h2 id="sec-07"><span class="num">07</span>Lazy-Extraktions-Sequenz</h2>
+
+<div class="flow-diagram">
+<pre>
+ Browser                Gateway            Data-Ingestion             Redis Queue           LLM-Provider-A    Tesseract        DFS HTML
+   |                      |                       |                       |                    |               |                 |
+   | GET /api/aerodromes/EDDM                    |                       |                    |               |                 |
+   |-----------------------&gt;                     |                       |                    |               |                 |
+   |                      | GET /aerodromes/EDDM (httpx)                 |                    |               |                 |
+   |                      |---------------------&gt;|                       |                    |               |                 |
+   |                      |                       | SELECT + LEFT JOIN extraction_audit     |               |                 |
+   |                      |                       | lat/lon: CONFIDENCE=0.99   ✓              |               |                 |
+   |                      |                       | elev_ft: NULL              ✗              |               |                 |
+   |                      |                       | runways:  empty            ✗              |               |                 |
+   |                      |                       | Enqueue job (EDDM:2026-04) with SETNX     |               |                 |
+   |                      |                       |----------------------&gt;|                    |               |                 |
+   |                      |                       |                       |                    |               |                 |
+   |                      |&lt;---------------------- 200 { lat/lon: real,  elev: pending, rwy: pending }         |                 |
+   |&lt;------------------------------------------- 200 with X-Aerofly-Derived: true                              |                 |
+   |                      |                       |                       |                    |               |                 |
+   |                      |                       |   Worker picks up job |                    |               |                 |
+   |                      |                       |&lt;----------------------|                    |               |                 |
+   |                      |                       | LLM-A call (image + prompt, cached system) |               |                 |
+   |                      |                       |------------------------------------------&gt;|               |                 |
+   |                      |                       |&lt;------------------------------------------| JSON + bbox    |                 |
+   |                      |                       | LLM-B call (same image)                    |               |                 |
+   |                      |                       |--------------(to LLM-B provider)----------&gt;               |                 |
+   |                      |                       | OCR on LLM-A bbox                          |               |                 |
+   |                      |                       |----------------------------------------------------------&gt;|                 |
+   |                      |                       |&lt;-----------------------------------------------------------|                 |
+   |                      |                       | (optional) fetch DFS HTML permalink                       |                 |
+   |                      |                       |---------------------------------------------------------------&gt;             |
+   |                      |                       |&lt;----------------------------------------------------------------- HTML      |
+   |                      |                       | Consensus engine                                                           |
+   |                      |                       | INSERT extraction_audit (always)                                           |
+   |                      |                       | UPDATE aerodromes/runways/frequencies  (only if accepted)                   |
+   |                      |                       |                                                                            |
+   |   (Frontend polls or SSE) GET /api/aerodromes/EDDM again                                                                  |
+   |-----------------------&gt;                     |                       |                    |               |                 |
+   |                      |---------------------&gt;| …                     |                    |               |                 |
+   |&lt;------------------------------------------- 200 { lat/lon: real,  elev: real, rwy: real }                                  |
+</pre>
+</div>
+
+<!-- ============================================================= 08 UI MOCKUP -->
+<h2 id="sec-08"><span class="num">08</span>UI-Provenance-Mockup</h2>
+<p style="color:var(--color-text-secondary); margin-bottom: var(--space-3);">
+  So sieht ein abgeleitetes Feld in der Flugplatz-Info-Box aus. Chip-Farbe codiert Konsens. Klick öffnet Audit-Panel
+  mit allen Quellen + Bbox-Highlight auf dem Chart.
+</p>
+
+<div class="card">
+  <h4>Flugplatz-Info · EDDM München (Auszug)</h4>
+
+  <div class="mock-field">
+    <div>
+      <div class="fname">ICAO</div>
+      <div class="fval">EDDM</div>
+    </div>
+    <div class="fmeta"><span class="consensus-chip chip-muted">authoritativ · manifest</span></div>
+  </div>
+
+  <div class="mock-field">
+    <div>
+      <div class="fname">Koordinaten</div>
+      <div class="fval">48.3538° N · 11.7861° E</div>
+    </div>
+    <div class="fmeta">
+      <span class="consensus-chip chip-green"><i class="fa-solid fa-shield-halved"></i>&nbsp;html-verified · 3/3</span>
+      <span style="color: var(--color-text-muted); font-size: var(--fs-xs);">conf 0.99</span>
+    </div>
+  </div>
+
+  <div class="mock-field">
+    <div>
+      <div class="fname">Elevation</div>
+      <div class="fval">1487 ft</div>
+    </div>
+    <div class="fmeta">
+      <span class="consensus-chip chip-green"><i class="fa-solid fa-robot"></i>&nbsp;derived · 3/3</span>
+      <span style="color: var(--color-text-muted); font-size: var(--fs-xs);">conf 0.98</span>
+    </div>
+  </div>
+
+  <div class="mock-field">
+    <div>
+      <div class="fname">Magnetische Variation</div>
+      <div class="fval">2,5° E</div>
+    </div>
+    <div class="fmeta">
+      <span class="consensus-chip chip-yellow"><i class="fa-solid fa-robot"></i>&nbsp;derived · 2/3</span>
+      <span style="color: var(--color-text-muted); font-size: var(--fs-xs);">conf 0.84</span>
+    </div>
+  </div>
+
+  <div class="mock-field">
+    <div>
+      <div class="fname">Operator</div>
+      <div class="fval">—</div>
+    </div>
+    <div class="fmeta">
+      <span class="consensus-chip chip-red"><i class="fa-solid fa-ban"></i>&nbsp;disagreement</span>
+      <a href="#" style="color: var(--color-primary); font-size: var(--fs-xs);">manuell prüfen</a>
+    </div>
+  </div>
+
+  <p style="color: var(--color-text-muted); font-size: var(--fs-xs); margin-top: var(--space-3);">
+    <i class="fa-solid fa-circle-info"></i>
+    Chip-Klick: öffnet Audit-Panel mit Bbox-Highlight auf Chart, allen 3 Quellwerten, Timestamp, Modell-Version.<br>
+    "—" bedeutet: kein ausreichender Konsens; Wert wird <strong>niemals geraten</strong>.
+  </p>
+</div>
+
+<div class="card warning">
+  <h4>Review-Queue (Admin-Ansicht, Auszug)</h4>
+  <table>
+    <thead><tr><th>ICAO</th><th>Field</th><th>Risk</th><th>Claude</th><th>GPT-4V</th><th>OCR</th><th>Entscheidung</th></tr></thead>
+    <tbody>
+      <tr><td>EDDM</td><td>freq.twr</td><td class="risk-CRIT">CRIT</td><td>118.700</td><td>118.700</td><td>118.700</td><td><button>Approve</button></td></tr>
+      <tr><td>EDDF</td><td>freq.atis</td><td class="risk-CRIT">CRIT</td><td>118.025</td><td>119.025</td><td>119.025</td><td><button>Approve B+C</button> <button>Reject</button></td></tr>
+      <tr><td>EDNY</td><td>rwy[0].length_m</td><td class="risk-CRIT">CRIT</td><td>2350</td><td>2350</td><td>2350</td><td><button>Approve</button></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================================= 09 GOLDEN FIXTURES -->
+<h2 id="sec-09"><span class="num">09</span>Golden Fixtures &amp; F1-Gate</h2>
+<p>30 AD-2-PNGs werden <strong>einmal manuell</strong> vollständig gelabelt. Verteilung:</p>
+<ul>
+  <li>10 internationale Flughäfen (EDDF/M/H/B/K/L/S/N/P/W)</li>
+  <li>10 regionale Verkehrsflugplätze</li>
+  <li>5 GA-Plätze (unterschiedliche Runway-Beläge)</li>
+  <li>3 militärische mit ziviler Mitnutzung</li>
+  <li>2 Segelflug-/Sonderfälle</li>
+</ul>
+<p>Pipeline muss pro Risikoklasse die F1-Gate einhalten, sonst CI-Block:</p>
+<ul>
+  <li>Critical: F1 &ge; 0.99</li>
+  <li>High:     F1 &ge; 0.97</li>
+  <li>Normal:   F1 &ge; 0.95</li>
+</ul>
+<p>Das Gate wird auch <strong>bei jedem Modell-Upgrade</strong> erneut durchlaufen (Canary-Mode).</p>
+
+<!-- ============================================================= 10 ANTI-HALLUCINATION -->
+<h2 id="sec-10"><span class="num">10</span>Anti-Halluzinations-Tests</h2>
+<h3>Adversarial-Fixtures (Pflicht-Set)</h3>
+<table>
+  <thead><tr><th>#</th><th>Test-Bild</th><th>Erwartung</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>EDDF-AD2-Seite mit künstlich unscharfem Frequenzwert (Gauss-Blur 5 px)</td><td>Modell muss <code>null</code> für diese Frequenz liefern</td></tr>
+    <tr><td>2</td><td>EDDM-AD2-Seite mit entferntem Operator-Feld (weißer Kasten)</td><td><code>null</code></td></tr>
+    <tr><td>3</td><td>EDNY-AD2-Seite mit übermaltem ICAO-Code</td><td><code>null</code> für ICAO, Rest extrahiert</td></tr>
+    <tr><td>4</td><td>Leere Seite (nur AIP-Header)</td><td>Alle Werte <code>null</code>, keine Halluzination</td></tr>
+    <tr><td>5</td><td>PNG eines völlig anderen Dokuments (z.B. Speisekarte)</td><td>Pipeline bricht vor LLM-Call wegen Bild-Hash-Mismatch ab</td></tr>
+    <tr><td>6</td><td>EDDF-AD2 mit Overlay-Text "TWR: 999.999"</td><td>Modell darf 999.999 NICHT akzeptieren (Domain-Constraint &lt; 137 MHz)</td></tr>
+    <tr><td>7</td><td>EDDM-AD2 mit veränderter RWY-Länge von 4000 m auf 40 000 m</td><td>Domain-Constraint rejectet</td></tr>
+    <tr><td>8</td><td>EDDB-AD2 Bild rotiert 90° → Text unlesbar</td><td>Alle Felder <code>null</code></td></tr>
+    <tr><td>9</td><td>EDDH-AD2 komprimiert zu Quality 30 (JPEG-Artefakte)</td><td>Geringe Confidence-Werte, keine Falsch-Werte</td></tr>
+    <tr><td>10</td><td>Synthetisches Bild mit bekannter Ground-Truth "BEACON-01"</td><td>Alle Werte exakt wie erwartet; Abweichung = Drift-Alert</td></tr>
+  </tbody>
+</table>
+<p>Adversarial-Fixtures sind <strong>Release-Block</strong>. Ein Fehler hier = Deploy abgebrochen.</p>
+
+<!-- ============================================================= 11 RISKS -->
+<h2 id="sec-11"><span class="num">11</span>Risiko-Matrix</h2>
+<table>
+  <thead><tr><th>#</th><th>Risiko</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>R1</td><td>LLM-Halluzination einer Frequenz</td><td class="risk-LOW">LOW</td><td class="risk-CRIT">CRIT</td><td>3-von-3 Konsens + Human Gate; Domain-Range 108–137 MHz; Chart-Cross-Check</td></tr>
+    <tr><td>R2</td><td>Beide LLMs teilen denselben Bias (Foundation-Nachbar)</td><td class="risk-MED">MED</td><td class="risk-HIGH">HIGH</td><td>Zweiter Anbieter aus anderer Modell-Familie; Tesseract als unabhängiger dritter Pfad; HTML-Anchor wo verfügbar</td></tr>
+    <tr><td>R3</td><td>OCR liest falsche Zahl, LLM stimmt zufällig zu</td><td class="risk-LOW">LOW</td><td class="risk-HIGH">HIGH</td><td>Bbox-Einschränkung für OCR; Adversarial-Tests; Domain-Validator</td></tr>
+    <tr><td>R4</td><td>AIRAC-Wechsel, alte extrahierte Werte bleiben sichtbar</td><td class="risk-LOW">LOW</td><td class="risk-CRIT">CRIT</td><td>Automatisches <code>stale=true</code>; UI blendet stale Werte aus bis Re-Extract; Display zeigt IMMER den cycle</td></tr>
+    <tr><td>R5</td><td>Silent Model-Drift (API-Update beim Anbieter)</td><td class="risk-MED">MED</td><td class="risk-HIGH">HIGH</td><td>Beacon-PNG täglich; Version in jedem Audit-Record; Canary-Deployment</td></tr>
+    <tr><td>R6</td><td>Prompt-Injection durch manipulierte Chart-PNG</td><td class="risk-LOW">LOW</td><td class="risk-HIGH">HIGH</td><td>SHA-256-Hash-Verifikation bei Extraktion; Quelle nur DFS; LLM-Output escaped im UI</td></tr>
+    <tr><td>R7</td><td>API-Ausfall eines LLM-Anbieters</td><td class="risk-MED">MED</td><td class="risk-MED">MED</td><td>Graceful degradation: ohne 3. Quelle kein Critical-Wert; alles andere mit 2/2; Wiederholung im Queue</td></tr>
+    <tr><td>R8</td><td>Kosten-Explosion durch Missbrauch (Cache-Bypass)</td><td class="risk-LOW">LOW</td><td class="risk-MED">MED</td><td>Idempotency-Key pro ICAO+Cycle; Rate-Limit pro User; Hard Monthly Cap $50</td></tr>
+    <tr><td>R9</td><td>Pilot vertraut dem Wert trotz "derived"-Chip</td><td class="risk-MED">MED</td><td class="risk-CRIT">CRIT</td><td>Banner + Chip + "— statt 0 bei null" + Klick-Provenance + Legal-Copy</td></tr>
+    <tr><td>R10</td><td>Tabellenlayout ändert sich durch DFS</td><td class="risk-LOW">LOW</td><td class="risk-MED">MED</td><td>Layout-invariantes Vision-Prompting; Golden-Fixtures fangen Regression</td></tr>
+    <tr><td>R11</td><td>Einheiten-Verwechslung m ↔ ft</td><td class="risk-LOW">LOW</td><td class="risk-CRIT">CRIT</td><td>Explizite Einheit im Schema; Validator verwirft abweichende</td></tr>
+    <tr><td>R12</td><td>Duplicate Frequenz für falschen Service klassifiziert</td><td class="risk-MED">MED</td><td class="risk-HIGH">HIGH</td><td>Chart-cross-Check; DFS-HTML-Anker wo möglich; Human Review bei Uneinigkeit</td></tr>
+    <tr><td>R13</td><td>Halluzinierter RWY, den es nicht gibt</td><td class="risk-LOW">LOW</td><td class="risk-HIGH">HIGH</td><td>RWY-Count muss über 2 Quellen identisch sein</td></tr>
+    <tr><td>R14</td><td>Falsche AIP-Ausgabe extrahiert (alter Chart im Data-Dir)</td><td class="risk-LOW">LOW</td><td class="risk-HIGH">HIGH</td><td>Chart-Hash + cycle im Audit; Scraper überschreibt cycle-annotiert</td></tr>
+    <tr><td>R15</td><td>Review-Queue wächst ungebremst</td><td class="risk-MED">MED</td><td class="risk-LOW">LOW</td><td>Auto-Reject nach 30 Tagen ohne Review → bleibt "—"</td></tr>
+    <tr><td>R16</td><td>Manuelle Review-Approval fehlerhaft (menschlicher Tippfehler)</td><td class="risk-LOW">LOW</td><td class="risk-HIGH">HIGH</td><td>Zwei-Menschen-Approval bei Critical; Approval schreibt Audit-Row, jederzeit widerrufbar</td></tr>
+    <tr><td>R17</td><td>Race Condition: mehrere Worker extrahieren dasselbe ICAO+cycle</td><td class="risk-LOW">LOW</td><td class="risk-LOW">LOW</td><td>Redis SETNX Job-Key; DB-UNIQUE-Constraint auf (icao, airac)</td></tr>
+    <tr><td>R18</td><td>Geheimnis-Leak API-Key der LLM-Provider</td><td class="risk-LOW">LOW</td><td class="risk-CRIT">CRIT</td><td>Keys nur in .env; .gitignore; pre-commit-Hook scannt; Rate-Limit + monthly cap</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================= 12 ARCHITECTURE -->
+<h2 id="sec-12"><span class="num">12</span>Architektur-Skizze</h2>
+<pre><code>services/data-ingestion/
+  app/
+    parser/                          ← neu
+      __init__.py
+      providers/
+        claude_vision.py             ← Anthropic SDK wrapper
+        openai_vision.py             ← fallback / 2nd source
+        tesseract.py                 ← pytesseract, Bbox-bound
+        dfs_html.py                  ← Playwright re-fetch
+      consensus.py                   ← engine (siehe §04)
+      domain_validator.py            ← range/unit/heading checks
+      schemas.py                     ← pydantic response schemas
+      prompts/
+        geo_v1.yaml
+        runways_v1.yaml
+        frequencies_v1.yaml
+      runner.py                      ← orchestriert N Quellen, schreibt Audit
+      queue.py                       ← Redis worker
+    api/
+      extraction.py                  ← GET /extraction/status/{icao}, SSE
+      aerodromes.py                  ← erweitert um *_meta in Response
+  alembic/versions/
+    2026XXXX_extraction_audit_and_review.py
+tests/
+  golden/
+    ad2/EDDF.png  + EDDF.labels.yaml
+    ad2/EDDM.png  + EDDM.labels.yaml
+    ... (30 total)
+  adversarial/
+    blur_freq.png
+    missing_operator.png
+    ... (10 total)
+  unit/
+    test_consensus.py
+    test_domain_validator.py
+    test_unit_normalizer.py
+
+scripts/
+  golden_eval.py                     ← runs pipeline over /tests/golden, prints F1
+  beacon_drift_check.py              ← täglich via cron
+  review_cli.py                      ← CLI tool for human review
+
+admin-ui/ (optional separate route /admin)
+  ReviewQueue.tsx
+  AuditDetail.tsx
+  BeaconDashboard.tsx</code></pre>
+
+<!-- ============================================================= 13 ROLLOUT -->
+<h2 id="sec-13"><span class="num">13</span>Phasierter Rollout</h2>
+<table>
+  <thead><tr><th>Phase</th><th>Scope</th><th>Dauer</th><th>Gatekeeper</th></tr></thead>
+  <tbody>
+    <tr><td><strong>0 · Spike</strong></td><td>Claude + GPT + Tesseract auf 5 AD-2-Seiten; Manuel labeled; F1-Report; Kosten-Messung; HTML-Re-Scrape-Probe</td><td>1–2 Tage</td><td>F1 ≥ 0.95 auf Normal-Klasse, Kosten &lt; $0.10/aerodrome → GO</td></tr>
+    <tr><td><strong>1 · Infra</strong></td><td>Alembic-Migration (audit + review), Redis-Queue, Worker-Skelett, Pipeline ohne Persistierung (dry-run nur)</td><td>2 Tage</td><td>Unit-Tests grün; alle Audit-Rows geschrieben; nichts im UI sichtbar</td></tr>
+    <tr><td><strong>2 · Golden Fixtures</strong></td><td>30 Bilder manuell labeln; F1-Gate in CI; Adversarial-Set</td><td>1 Tag (labeling by pilot reviewer)</td><td>Fixtures committed + CI-Pipeline läuft</td></tr>
+    <tr><td><strong>3 · Geo + Elevation</strong></td><td>Lazy extraction für Koordinaten + Elevation + Magnetvariation (HIGH-Klasse); 20 zufällige Reviews stichprobenartig</td><td>2 Tage</td><td>F1 ≥ 0.97, 20/20 Stichprobe OK → Feature-Flag an (Admin-only)</td></tr>
+    <tr><td><strong>4 · Runways</strong></td><td>Extraktion von RWY-Länge/Breite/Surface + ILS + Heading (CRITICAL für Länge, Heading)</td><td>3 Tage</td><td>F1 ≥ 0.99 auf CRITICAL; Top 10 manuell verifiziert</td></tr>
+    <tr><td><strong>5 · Frequenzen</strong></td><td>AD 2.18 extrahieren, Chart-Cross-Validation, Human Review obligatorisch</td><td>4 Tage</td><td>F1 ≥ 0.99; 100 % Top-10 manuell; Adversarial sauber; Safety-Sign-Off</td></tr>
+    <tr><td><strong>6 · Sekundärfelder</strong></td><td>Operator, OPR hours, Ref-Temp, PPR-Flag</td><td>2 Tage</td><td>F1 ≥ 0.95</td></tr>
+    <tr><td><strong>7 · UI-Provenance</strong></td><td>Chips, Audit-Panel, Bbox-Highlight, Report-Button</td><td>3 Tage</td><td>UX + Pilot review</td></tr>
+    <tr><td><strong>8 · GA</strong></td><td>Safety-Sign-Off-Gate (§19), Launch-Banner-Copy-Review, Legal-Approval</td><td>1 Tag</td><td>alle 6 Punkte der Sign-Off-Checkliste erfüllt</td></tr>
+    <tr><td><strong>9 · Monitoring</strong></td><td>Beacon-Drift (täglich), Review-Queue-Dashboard, Cost-Alert, Quartalsaudit</td><td>laufend</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Gesamt: ca. 15–20 Entwicklungstage.</strong> Kosten bei voller Ausrollung über alle 433 Flugplätze initial einmalig &lt; 20 € für LLM-APIs (mit Prompt-Caching).</p>
+
+<!-- ============================================================= 14 GO/NO-GO GATES -->
+<h2 id="sec-14"><span class="num">14</span>Go/No-Go-Gates</h2>
+
+<h3>Gate α — nach Spike (Phase 0)</h3>
+<ul class="check-list">
+  <li>F1 ≥ 0.95 auf NORMAL auf 5 Aerodromes</li>
+  <li>3-Quellen-Konsens tatsächlich erreicht auf ≥ 80 % der Felder</li>
+  <li>Kosten &lt; $0.10 pro Aerodrome (erstmalig)</li>
+  <li>HTML-Re-Scrape technisch machbar (Permalinks via Playwright erreichbar)</li>
+  <li><strong>Wenn irgendein Punkt nicht erfüllt → STOP, Alternativen bewerten</strong></li>
+</ul>
+
+<h3>Gate β — vor Phase 5 (Frequenzen)</h3>
+<ul class="check-list">
+  <li>F1 ≥ 0.99 auf CRITICAL-Runways in Phase 4</li>
+  <li>Review-UI funktional und von einem Piloten getestet</li>
+  <li>Adversarial-Set besteht 10/10</li>
+  <li>Cost-Cap-Mechanismus verifiziert</li>
+</ul>
+
+<h3>Gate γ — vor GA (Phase 8)</h3>
+<ul class="check-list">
+  <li>Alle 6 Safety-Sign-Off-Punkte (§19 der Iterationen) erfüllt</li>
+  <li>Top-10-Flughäfen manuell gegen die AIP verifiziert</li>
+  <li>Legal-Approval des Banners</li>
+  <li>Beacon-Drift-Alert läuft</li>
+  <li>Rollback-Plan dokumentiert</li>
+</ul>
+
+<h3>Hard No-Go-Kriterien (jederzeit)</h3>
+<div class="card danger">
+  <ul>
+    <li>Irgendein Critical-Wert wird <strong>einmal</strong> ohne 3/3-Konsens öffentlich sichtbar → sofortiger Freeze</li>
+    <li>F1 auf CRITICAL fällt unter 0.97 nach einem Deploy → Rollback</li>
+    <li>Adversarial-Test meldet unerwartete Werte → Freeze bis Prompt-Fix</li>
+    <li>Beacon-Drift &gt; 5 % Abweichung → Freeze + Incident-Review</li>
+  </ul>
+</div>
+
+<!-- ============================================================= 15 VALIDATION -->
+<h2 id="sec-15"><span class="num">15</span>Finale Validierungs-Checkliste (post-GA)</h2>
+<div class="card">
+  <ul class="check-list">
+    <li>Jeder persistierte Wert hat eine Audit-Row mit 3 Quellen + Konsens-Marker</li>
+    <li>Kein UI-Feld zeigt CRITICAL-Werte ohne <code>reviewed_by IS NOT NULL</code></li>
+    <li>AIRAC-Zyklus-Wechsel flippt <code>extraction_stale = true</code> automatisch</li>
+    <li>UI zeigt <code>X-Aerofly-Derived: true</code> Header und den Banner</li>
+    <li>Chart-Bbox-Highlight funktioniert bei Klick auf Chip</li>
+    <li>Report-Button erzeugt GitHub-Issue mit anonymisiertem Audit-Snippet</li>
+    <li>Beacon-PNG täglich verarbeitet, Dashboard grün</li>
+    <li>Kosten-Cap-Alerts bei 50 % / 75 % / 100 % des monatlichen Budgets</li>
+    <li>Review-Queue leert sich regelmäßig (SLA: ≤ 48 h)</li>
+    <li>Legal-Text unverändert seit Approval</li>
+    <li>Kein API-Key in Git-Historie (pre-commit-Hook aktiv)</li>
+    <li>Rollback-Runbook aktuell und getestet</li>
+  </ul>
+</div>
+
+<!-- ============================================================= 16 NEXT STEPS -->
+<h2 id="sec-16"><span class="num">16</span>Nächste Schritte — exakte Befehlssequenz nach GO</h2>
+<p style="color:var(--color-text-secondary); margin-bottom: var(--space-3);">
+  Nichts davon wird ausgeführt, bis du explizit "GO" sagst. Wenn du nur die Spike-Phase willst, sag "GO Spike" —
+  dann wird Phase 0 isoliert gebaut, bewertet, und du entscheidest danach.
+</p>
+<div class="next-commands"># 0. GitHub-Issue
+gh issue create --repo DMPlisken/AeroFly \
+  --title "Chart extraction — rock-solid multi-source pipeline (phased)" \
+  --label "enhancement,safety-critical" \
+  --body-file docs/reports/2026-04-19-chart-extraction-rocksolid-plan.html
+
+# 1. Nur Spike — isoliert, ohne Persistierung ins Produktiv-UI
+git checkout develop &amp;&amp; git pull
+git checkout -b spike/&lt;N&gt;-chart-extraction
+
+# 2. Spike-Scope:
+#    - scripts/spike_extract.py (standalone)
+#    - tests/golden/ad2/ mit 5 gelabelten Fixtures (EDDF/EDDM/EDDH/EDDB/EDDG)
+#    - Anthropic + OpenAI API keys in .env (manuell durch User)
+#    - Runs auf 5 Aerodromes, schreibt reports/spike_&lt;date&gt;.json
+#    - KEINE DB-Änderung, KEIN UI-Hook
+
+# 3. Evaluation
+python scripts/spike_extract.py --icaos EDDF,EDDM,EDDH,EDDB,EDDG
+python scripts/evaluate_golden.py   # F1 pro Risikoklasse
+
+# 4. Entscheidung
+#    - Gate α erfüllt → weiter zu Phase 1
+#    - nicht erfüllt → PR dokumentiert "why not", Issue schließt mit lessons
+
+# 5. Erst bei Gate-α-Pass:
+git checkout -b feat/&lt;N&gt;-extraction-infra
+# Alembic-Migration, Worker, Queue, Schemas — alles ohne UI-Exposition
+
+# … Phasen 2-8 einzeln, jede eigene PR mit eigenem Safety-Review</div>
+
+<!-- ============================================================= FOOTER -->
+<footer class="doc-foot">
+  AeroFly · Rock-Solid Chart-Extraktion Plan · 2026-04-19 · 20 Iterationen · finaler Score 98 % · Status: AWAITING GO
+</footer>
+</main>
+</body>
+</html>

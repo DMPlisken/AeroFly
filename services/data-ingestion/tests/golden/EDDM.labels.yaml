@@ -1,0 +1,59 @@
+# DRAFT — requires pilot verification before F1-gate use.
+icao: EDDM
+source_chart: AD_2-*_print.png
+source_airac_cycle: 2026-04
+approved_by: null       # TODO: pilot reviewer
+approved_at: null
+
+geo:
+  latitude_deg: 48.353889
+  longitude_deg: 11.786111
+  elevation_ft: 1487
+  magnetic_variation_deg: 2.5     # approx IGRF, DE area; pilot verify
+  reference_temp_c: unverified
+  operator: "Flughafen München GmbH"
+  operator_de: "Flughafen München GmbH"
+  city: "Munich"
+  city_de: "München"
+
+runways:
+  - designator_le: "08L"
+    designator_he: "26R"
+    true_heading_le_deg: unverified
+    true_heading_he_deg: unverified
+    length_m: 4000
+    width_m: 60
+    surface: asphalt
+    ils_le: true
+    ils_he: true
+  - designator_le: "08R"
+    designator_he: "26L"
+    true_heading_le_deg: unverified
+    true_heading_he_deg: unverified
+    length_m: 4000
+    width_m: 60
+    surface: asphalt
+    ils_le: true
+    ils_he: true
+
+frequencies:
+  - type: twr
+    callsign: "Munich Tower"
+    callsign_de: "München Turm"
+    frequency_mhz: "118.700"
+    operational_hours: unverified
+  - type: gnd
+    callsign: "Munich Apron North"
+    callsign_de: "Apron München Nord"
+    frequency_mhz: "121.700"
+    operational_hours: unverified
+  - type: atis
+    callsign: "Munich ATIS"
+    callsign_de: "München ATIS"
+    frequency_mhz: "123.125"
+    operational_hours: unverified
+  - type: del
+    callsign: "Munich Delivery"
+    callsign_de: "München Delivery"
+    frequency_mhz: "121.825"
+    operational_hours: unverified

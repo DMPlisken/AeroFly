@@ -71,3 +71,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Reframe: no auth, charts are the product, close #10 and #14 (`feat/13-chart-image-display`)
 
 > es gibt keine authentifizierung für die bilder und informationen. du kommst ohne login überall hin und die bilder die wir bereits gescraped haben sollten eigentlich völlig ausreichend sein. mehr informationen als wir schon haben gibt es nicht
+
+### 2026-04-19 — Run housekeeping after chart display (`feat/13-chart-image-display`)
+
+> do housekeeping

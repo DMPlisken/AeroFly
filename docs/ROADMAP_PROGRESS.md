@@ -10,27 +10,28 @@
 - [x] Alembic migrations for all services — issue #4, data-ingestion (6 tables + 9 enums), search + gateway (baseline schemas)
 
 ### Data Ingestion
-- [ ] DFS AIP parser — aerodrome directory (AD 2) — issue #10 (core metadata: lat/lon/elev/city/region)
-- [ ] Runway data extraction (dimensions, surface, orientation) — issue #10
-- [ ] Frequency extraction (TWR, GND, ATIS, AFIS) — issue #10
+- [~] DFS AIP parser — aerodrome directory (AD 2) — **won't do** (issue #10 closed). The chart images already contain the authoritative data; structured extraction would be lossy.
+- [~] Runway data extraction (dimensions, surface, orientation) — **won't do** (part of #10). Pilot reads it from the chart.
+- [~] Frequency extraction (TWR, GND, ATIS, AFIS) — **won't do** (part of #10). Pilot reads it from the chart.
 - [x] Aerodrome chart/map PDF ingestion & indexing — feat/1 scraper (1042 PNGs) + issue #8 importer + issue #13 inline display
-- [ ] NOTAM feed integration — issue #12
-- [ ] Scheduled re-sync jobs
+- [ ] NOTAM feed integration — issue #12 (pending go/no-go decision)
+- [ ] Scheduled re-sync jobs — for future AIRAC-cycle updates via the existing scraper
 
 ### Search & API
-- [ ] Meilisearch index configuration (aerodromes, frequencies, charts)
-- [x] Gateway REST API — aerodrome listing + detail endpoints — issue #8 (interim; moves to Search when Meilisearch lands)
-- [x] Full-text prefix search endpoint (ICAO, name, city, region) — issue #8 (ILIKE against Postgres for now)
+- [ ] Meilisearch index configuration (aerodromes, frequencies, charts) — issue #11 (pending go/no-go decision)
+- [x] Gateway REST API — aerodrome listing + detail endpoints — issue #8
+- [x] Full-text prefix search endpoint (ICAO, name) — issue #8 (ILIKE against Postgres)
 - [x] Swagger/OpenAPI documentation — gateway at `/api/docs`, data-ingestion at `/docs`
-- [ ] API authentication (JWT)
-- [ ] Rate limiting
+- [x] Chart image serving — issue #13 (nginx serves PNGs directly from data-ingestion volume, 1-day browser cache)
+- [~] API authentication (JWT) — **won't do** (issue #14 closed). Data is public.
+- [~] Rate limiting — **won't do** for Phase 1. Revisit if third-party API consumers appear.
 
 ### Frontend
 - [x] Design Kit creation (`docs/Design-Kits/aerofly-design-kit.html`) — v2.0 dark-first glassmorphism, 22 sections incl. 3 page mockups, issue #2
 - [x] Aerodrome search page — issue #8, paginated, filterable, Vite proxy to gateway
-- [x] Aerodrome detail view — issue #8 (runways + frequencies live; map, charts, NOTAMs are placeholders awaiting data)
+- [x] Aerodrome detail view — issue #8 + #13 (inline chart images; runway/frequency/NOTAM sections stay "—" since the chart itself contains those)
 - [x] Bilingual UI (DE/EN) — issue #8, custom I18nProvider, every string translated, persisted via localStorage
-- [ ] Responsive layout — mobile / tablet breakpoints pending
+- [ ] Responsive layout — issue #15 (pending go/no-go decision)
 
 ## Phase 2: Enhanced Data & Tools (Planned)
 - [ ] Weather integration (METAR/TAF)

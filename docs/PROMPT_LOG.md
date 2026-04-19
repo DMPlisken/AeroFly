@@ -39,3 +39,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Make the stack runnable end-to-end (`develop`)
 
 > build docker and perform all end-to-end testing and do everything so that I can run it.
+
+### 2026-04-19 — Run housekeeping after making stack runnable (`chore/6-runnable-dev-env`)
+
+> do housekeeping

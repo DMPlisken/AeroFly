@@ -75,3 +75,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Run housekeeping after chart display (`feat/13-chart-image-display`)
 
 > do housekeeping
+
+### 2026-04-19 — Chart click-to-enlarge + zoom (`develop`)
+
+> Ich brauche für die Bilder Click & Large mit Zoom-Funktionalität.

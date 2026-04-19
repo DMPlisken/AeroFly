@@ -10,11 +10,11 @@
 - [x] Alembic migrations for all services — issue #4, data-ingestion (6 tables + 9 enums), search + gateway (baseline schemas)
 
 ### Data Ingestion
-- [ ] DFS AIP parser — aerodrome directory (AD 2)
-- [ ] Runway data extraction (dimensions, surface, orientation)
-- [ ] Frequency extraction (TWR, GND, ATIS, AFIS)
-- [ ] Aerodrome chart/map PDF ingestion & indexing
-- [ ] NOTAM feed integration
+- [ ] DFS AIP parser — aerodrome directory (AD 2) — issue #10 (core metadata: lat/lon/elev/city/region)
+- [ ] Runway data extraction (dimensions, surface, orientation) — issue #10
+- [ ] Frequency extraction (TWR, GND, ATIS, AFIS) — issue #10
+- [x] Aerodrome chart/map PDF ingestion & indexing — feat/1 scraper (1042 PNGs) + issue #8 importer + issue #13 inline display
+- [ ] NOTAM feed integration — issue #12
 - [ ] Scheduled re-sync jobs
 
 ### Search & API

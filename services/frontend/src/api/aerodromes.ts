@@ -77,6 +77,7 @@ export interface Chart {
   title: string;
   title_de: string | null;
   source_url: string;
+  preview_url: string | null;
 }
 
 export interface Notam {

@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from app.api.aerodromes import router as aerodromes_router
+from app.api.charts import router as charts_router
 
 app = FastAPI(
     title="AeroFly Data Ingestion",
@@ -13,6 +14,7 @@ app = FastAPI(
 )
 
 app.include_router(aerodromes_router)
+app.include_router(charts_router)
 
 
 @app.get("/health", tags=["health"])

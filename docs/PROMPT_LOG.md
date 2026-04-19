@@ -63,3 +63,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Run housekeeping after vertical slice + import (`feat/8-aerodrome-listing`)
 
 > do housepeeping
+
+### 2026-04-19 — Create 6 GitHub issues + start implementation (`develop`)
+
+> Mach ein GitHub-Issue aus: "DFS HTML/chart parser (extract structured runways/frequencies/coords from the existing scraped images) ·  Meilisearch sync · NOTAM integration · chart image display in detail view · authentication · responsive/mobile layout." - Und starte mit der Implementierung in einem neuen Branch.

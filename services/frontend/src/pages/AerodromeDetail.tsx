@@ -162,7 +162,40 @@ export function AerodromeDetailPage() {
             <div className="card-header">
               <span className="card-title">{t("detail.section.charts")}</span>
             </div>
-            <p style={{ color: "var(--color-text-muted)" }}>{t("detail.empty.charts")}</p>
+            {data.charts.length === 0 ? (
+              <p style={{ color: "var(--color-text-muted)" }}>{t("detail.empty.charts")}</p>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+                {data.charts.map((c) => (
+                  <li
+                    key={c.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "var(--space-3)",
+                      padding: "var(--space-2) var(--space-3)",
+                      background: "var(--color-bg-elevated)",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "var(--fs-sm)",
+                    }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                      <i className="fa-solid fa-file-lines" style={{ color: "var(--color-text-muted)" }} />
+                      {c.title}
+                    </span>
+                    <a
+                      href={c.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-ghost btn-sm"
+                    >
+                      <i className="fa-solid fa-arrow-up-right-from-square" /> DFS
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="card">

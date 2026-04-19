@@ -51,15 +51,36 @@ This runs `alembic upgrade head` inside each migration-owning container
 - `search.*` — empty (projections land when Meilisearch sync track starts)
 - `gateway.*` — empty (API tables land when Gateway API track starts)
 
-## Seed demo data (10 real German airports)
+## Load real aerodrome data (433 German aerodromes)
+
+If the DFS scraper has already run and populated the `data/` directory
+on the host, import everything into the database:
+
+```bash
+bash scripts/import-scraped-data.sh          # additive, idempotent
+bash scripts/import-scraped-data.sh --wipe   # TRUNCATE aerodromes first
+```
+
+This reads every `data/aerodromes/*/manifest.json` (produced by issue #1
+Playwright scraper) and inserts one aerodrome row plus its chart
+document references. Structured fields (runways, frequencies,
+coordinates) are not in the manifest — they require the HTML/chart
+parser (follow-up).
+
+Subsequent AIRAC updates only need to re-run the scraper and this
+import: existing rows with matching `source_url` are skipped.
+
+### Fallback: 10 hand-picked demo airports
+
+If you do not yet have the scraped `data/` directory, a small demo
+seed with plausible (but fake!) runways and frequencies is available:
 
 ```bash
 bash scripts/seed-demo-data.sh
 ```
 
-Idempotent — rerunning skips aerodromes that already exist. Without this
-step the frontend will show an empty state until the DFS scraper (#1)
-populates the DB.
+Use for UI demos only — the DFS scraper (or `import-scraped-data.sh`)
+replaces these values.
 
 ## Verify
 

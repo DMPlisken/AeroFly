@@ -10,6 +10,18 @@ import { AerodromeCard } from "@/components/AerodromeCard";
 import { useI18n } from "@/i18n";
 
 const LIMIT = 24;
+
+function paginationWindow(current: number, total: number): (number | "ellipsis")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+  const out: (number | "ellipsis")[] = [0];
+  const start = Math.max(1, current - 1);
+  const end = Math.min(total - 2, current + 1);
+  if (start > 1) out.push("ellipsis");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 2) out.push("ellipsis");
+  out.push(total - 1);
+  return out;
+}
 const TYPES: (AerodromeType | "")[] = [
   "",
   "international",
@@ -148,15 +160,24 @@ export function SearchPage() {
                 >
                   <i className="fa-solid fa-chevron-left" />
                 </button>
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <button
-                    key={i}
-                    className={i === page ? "is-active" : ""}
-                    onClick={() => update({ offset: i * LIMIT })}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                {paginationWindow(page, totalPages).map((entry, i) =>
+                  entry === "ellipsis" ? (
+                    <span
+                      key={`e${i}`}
+                      style={{ padding: "0 var(--space-2)", color: "var(--color-text-muted)" }}
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={entry}
+                      className={entry === page ? "is-active" : ""}
+                      onClick={() => update({ offset: entry * LIMIT })}
+                    >
+                      {entry + 1}
+                    </button>
+                  ),
+                )}
                 <button
                   disabled={offset + items.length >= total}
                   onClick={() => update({ offset: offset + LIMIT })}

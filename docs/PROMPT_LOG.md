@@ -55,3 +55,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Vertical slice choices: `/aerodromes` prefix, limit/offset, Dashboard landing, real seed data, full DE/EN (`develop`)
 
 > 1a; 2a; 3b; 4c; 5b
+
+### 2026-04-19 — Load already-scraped data into Docker, not demo seeds (`feat/8-aerodrome-listing`)
+
+> Wir haben schon alle Daten von den Flughäfen gescreate. Die solltest du alle lokal in deinem Docker auch zur Verfügung haben. Und das Scraten sollte nur dafür notwendig sein, wenn Updates verfügbar sind, die eben abzudaten.

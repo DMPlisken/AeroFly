@@ -1,14 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-function App() {
-  return (
-    <div>
-      <h1>AeroFly</h1>
-      <p>Aerodrome Compendium — Deutsche Flugplatzdaten</p>
-    </div>
-  );
-}
+import { App } from "./App";
+import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

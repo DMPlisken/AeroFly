@@ -81,6 +81,7 @@ services:
       - ./services/data-ingestion:/app
       - ./shared/python:/app/shared
       - ./scripts:/app/scripts:ro
+      - ./data:/app/data:ro
     depends_on:
       postgres:
         condition: service_healthy

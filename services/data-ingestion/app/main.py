@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI
 
+from app.api.aerodromes import router as aerodromes_router
+
 app = FastAPI(
     title="AeroFly Data Ingestion",
     description="Ingests aerodrome data from DFS (Deutsche Flugsicherung) and other sources.",
@@ -9,6 +11,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+app.include_router(aerodromes_router)
 
 
 @app.get("/health", tags=["health"])

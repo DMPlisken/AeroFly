@@ -1,254 +1,2588 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroFly Design Kit</title>
+  <title>AeroFly Design Kit v2.0</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Free -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
   <style>
-    /* ============================================
-       AeroFly Design Kit — Single Source of Truth
-       ============================================
-       All frontend UI components MUST reference this file.
-       If a component is missing, add it here FIRST.
-    */
+    /* ==========================================================================
+       AeroFly Design Kit v2.0 — Single Source of Truth
+       --------------------------------------------------------------------------
+       All frontend UI implementations MUST reference this file.
+       If a component is missing, add it here FIRST, then implement.
 
-    :root {
-      /* --- 1. Color Tokens (Light Mode) --- */
-      --color-primary: #1a56db;
-      --color-primary-hover: #1e40af;
-      --color-primary-light: #dbeafe;
-      --color-secondary: #059669;
-      --color-secondary-hover: #047857;
-      --color-secondary-light: #d1fae5;
-      --color-danger: #dc2626;
-      --color-danger-hover: #b91c1c;
-      --color-danger-light: #fee2e2;
-      --color-warning: #d97706;
-      --color-warning-light: #fef3c7;
-      --color-info: #2563eb;
-      --color-info-light: #dbeafe;
+       Theme: Dark-first glassmorphism (primary) + Light (secondary) via toggle.
+       Framework: Plain CSS custom properties. FontAwesome 6 via CDN.
+       Fonts: Inter (UI) + JetBrains Mono (ICAO / frequencies / METAR).
+       ========================================================================== */
 
-      --color-bg: #ffffff;
-      --color-bg-secondary: #f9fafb;
-      --color-bg-tertiary: #f3f4f6;
-      --color-text: #111827;
-      --color-text-secondary: #6b7280;
-      --color-text-muted: #9ca3af;
-      --color-border: #e5e7eb;
+    /* --- Design Tokens : Dark (default) --- */
+    :root,
+    [data-theme="dark"] {
+      /* Background layers */
+      --color-bg:            #0b0f1a;
+      --color-bg-elevated:   #0f172a;
+      --color-surface:       #1e293b;
+      --color-surface-2:     #334155;
+      --color-surface-3:     #475569;
+
+      /* Text */
+      --color-text:          #f8fafc;
+      --color-text-secondary:#94a3b8;
+      --color-text-muted:    #64748b;
+      --color-text-inverse:  #0b0f1a;
+
+      /* Borders */
+      --color-border:        #1e293b;
+      --color-border-strong: #334155;
+      --color-border-subtle: rgba(255,255,255,0.08);
+
+      /* Brand / accent */
+      --color-primary:        #3b82f6;
+      --color-primary-hover:  #2563eb;
+      --color-primary-pressed:#1d4ed8;
+      --color-primary-soft:   rgba(59,130,246,0.12);
+      --color-primary-ring:   rgba(59,130,246,0.35);
+
+      /* Semantic */
+      --color-success:        #10b981;
+      --color-success-soft:   rgba(16,185,129,0.12);
+      --color-warning:        #f59e0b;
+      --color-warning-soft:   rgba(245,158,11,0.12);
+      --color-danger:         #ef4444;
+      --color-danger-soft:    rgba(239,68,68,0.12);
+      --color-info:           #06b6d4;
+      --color-info-soft:      rgba(6,182,212,0.12);
+
+      /* Aviation-specific */
+      --color-runway:         #475569;
+      --color-runway-marker:  #f8fafc;
+      --color-taxiway:        #fbbf24;
+
+      --color-freq-twr:       #ef4444;  /* Tower */
+      --color-freq-gnd:       #10b981;  /* Ground */
+      --color-freq-atis:      #3b82f6;  /* ATIS */
+      --color-freq-afis:      #a855f7;  /* AFIS */
+      --color-freq-app:       #f59e0b;  /* Approach */
+      --color-freq-del:       #06b6d4;  /* Delivery */
+      --color-freq-dep:       #ec4899;  /* Departure */
+      --color-freq-info:      #64748b;  /* Info / other */
+
+      --color-notam-critical: #ef4444;
+      --color-notam-high:     #f59e0b;
+      --color-notam-normal:   #3b82f6;
+      --color-notam-low:      #64748b;
+
+      --color-wx-vmc:         #10b981;
+      --color-wx-mvfr:        #3b82f6;
+      --color-wx-ifr:         #ef4444;
+      --color-wx-lifr:        #a855f7;
+
+      /* Glass / overlays */
+      --glass-bg:     rgba(30,41,59,0.7);
+      --glass-border: rgba(255,255,255,0.08);
+      --glass-blur:   16px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.45);
+      --shadow-glow-primary: 0 8px 24px rgba(59,130,246,0.25);
+
+      /* Page gradient (dark) */
+      --page-gradient: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
+    }
+
+    /* --- Design Tokens : Light --- */
+    [data-theme="light"] {
+      --color-bg:            #ffffff;
+      --color-bg-elevated:   #f9fafb;
+      --color-surface:       #ffffff;
+      --color-surface-2:     #f3f4f6;
+      --color-surface-3:     #e5e7eb;
+
+      --color-text:          #0f172a;
+      --color-text-secondary:#475569;
+      --color-text-muted:    #94a3b8;
+      --color-text-inverse:  #ffffff;
+
+      --color-border:        #e5e7eb;
       --color-border-strong: #d1d5db;
+      --color-border-subtle: rgba(0,0,0,0.06);
 
-      /* --- Aviation-specific --- */
-      --color-runway: #374151;
-      --color-taxiway: #fbbf24;
-      --color-frequency-twr: #dc2626;
-      --color-frequency-gnd: #059669;
-      --color-frequency-atis: #2563eb;
-      --color-frequency-afis: #7c3aed;
-      --color-notam-active: #dc2626;
-      --color-notam-upcoming: #d97706;
+      --color-primary:        #1a56db;
+      --color-primary-hover:  #1e40af;
+      --color-primary-pressed:#1e3a8a;
+      --color-primary-soft:   #dbeafe;
+      --color-primary-ring:   rgba(26,86,219,0.25);
 
-      /* --- 2. Typography --- */
-      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-      --font-size-xs: 0.75rem;
-      --font-size-sm: 0.875rem;
-      --font-size-base: 1rem;
-      --font-size-lg: 1.125rem;
-      --font-size-xl: 1.25rem;
-      --font-size-2xl: 1.5rem;
-      --font-size-3xl: 1.875rem;
+      --color-success:        #059669;
+      --color-success-soft:   #d1fae5;
+      --color-warning:        #d97706;
+      --color-warning-soft:   #fef3c7;
+      --color-danger:         #dc2626;
+      --color-danger-soft:    #fee2e2;
+      --color-info:           #0891b2;
+      --color-info-soft:      #cffafe;
 
-      /* --- 3. Spacing --- */
+      --color-runway:         #374151;
+      --color-runway-marker:  #ffffff;
+      --color-taxiway:        #d97706;
+
+      --color-freq-twr:       #dc2626;
+      --color-freq-gnd:       #059669;
+      --color-freq-atis:      #2563eb;
+      --color-freq-afis:      #7c3aed;
+      --color-freq-app:       #d97706;
+      --color-freq-del:       #0891b2;
+      --color-freq-dep:       #db2777;
+      --color-freq-info:      #6b7280;
+
+      --color-notam-critical: #dc2626;
+      --color-notam-high:     #d97706;
+      --color-notam-normal:   #2563eb;
+      --color-notam-low:      #6b7280;
+
+      --color-wx-vmc:         #059669;
+      --color-wx-mvfr:        #2563eb;
+      --color-wx-ifr:         #dc2626;
+      --color-wx-lifr:        #7c3aed;
+
+      --glass-bg:     rgba(255,255,255,0.75);
+      --glass-border: rgba(0,0,0,0.06);
+      --glass-blur:   12px;
+
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
+      --shadow-md: 0 4px 12px rgba(15,23,42,0.08);
+      --shadow-lg: 0 12px 32px rgba(15,23,42,0.12);
+      --shadow-glow-primary: 0 8px 24px rgba(26,86,219,0.2);
+
+      --page-gradient: linear-gradient(135deg, #f9fafb 0%, #eef2ff 100%);
+    }
+
+    /* --- Typography tokens (theme-agnostic) --- */
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+      --fs-xs:   0.75rem;   /*  12px */
+      --fs-sm:   0.875rem;  /*  14px */
+      --fs-base: 1rem;      /*  16px */
+      --fs-lg:   1.125rem;  /*  18px */
+      --fs-xl:   1.25rem;   /*  20px */
+      --fs-2xl:  1.5rem;    /*  24px */
+      --fs-3xl:  1.875rem;  /*  30px */
+      --fs-4xl:  2.25rem;   /*  36px */
+      --fs-5xl:  3rem;      /*  48px */
+
+      --fw-light: 300;
+      --fw-regular: 400;
+      --fw-medium: 500;
+      --fw-semibold: 600;
+      --fw-bold: 700;
+      --fw-black: 800;
+
+      /* Spacing scale */
+      --space-0: 0;
       --space-1: 0.25rem;
       --space-2: 0.5rem;
       --space-3: 0.75rem;
       --space-4: 1rem;
+      --space-5: 1.25rem;
       --space-6: 1.5rem;
       --space-8: 2rem;
+      --space-10: 2.5rem;
       --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
 
-      /* --- 4. Borders & Radius --- */
+      /* Radius */
+      --radius-none: 0;
       --radius-sm: 0.25rem;
       --radius-md: 0.375rem;
       --radius-lg: 0.5rem;
       --radius-xl: 0.75rem;
+      --radius-2xl: 1rem;
+      --radius-3xl: 1.5rem;
       --radius-full: 9999px;
+
+      /* Z-index scale */
+      --z-base: 0;
+      --z-dropdown: 10;
+      --z-sticky: 20;
+      --z-sidebar: 30;
+      --z-drawer: 40;
+      --z-modal: 50;
+      --z-toast: 60;
+      --z-tooltip: 70;
+
+      /* Motion */
+      --duration-fast: 120ms;
+      --duration-base: 200ms;
+      --duration-slow: 320ms;
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* --- Dark Mode --- */
-    [data-theme="dark"] {
-      --color-bg: #0f172a;
-      --color-bg-secondary: #1e293b;
-      --color-bg-tertiary: #334155;
-      --color-text: #f1f5f9;
-      --color-text-secondary: #94a3b8;
-      --color-text-muted: #64748b;
-      --color-border: #334155;
-      --color-border-strong: #475569;
-    }
+    /* --- Reset & base --- */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: var(--font-family);
-      background: var(--color-bg);
+      font-family: var(--font-sans);
+      font-size: var(--fs-base);
+      line-height: 1.55;
       color: var(--color-text);
-      line-height: 1.6;
+      background: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Headings for the KIT itself */
+    .kit-main h1, .kit-main h2, .kit-main h3, .kit-main h4 {
+      font-family: var(--font-sans);
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code, pre, .mono {
+      font-family: var(--font-mono);
+      font-variant-ligatures: none;
+    }
+
+    /* ==========================================================================
+       KIT LAYOUT (not a reusable component — only for rendering this doc)
+       ========================================================================== */
+    .kit-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+    .kit-toc {
+      position: sticky; top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow-y: auto;
+      padding: var(--space-6);
+      background: var(--color-bg-elevated);
+      border-right: 1px solid var(--color-border-strong);
+    }
+    .kit-toc h3 {
+      font-size: var(--fs-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-3);
+    }
+    .kit-toc ul { list-style: none; margin: 0; padding: 0; }
+    .kit-toc li { margin: var(--space-1) 0; }
+    .kit-toc a {
+      display: block;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      color: var(--color-text-secondary);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-medium);
+      text-decoration: none;
+      transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+    }
+    .kit-toc a:hover { background: var(--color-primary-soft); color: var(--color-primary); }
+
+    .kit-main {
+      padding: var(--space-10) var(--space-12);
+      max-width: 1280px;
+    }
+    .kit-main > header { margin-bottom: var(--space-12); }
+    .kit-main > header h1 {
+      font-size: var(--fs-5xl);
+      font-weight: var(--fw-black);
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-3);
+    }
+    .kit-main > header p {
+      color: var(--color-text-secondary);
+      font-size: var(--fs-lg);
+      max-width: 62ch;
+    }
+    .kit-section {
+      margin: var(--space-16) 0;
+      scroll-margin-top: var(--space-6);
+    }
+    .kit-section > h2 {
+      font-size: var(--fs-2xl);
+      font-weight: var(--fw-bold);
+      margin-bottom: var(--space-2);
+      display: flex; align-items: center; gap: var(--space-3);
+    }
+    .kit-section > h2 .sec-num {
+      font-family: var(--font-mono);
+      color: var(--color-primary);
+      font-size: var(--fs-base);
+      font-weight: var(--fw-medium);
+      background: var(--color-primary-soft);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-md);
+    }
+    .kit-section > p.sec-desc {
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-6);
+      max-width: 72ch;
+    }
+    .kit-section > h3 {
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-semibold);
+      margin: var(--space-8) 0 var(--space-3);
+      color: var(--color-text);
+    }
+    .kit-preview {
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      display: flex; flex-wrap: wrap; gap: var(--space-4);
+      align-items: center;
+    }
+    .kit-preview.block { display: block; }
+    .kit-preview.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .kit-preview.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+    .kit-preview.centered { justify-content: center; }
+    .kit-preview.canvas {
+      background: var(--page-gradient);
       padding: var(--space-8);
     }
+    .kit-note {
+      font-size: var(--fs-sm);
+      color: var(--color-text-muted);
+      margin-top: var(--space-3);
+    }
 
-    h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-8); border-bottom: 2px solid var(--color-primary); padding-bottom: var(--space-4); }
-    h2 { font-size: var(--font-size-2xl); margin: var(--space-8) 0 var(--space-4); color: var(--color-primary); }
-    h3 { font-size: var(--font-size-xl); margin: var(--space-6) 0 var(--space-3); }
+    /* Theme toggle button (top-right) */
+    .theme-toggle {
+      position: fixed; top: var(--space-4); right: var(--space-6);
+      z-index: var(--z-sticky);
+    }
 
-    .section { margin-bottom: var(--space-12); padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
-    .component-row { display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center; margin: var(--space-4) 0; }
+    /* ==========================================================================
+       REUSABLE COMPONENTS — use these classes in the app
+       ========================================================================== */
 
-    /* --- 5. Buttons --- */
+    /* --- Color swatches (kit only) --- */
+    .swatch {
+      display: inline-flex; flex-direction: column; gap: var(--space-2);
+      width: 140px;
+    }
+    .swatch-chip {
+      width: 100%; height: 72px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+    .swatch-label { font-size: var(--fs-xs); color: var(--color-text-secondary); }
+    .swatch-label strong { display: block; color: var(--color-text); font-family: var(--font-mono); }
+
+    /* --- Buttons --- */
     .btn {
-      display: inline-flex; align-items: center; gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--radius-md); border: 1px solid transparent;
-      font-size: var(--font-size-sm); font-weight: 500;
-      cursor: pointer; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: var(--space-2);
+      padding: 0 var(--space-4);
+      height: 38px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-lg);
+      background: transparent;
+      color: var(--color-text);
+      font: var(--fw-semibold) var(--fs-sm)/1 var(--font-sans);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--duration-fast) var(--ease-standard),
+                  border-color var(--duration-fast) var(--ease-standard),
+                  color var(--duration-fast) var(--ease-standard),
+                  box-shadow var(--duration-fast) var(--ease-standard),
+                  transform var(--duration-fast) var(--ease-standard);
     }
-    .btn-primary { background: var(--color-primary); color: white; }
+    .btn:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+    .btn:disabled, .btn[aria-disabled="true"] {
+      opacity: 0.5; cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+      box-shadow: var(--shadow-glow-primary);
+    }
     .btn-primary:hover { background: var(--color-primary-hover); }
-    .btn-secondary { background: var(--color-secondary); color: white; }
-    .btn-danger { background: var(--color-danger); color: white; }
-    .btn-outline { background: transparent; border-color: var(--color-border-strong); color: var(--color-text); }
+    .btn-primary:active { background: var(--color-primary-pressed); transform: translateY(1px); }
 
-    /* --- 6. Badges / Status --- */
-    .badge {
-      display: inline-flex; align-items: center;
-      padding: var(--space-1) var(--space-2);
-      border-radius: var(--radius-full);
-      font-size: var(--font-size-xs); font-weight: 600;
+    .btn-secondary {
+      background: var(--color-surface);
+      color: var(--color-text);
+      border-color: var(--color-border-strong);
     }
-    .badge-frequency-twr { background: var(--color-frequency-twr); color: white; }
-    .badge-frequency-gnd { background: var(--color-frequency-gnd); color: white; }
-    .badge-frequency-atis { background: var(--color-frequency-atis); color: white; }
-    .badge-frequency-afis { background: var(--color-frequency-afis); color: white; }
-    .badge-notam-active { background: var(--color-notam-active); color: white; }
-    .badge-notam-upcoming { background: var(--color-warning); color: white; }
+    .btn-secondary:hover { background: var(--color-surface-2); }
 
-    /* --- 7. Cards --- */
-    .card {
-      border: 1px solid var(--color-border); border-radius: var(--radius-lg);
-      padding: var(--space-4); background: var(--color-bg);
+    .btn-danger  { background: var(--color-danger);  color: #fff; }
+    .btn-danger:hover  { filter: brightness(1.1); }
+    .btn-success { background: var(--color-success); color: #fff; }
+    .btn-success:hover { filter: brightness(1.1); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--color-text);
+      border-color: var(--color-border-strong);
     }
-    .card-header { font-weight: 600; margin-bottom: var(--space-2); }
-    .card-icao { font-family: var(--font-mono); font-size: var(--font-size-lg); color: var(--color-primary); }
+    .btn-outline:hover { border-color: var(--color-primary); color: var(--color-primary); }
 
-    /* --- 8. Search Input --- */
-    .search-input {
-      width: 100%; padding: var(--space-3) var(--space-4);
-      border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg);
-      font-size: var(--font-size-base); background: var(--color-bg);
+    .btn-ghost {
+      background: transparent; color: var(--color-text-secondary);
+    }
+    .btn-ghost:hover { background: var(--color-surface); color: var(--color-text); }
+
+    .btn-icon {
+      width: 38px; padding: 0;
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
+      border-color: var(--color-border-strong);
+    }
+    .btn-icon:hover { color: var(--color-text); background: var(--color-surface-2); }
+
+    .btn-sm  { height: 30px; padding: 0 var(--space-3); font-size: var(--fs-xs); }
+    .btn-lg  { height: 46px; padding: 0 var(--space-6); font-size: var(--fs-base); }
+
+    .btn-loading {
+      pointer-events: none;
+    }
+    .btn-loading::before {
+      content: ""; display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid currentColor; border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- Form elements --- */
+    .form-group { margin-bottom: var(--space-5); }
+    .form-label {
+      display: block;
+      font-size: var(--fs-sm); font-weight: var(--fw-semibold);
+      margin-bottom: var(--space-2);
       color: var(--color-text);
     }
-    .search-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+    .form-help {
+      margin-top: var(--space-2);
+      font-size: var(--fs-xs); color: var(--color-text-muted);
+    }
+    .form-error {
+      margin-top: var(--space-2);
+      font-size: var(--fs-xs); color: var(--color-danger);
+      display: flex; align-items: center; gap: var(--space-2);
+    }
 
-    /* --- 9. Tables --- */
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: var(--space-3); text-align: left; border-bottom: 1px solid var(--color-border); }
-    .table th { font-weight: 600; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+    .input, .select, .textarea {
+      width: 100%;
+      height: 42px;
+      padding: 0 var(--space-4);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font: var(--fw-regular) var(--fs-sm) var(--font-sans);
+      transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+    }
+    .input::placeholder, .textarea::placeholder { color: var(--color-text-muted); }
+    .input:focus, .select:focus, .textarea:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-ring);
+    }
+    .input[aria-invalid="true"] {
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 3px var(--color-danger-soft);
+    }
+    .textarea { height: auto; min-height: 96px; padding: var(--space-3) var(--space-4); resize: vertical; }
+    .select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--color-text-secondary) 50%), linear-gradient(135deg, var(--color-text-secondary) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: var(--space-10); }
 
-    /* Placeholder for additional components */
-    .placeholder { color: var(--color-text-muted); font-style: italic; padding: var(--space-4); }
+    .input-wrap { position: relative; }
+    .input-wrap > .input { padding-left: var(--space-10); }
+    .input-wrap > .input-icon {
+      position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%);
+      color: var(--color-text-muted); pointer-events: none;
+    }
+
+    /* Checkbox / Radio */
+    .check, .radio {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-size: var(--fs-sm); cursor: pointer; user-select: none;
+    }
+    .check input, .radio input {
+      appearance: none; -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border: 1.5px solid var(--color-border-strong);
+      background: var(--color-surface);
+      display: inline-grid; place-content: center;
+      cursor: pointer;
+      transition: border-color var(--duration-fast), background var(--duration-fast);
+    }
+    .check input { border-radius: var(--radius-sm); }
+    .radio input { border-radius: var(--radius-full); }
+    .check input:checked, .radio input:checked {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+    }
+    .check input:checked::before {
+      content: ""; width: 10px; height: 10px;
+      background: #fff;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+    .radio input:checked::before {
+      content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff;
+    }
+
+    /* Toggle */
+    .toggle {
+      display: inline-flex; align-items: center; gap: var(--space-3);
+      cursor: pointer; user-select: none; font-size: var(--fs-sm);
+    }
+    .toggle input { position: absolute; opacity: 0; }
+    .toggle-track {
+      position: relative;
+      width: 40px; height: 22px;
+      background: var(--color-surface-2);
+      border-radius: var(--radius-full);
+      transition: background var(--duration-base);
+    }
+    .toggle-track::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 18px; height: 18px;
+      background: #fff; border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--duration-base);
+    }
+    .toggle input:checked + .toggle-track { background: var(--color-primary); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+    /* --- Badges --- */
+    .badge {
+      display: inline-flex; align-items: center; gap: var(--space-1);
+      padding: 2px var(--space-2);
+      border-radius: var(--radius-md);
+      font: var(--fw-semibold) var(--fs-xs)/1.5 var(--font-sans);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      background: var(--color-surface-2);
+      color: var(--color-text);
+    }
+    .badge-pill { border-radius: var(--radius-full); padding: 2px var(--space-3); }
+    .badge-lg   { font-size: var(--fs-sm); padding: var(--space-1) var(--space-3); }
+    .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    .badge-neutral { background: var(--color-surface-2); color: var(--color-text-secondary); }
+    .badge-info    { background: var(--color-info-soft); color: var(--color-info); }
+    .badge-success { background: var(--color-success-soft); color: var(--color-success); }
+    .badge-warning { background: var(--color-warning-soft); color: var(--color-warning); }
+    .badge-danger  { background: var(--color-danger-soft); color: var(--color-danger); }
+
+    /* Solid variants */
+    .badge-solid-primary { background: var(--color-primary); color: #fff; }
+    .badge-solid-success { background: var(--color-success); color: #fff; }
+    .badge-solid-warning { background: var(--color-warning); color: #0b0f1a; }
+    .badge-solid-danger  { background: var(--color-danger); color: #fff; }
+
+    /* Aviation frequency badges (mono font, solid color stripe) */
+    .freq-badge {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      font-weight: var(--fw-medium);
+    }
+    .freq-badge .freq-type {
+      font-weight: var(--fw-bold);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+    .freq-twr  .freq-type { background: var(--color-freq-twr); }
+    .freq-gnd  .freq-type { background: var(--color-freq-gnd); }
+    .freq-atis .freq-type { background: var(--color-freq-atis); }
+    .freq-afis .freq-type { background: var(--color-freq-afis); }
+    .freq-app  .freq-type { background: var(--color-freq-app); }
+    .freq-del  .freq-type { background: var(--color-freq-del); }
+    .freq-dep  .freq-type { background: var(--color-freq-dep); }
+    .freq-info .freq-type { background: var(--color-freq-info); }
+    .freq-badge .freq-value { color: var(--color-text); font-weight: var(--fw-bold); }
+
+    /* NOTAM severity badge */
+    .notam-badge {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: var(--fs-xs); font-weight: var(--fw-bold);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .notam-critical { background: rgba(239,68,68,0.14); color: var(--color-notam-critical); }
+    .notam-high     { background: rgba(245,158,11,0.14); color: var(--color-notam-high); }
+    .notam-normal   { background: rgba(59,130,246,0.14); color: var(--color-notam-normal); }
+    .notam-low      { background: var(--color-surface-2); color: var(--color-notam-low); }
+
+    /* Weather category badge */
+    .wx-badge {
+      display: inline-flex; align-items: center; gap: var(--space-1);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: var(--fs-xs); font-weight: var(--fw-bold);
+      letter-spacing: 0.08em;
+    }
+    .wx-vmc  { background: rgba(16,185,129,0.18); color: var(--color-wx-vmc); }
+    .wx-mvfr { background: rgba(59,130,246,0.18); color: var(--color-wx-mvfr); }
+    .wx-ifr  { background: rgba(239,68,68,0.18); color: var(--color-wx-ifr); }
+    .wx-lifr { background: rgba(168,85,247,0.18); color: var(--color-wx-lifr); }
+
+    /* System status pill (used in top bar) */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font: var(--fw-bold) var(--fs-xs) var(--font-sans);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .status-pill .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+      animation: pulse-dot 1.6s ease-in-out infinite;
+    }
+    .status-online   { background: rgba(16,185,129,0.12); color: var(--color-success); }
+    .status-degraded { background: rgba(245,158,11,0.12); color: var(--color-warning); }
+    .status-offline  { background: rgba(239,68,68,0.12); color: var(--color-danger); }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+      50%      { opacity: 0.75; box-shadow: 0 0 0 5px transparent; }
+    }
+
+    /* --- Cards --- */
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+    }
+    .card-bordered { border-width: 1px; }
+    .card-elevated { box-shadow: var(--shadow-md); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+    .card-title { font-weight: var(--fw-bold); font-size: var(--fs-base); }
+    .card-subtitle { color: var(--color-text-secondary); font-size: var(--fs-sm); }
+    .card-accent-left { border-left: 3px solid var(--color-primary); }
+    .card-accent-success { border-left: 3px solid var(--color-success); }
+    .card-accent-warning { border-left: 3px solid var(--color-warning); }
+    .card-accent-danger  { border-left: 3px solid var(--color-danger); }
+
+    .card-glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-5);
+    }
+
+    .stat-card {
+      display: flex; flex-direction: column; gap: var(--space-1);
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+    }
+    .stat-card .stat-label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+    .stat-card .stat-value { font: var(--fw-black) var(--fs-3xl)/1 var(--font-mono); color: var(--color-text); }
+    .stat-card .stat-trend { font-size: var(--fs-xs); color: var(--color-success); display: inline-flex; align-items: center; gap: var(--space-1); }
+    .stat-card .stat-trend.neg { color: var(--color-danger); }
+
+    .tile {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      text-align: center;
+      cursor: pointer;
+      transition: transform var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+    }
+    .tile:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+    .tile i { font-size: var(--fs-xl); color: var(--color-primary); }
+    .tile span { font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* --- Navigation : Sidebar --- */
+    .sidebar {
+      width: 260px;
+      background: var(--color-bg-elevated);
+      border-right: 1px solid var(--color-border-strong);
+      display: flex; flex-direction: column;
+      padding: var(--space-6);
+      gap: var(--space-6);
+      min-height: 520px;
+    }
+    .sidebar-brand { display: flex; align-items: center; gap: var(--space-3); font-weight: var(--fw-bold); font-size: var(--fs-lg); letter-spacing: -0.01em; }
+    .sidebar-brand .brand-mark {
+      width: 36px; height: 36px; border-radius: var(--radius-lg);
+      background: var(--color-primary);
+      display: grid; place-items: center; color: #fff;
+      box-shadow: var(--shadow-glow-primary);
+    }
+    .sidebar-brand .brand-accent { color: var(--color-primary); }
+    .sidebar-section-title {
+      font-size: 10px; font-weight: var(--fw-bold); letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--fs-sm); font-weight: var(--fw-medium);
+      border-right: 3px solid transparent;
+      transition: color var(--duration-fast), background var(--duration-fast);
+      cursor: pointer; text-decoration: none;
+    }
+    .nav-item i { width: 20px; text-align: center; }
+    .nav-item:hover { color: var(--color-text); background: var(--color-surface); text-decoration: none; }
+    .nav-item.is-active {
+      color: var(--color-primary);
+      background: var(--color-primary-soft);
+      border-right-color: var(--color-primary);
+    }
+    .nav-badge {
+      margin-left: auto;
+      background: var(--color-primary); color: #fff;
+      font-size: 10px; font-weight: var(--fw-bold);
+      padding: 2px 6px; border-radius: var(--radius-full);
+    }
+    .sidebar-foot {
+      margin-top: auto;
+      display: flex; align-items: center; gap: var(--space-3);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border-strong);
+    }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--color-primary); color: #fff;
+      display: grid; place-items: center;
+      font-weight: var(--fw-bold); font-size: var(--fs-sm);
+    }
+    .avatar-sm { width: 28px; height: 28px; font-size: var(--fs-xs); }
+
+    /* --- Top bar --- */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; padding: 0 var(--space-6);
+      background: var(--color-bg-elevated);
+      border-bottom: 1px solid var(--color-border-strong);
+      gap: var(--space-4);
+    }
+    .topbar-search {
+      flex: 1; max-width: 480px;
+      display: flex; align-items: center; gap: var(--space-3);
+      height: 40px; padding: 0 var(--space-4);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-full);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
+    }
+    .topbar-search input {
+      flex: 1; border: none; outline: none; background: transparent; color: var(--color-text);
+      font: var(--fw-regular) var(--fs-sm) var(--font-sans);
+    }
+    .topbar-actions { display: flex; align-items: center; gap: var(--space-3); }
+    .icon-button {
+      width: 36px; height: 36px; border-radius: var(--radius-lg);
+      display: grid; place-items: center;
+      background: transparent; color: var(--color-text-secondary);
+      border: 1px solid transparent; cursor: pointer;
+      transition: background var(--duration-fast), color var(--duration-fast);
+    }
+    .icon-button:hover { background: var(--color-surface); color: var(--color-text); }
+
+    /* --- Breadcrumbs --- */
+    .breadcrumbs { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); color: var(--color-text-muted); }
+    .breadcrumbs a { color: var(--color-text-secondary); text-decoration: none; }
+    .breadcrumbs a:hover { color: var(--color-primary); }
+    .breadcrumbs .sep { opacity: 0.4; }
+    .breadcrumbs .current { color: var(--color-text); font-weight: var(--fw-semibold); }
+
+    /* --- Tabs --- */
+    .tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--color-border-strong); }
+    .tab {
+      padding: var(--space-3) var(--space-4);
+      border: none; background: transparent;
+      color: var(--color-text-secondary); font-weight: var(--fw-semibold);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color var(--duration-fast), border-color var(--duration-fast);
+      font-size: var(--fs-sm);
+    }
+    .tab:hover { color: var(--color-text); }
+    .tab.is-active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+    /* --- Language toggle (DE/EN pill) --- */
+    .lang-toggle {
+      display: inline-flex; padding: 3px; gap: 2px;
+      background: var(--color-surface); border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-full);
+    }
+    .lang-toggle button {
+      border: none; background: transparent;
+      padding: 4px var(--space-3);
+      color: var(--color-text-secondary);
+      font: var(--fw-bold) var(--fs-xs) var(--font-sans);
+      border-radius: var(--radius-full); cursor: pointer;
+    }
+    .lang-toggle button.is-active { background: var(--color-primary); color: #fff; }
+
+    /* --- Tables --- */
+    .table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      font-size: var(--fs-sm);
+    }
+    .table th {
+      text-align: left; font-weight: var(--fw-semibold);
+      color: var(--color-text-secondary);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border-strong);
+      text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--fs-xs);
+      background: var(--color-bg-elevated);
+    }
+    .table td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text);
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .table-striped tr:nth-child(even) td { background: var(--color-bg-elevated); }
+    .table-hoverable tr:hover td { background: var(--color-primary-soft); }
+    .table .icao { font-family: var(--font-mono); color: var(--color-primary); font-weight: var(--fw-bold); }
+    .sort-header { cursor: pointer; user-select: none; }
+    .sort-header i { margin-left: var(--space-1); opacity: 0.6; font-size: 10px; }
+
+    /* --- Definition list / Key-value grid --- */
+    .kv-grid { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-6); font-size: var(--fs-sm); }
+    .kv-grid dt { color: var(--color-text-muted); font-weight: var(--fw-semibold); text-transform: uppercase; font-size: var(--fs-xs); letter-spacing: 0.04em; }
+    .kv-grid dd { margin: 0; color: var(--color-text); font-family: var(--font-mono); }
+
+    /* --- Pagination --- */
+    .pagination { display: inline-flex; gap: var(--space-1); align-items: center; }
+    .pagination button {
+      min-width: 34px; height: 34px; padding: 0 var(--space-2);
+      border: 1px solid var(--color-border-strong);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: var(--fs-sm); font-weight: var(--fw-medium);
+    }
+    .pagination button:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .pagination button.is-active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* --- Empty state --- */
+    .empty-state {
+      padding: var(--space-10);
+      text-align: center;
+      border: 1px dashed var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      color: var(--color-text-secondary);
+    }
+    .empty-state i { font-size: var(--fs-4xl); color: var(--color-text-muted); margin-bottom: var(--space-4); }
+    .empty-state h4 { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--color-text); margin-bottom: var(--space-2); }
+
+    /* --- Skeleton --- */
+    .skeleton {
+      display: block;
+      background: linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-2) 50%, var(--color-surface) 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.4s ease-in-out infinite;
+      border-radius: var(--radius-md);
+    }
+    @keyframes skeleton-shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+
+    /* --- Alerts (banner) --- */
+    .alert {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      border: 1px solid transparent;
+      font-size: var(--fs-sm);
+    }
+    .alert i { font-size: var(--fs-lg); margin-top: 1px; }
+    .alert-info    { background: var(--color-info-soft);    color: var(--color-info);    border-color: var(--color-info); }
+    .alert-success { background: var(--color-success-soft); color: var(--color-success); border-color: var(--color-success); }
+    .alert-warning { background: var(--color-warning-soft); color: var(--color-warning); border-color: var(--color-warning); }
+    .alert-danger  { background: var(--color-danger-soft);  color: var(--color-danger);  border-color: var(--color-danger); }
+    .alert strong { color: var(--color-text); display: block; margin-bottom: 2px; }
+    .alert .alert-body { flex: 1; color: var(--color-text); }
+
+    /* --- Toast --- */
+    .toast {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-left: 3px solid var(--color-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      min-width: 320px;
+      font-size: var(--fs-sm);
+    }
+    .toast.success { border-left-color: var(--color-success); }
+    .toast.danger  { border-left-color: var(--color-danger); }
+    .toast.warning { border-left-color: var(--color-warning); }
+    .toast .toast-icon { color: var(--color-primary); }
+    .toast.success .toast-icon { color: var(--color-success); }
+    .toast.danger  .toast-icon { color: var(--color-danger); }
+    .toast.warning .toast-icon { color: var(--color-warning); }
+    .toast .toast-body { flex: 1; color: var(--color-text); }
+    .toast .toast-close { color: var(--color-text-muted); cursor: pointer; }
+
+    /* --- Modal --- */
+    .modal-backdrop {
+      position: relative;
+      background: rgba(0,0,0,0.55);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      display: grid; place-items: center;
+      min-height: 280px;
+    }
+    .modal {
+      width: 100%; max-width: 440px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-5) var(--space-5) 0; }
+    .modal-title { font-size: var(--fs-lg); font-weight: var(--fw-bold); }
+    .modal-body  { padding: var(--space-4) var(--space-5); color: var(--color-text-secondary); font-size: var(--fs-sm); }
+    .modal-foot  { display: flex; justify-content: flex-end; gap: var(--space-2); padding: 0 var(--space-5) var(--space-5); }
+
+    /* --- Drawer --- */
+    .drawer-container {
+      position: relative; overflow: hidden;
+      min-height: 280px;
+      border-radius: var(--radius-xl);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-strong);
+    }
+    .drawer {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 320px; max-width: 90%;
+      background: var(--color-surface);
+      border-left: 1px solid var(--color-border-strong);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-lg);
+    }
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+
+    /* --- Tooltip --- */
+    .tooltip-host { position: relative; display: inline-block; }
+    .tooltip {
+      position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+      background: var(--color-text); color: var(--color-bg);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+      white-space: nowrap;
+      box-shadow: var(--shadow-md);
+    }
+    .tooltip::after {
+      content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: var(--color-text);
+    }
+
+    /* --- Progress --- */
+    .progress {
+      width: 100%; height: 8px;
+      background: var(--color-surface-2);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%; background: var(--color-primary);
+      border-radius: var(--radius-full);
+      transition: width var(--duration-slow);
+    }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--color-border-strong);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      display: inline-block;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* --- AI Summary Card (pulse accent) --- */
+    .ai-card {
+      position: relative;
+      background: var(--color-primary-soft);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-6);
+    }
+    .ai-card::after {
+      content: ""; position: absolute; inset: 0;
+      border-radius: inherit; border: 2px solid var(--color-primary);
+      animation: ai-pulse 2.4s cubic-bezier(0.4,0,0.6,1) infinite;
+      pointer-events: none;
+    }
+    @keyframes ai-pulse {
+      0%   { transform: scale(1);    opacity: 0.6; }
+      100% { transform: scale(1.02); opacity: 0; }
+    }
+    .ai-card .ai-head { display: flex; gap: var(--space-4); align-items: flex-start; margin-bottom: var(--space-4); }
+    .ai-card .ai-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-xl);
+      background: var(--color-primary); color: #fff;
+      display: grid; place-items: center; font-size: var(--fs-xl);
+      box-shadow: var(--shadow-glow-primary);
+    }
+    .ai-card .ai-title { color: var(--color-primary); font-weight: var(--fw-bold); font-size: var(--fs-lg); margin-bottom: var(--space-1); }
+    .ai-card .ai-subtitle { color: var(--color-text-secondary); font-size: var(--fs-sm); }
+
+    /* --- Aerodrome Card --- */
+    .aerodrome-card {
+      display: flex; flex-direction: column; gap: var(--space-3);
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: transform var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
+    }
+    .aerodrome-card:hover { transform: translateY(-2px); border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+    .aerodrome-card .ad-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+    .aerodrome-card .ad-icao { font-family: var(--font-mono); font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--color-primary); letter-spacing: -0.02em; }
+    .aerodrome-card .ad-name { font-size: var(--fs-base); font-weight: var(--fw-semibold); }
+    .aerodrome-card .ad-meta { color: var(--color-text-secondary); font-size: var(--fs-sm); display: flex; align-items: center; gap: var(--space-2); }
+    .aerodrome-card .ad-freqs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .aerodrome-card .ad-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--color-border); font-size: var(--fs-xs); }
+    .aerodrome-card .ad-stats div { display: flex; flex-direction: column; gap: 2px; }
+    .aerodrome-card .ad-stats .lbl { color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; }
+    .aerodrome-card .ad-stats .val { font-family: var(--font-mono); color: var(--color-text); font-weight: var(--fw-bold); }
+
+    /* --- Runway diagram (SVG container) --- */
+    .runway-diagram {
+      position: relative;
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      overflow: hidden;
+    }
+    .runway-diagram svg { display: block; width: 100%; height: auto; }
+
+    /* --- Frequency list --- */
+    .freq-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .freq-row {
+      display: grid; grid-template-columns: 96px 1fr max-content;
+      align-items: center; gap: var(--space-3);
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+    }
+    .freq-row .freq-col-type .freq-pill {
+      display: inline-block; padding: 3px var(--space-2);
+      border-radius: var(--radius-sm);
+      font: var(--fw-bold) 10px/1.2 var(--font-sans);
+      letter-spacing: 0.08em; color: #fff;
+    }
+    .freq-row .freq-col-name { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
+    .freq-row .freq-col-name .freq-sub { display: block; color: var(--color-text-muted); font-weight: var(--fw-regular); font-size: var(--fs-xs); }
+    .freq-row .freq-col-value { font-family: var(--font-mono); color: var(--color-primary); font-weight: var(--fw-bold); font-size: var(--fs-base); }
+
+    /* --- NOTAM list --- */
+    .notam-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .notam-item {
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface);
+      border-left: 3px solid var(--color-notam-normal);
+      border-radius: var(--radius-md);
+    }
+    .notam-item.is-critical { border-left-color: var(--color-notam-critical); background: rgba(239,68,68,0.06); }
+    .notam-item.is-high     { border-left-color: var(--color-notam-high);     background: rgba(245,158,11,0.06); }
+    .notam-item.is-normal   { border-left-color: var(--color-notam-normal);   background: rgba(59,130,246,0.06); }
+    .notam-item.is-low      { border-left-color: var(--color-notam-low);      background: var(--color-surface); }
+    .notam-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-1); }
+    .notam-id   { font-family: var(--font-mono); font-weight: var(--fw-bold); font-size: var(--fs-xs); letter-spacing: 0.02em; color: var(--color-text); }
+    .notam-time { font-family: var(--font-mono); color: var(--color-text-muted); font-size: var(--fs-xs); }
+    .notam-body { color: var(--color-text); font-size: var(--fs-sm); }
+
+    /* --- METAR block --- */
+    .metar {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+    }
+    .metar-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); display: block; margin-bottom: var(--space-1); }
+    .metar-raw   { font-family: var(--font-mono); color: var(--color-info); font-size: var(--fs-sm); letter-spacing: 0.02em; line-height: 1.6; }
+
+    /* --- Weather widget --- */
+    .wx-widget {
+      display: flex; flex-direction: column; gap: var(--space-4);
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      border-left: 3px solid var(--color-success);
+    }
+    .wx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+    .wx-tile  { text-align: center; padding: var(--space-3) var(--space-2); }
+    .wx-tile .lbl { display: block; font-size: var(--fs-xs); text-transform: uppercase; color: var(--color-text-muted); letter-spacing: 0.08em; margin-bottom: var(--space-1); }
+    .wx-tile .val { font: var(--fw-black) var(--fs-xl)/1 var(--font-mono); color: var(--color-text); }
+
+    /* --- Chart/PDF viewer placeholder --- */
+    .chart-viewer {
+      position: relative;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .chart-viewer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-bg-elevated);
+      border-bottom: 1px solid var(--color-border-strong);
+    }
+    .chart-viewer-head span { font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-secondary); }
+    .chart-viewer-head .ctrls { display: flex; gap: var(--space-1); }
+    .chart-viewer-body {
+      height: 380px;
+      background: radial-gradient(circle at 30% 40%, rgba(59,130,246,0.08), transparent 60%),
+                  radial-gradient(circle at 70% 70%, rgba(168,85,247,0.06), transparent 55%),
+                  var(--color-bg-elevated);
+      display: grid; place-items: center;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono); font-size: var(--fs-sm);
+    }
+    .chart-viewer-body i { font-size: 96px; opacity: 0.1; }
+    .chart-viewer-body .label { position: absolute; text-align: center; }
+
+    /* --- App-shell demo wrapper (used in mockups) --- */
+    .demo-shell {
+      display: flex;
+      min-height: 720px;
+      background: var(--page-gradient);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+    }
+    .demo-shell .sidebar { min-height: auto; }
+    .demo-main {
+      flex: 1;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .demo-body {
+      flex: 1; padding: var(--space-8);
+      overflow-y: auto;
+    }
+    .page-hero {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: var(--space-8); gap: var(--space-6);
+    }
+    .page-hero h1 { font-size: var(--fs-4xl); font-weight: var(--fw-black); letter-spacing: -0.03em; margin: 0 0 var(--space-2); }
+    .page-hero p  { color: var(--color-text-secondary); margin: 0; display: flex; align-items: center; gap: var(--space-2); }
+
+    /* Aviation grid rows */
+    .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--space-4); }
+    .col-span-8 { grid-column: span 8; }
+    .col-span-4 { grid-column: span 4; }
+    .col-span-6 { grid-column: span 6; }
+
+    /* Results grid (search) */
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+
+    /* Utility */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .gap-2 { gap: var(--space-2); }
+    .gap-3 { gap: var(--space-3); }
+    .gap-4 { gap: var(--space-4); }
+    .mt-4 { margin-top: var(--space-4); }
+    .mt-6 { margin-top: var(--space-6); }
   </style>
 </head>
 <body>
-  <h1>AeroFly Design Kit</h1>
-  <p>Single source of truth for all visual components, colors, typography, spacing, and patterns.</p>
 
-  <!-- 1. Color Tokens -->
-  <div class="section">
-    <h2>1. Color Tokens</h2>
-    <h3>Brand Colors</h3>
-    <div class="component-row">
-      <div style="width:80px;height:50px;background:var(--color-primary);border-radius:var(--radius-md);"></div>
-      <span>Primary (#1a56db)</span>
-      <div style="width:80px;height:50px;background:var(--color-secondary);border-radius:var(--radius-md);"></div>
-      <span>Secondary (#059669)</span>
-    </div>
-    <h3>Aviation-Specific Colors</h3>
-    <div class="component-row">
-      <div style="width:80px;height:50px;background:var(--color-runway);border-radius:var(--radius-md);"></div>
-      <span>Runway</span>
-      <div style="width:80px;height:50px;background:var(--color-taxiway);border-radius:var(--radius-md);"></div>
-      <span>Taxiway</span>
-    </div>
+  <!-- Theme toggle (persistent, top-right) -->
+  <div class="theme-toggle">
+    <button class="btn btn-secondary btn-sm" id="themeToggle" type="button" aria-label="Toggle theme">
+      <i class="fas fa-moon"></i>
+      <span id="themeLabel">Dark</span>
+    </button>
   </div>
 
-  <!-- 5. Buttons -->
-  <div class="section">
-    <h2>5. Buttons</h2>
-    <div class="component-row">
-      <button class="btn btn-primary">Primary</button>
-      <button class="btn btn-secondary">Secondary</button>
-      <button class="btn btn-danger">Danger</button>
-      <button class="btn btn-outline">Outline</button>
-    </div>
+  <div class="kit-shell">
+
+    <!-- ================================================================== -->
+    <!-- Table of Contents                                                   -->
+    <!-- ================================================================== -->
+    <aside class="kit-toc">
+      <h3>Contents</h3>
+      <ul>
+        <li><a href="#sec-1">1. Color Tokens</a></li>
+        <li><a href="#sec-2">2. Typography</a></li>
+        <li><a href="#sec-3">3. Spacing &amp; Radius</a></li>
+        <li><a href="#sec-4">4. Iconography</a></li>
+        <li><a href="#sec-5">5. Layout Primitives</a></li>
+        <li><a href="#sec-6">6. Buttons</a></li>
+        <li><a href="#sec-7">7. Form Elements</a></li>
+        <li><a href="#sec-8">8. Badges &amp; Status</a></li>
+        <li><a href="#sec-9">9. Cards</a></li>
+        <li><a href="#sec-10">10. Navigation</a></li>
+        <li><a href="#sec-11">11. Data Display</a></li>
+        <li><a href="#sec-12">12. Feedback</a></li>
+        <li><a href="#sec-13">13. AI Summary Card</a></li>
+        <li><a href="#sec-14">14. Aerodrome Card</a></li>
+        <li><a href="#sec-15">15. Runway Diagram</a></li>
+        <li><a href="#sec-16">16. Frequency List</a></li>
+        <li><a href="#sec-17">17. NOTAM List</a></li>
+        <li><a href="#sec-18">18. Weather &amp; METAR</a></li>
+        <li><a href="#sec-19">19. Chart / PDF Viewer</a></li>
+        <li><a href="#sec-20">20. Mockup: Search</a></li>
+        <li><a href="#sec-21">21. Mockup: Aerodrome Detail</a></li>
+        <li><a href="#sec-22">22. Mockup: Dashboard</a></li>
+      </ul>
+    </aside>
+
+    <main class="kit-main">
+      <header>
+        <h1>AeroFly <span style="color:var(--color-primary);">Design Kit</span> v2.0</h1>
+        <p>
+          Single source of truth for all AeroFly frontend work. Every component
+          implemented in the app MUST be based on a section of this kit. If a
+          component is missing, add it here first.
+        </p>
+        <div class="flex gap-2 mt-4">
+          <span class="badge badge-solid-primary">Theme: dark-first</span>
+          <span class="badge badge-neutral">Plain CSS custom properties</span>
+          <span class="badge badge-neutral">FontAwesome 6</span>
+          <span class="badge badge-neutral">Inter + JetBrains Mono</span>
+        </div>
+      </header>
+
+      <!-- ================================================================ -->
+      <!-- 1. Color Tokens                                                   -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-1">
+        <h2><span class="sec-num">01</span>Color Tokens</h2>
+        <p class="sec-desc">
+          All colors are exposed as CSS custom properties on <code>:root</code> and overridden under
+          <code>[data-theme="light"]</code>. Use semantic tokens (<code>--color-primary</code>) in
+          components, not hex values.
+        </p>
+
+        <h3>Brand &amp; semantic</h3>
+        <div class="kit-preview">
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-primary)"></div>       <div class="swatch-label"><strong>--color-primary</strong>Primary</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-primary-hover)"></div> <div class="swatch-label"><strong>--color-primary-hover</strong>Hover</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-primary-soft)"></div>  <div class="swatch-label"><strong>--color-primary-soft</strong>Soft / tint</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-success)"></div>       <div class="swatch-label"><strong>--color-success</strong>Success</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-warning)"></div>       <div class="swatch-label"><strong>--color-warning</strong>Warning</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-danger)"></div>        <div class="swatch-label"><strong>--color-danger</strong>Danger</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-info)"></div>          <div class="swatch-label"><strong>--color-info</strong>Info</div></div>
+        </div>
+
+        <h3>Surfaces &amp; text</h3>
+        <div class="kit-preview">
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-bg)"></div>          <div class="swatch-label"><strong>--color-bg</strong>Page</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-bg-elevated)"></div> <div class="swatch-label"><strong>--color-bg-elevated</strong>Elevated bg</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface)"></div>     <div class="swatch-label"><strong>--color-surface</strong>Surface 1</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2)"></div>   <div class="swatch-label"><strong>--color-surface-2</strong>Surface 2</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-text)"></div>        <div class="swatch-label"><strong>--color-text</strong>Body text</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-text-secondary)"></div><div class="swatch-label"><strong>--color-text-secondary</strong>Secondary</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-text-muted)"></div>  <div class="swatch-label"><strong>--color-text-muted</strong>Muted</div></div>
+        </div>
+
+        <h3>Aviation &mdash; Frequency</h3>
+        <div class="kit-preview">
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-twr)"></div>  <div class="swatch-label"><strong>TWR</strong>Tower</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-gnd)"></div>  <div class="swatch-label"><strong>GND</strong>Ground</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-atis)"></div> <div class="swatch-label"><strong>ATIS</strong>ATIS</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-afis)"></div> <div class="swatch-label"><strong>AFIS</strong>AFIS / Info</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-app)"></div>  <div class="swatch-label"><strong>APP</strong>Approach</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-del)"></div>  <div class="swatch-label"><strong>DEL</strong>Delivery</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-dep)"></div>  <div class="swatch-label"><strong>DEP</strong>Departure</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-freq-info)"></div> <div class="swatch-label"><strong>INFO</strong>Other</div></div>
+        </div>
+
+        <h3>Aviation &mdash; NOTAM severity &amp; Weather category</h3>
+        <div class="kit-preview">
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-notam-critical)"></div> <div class="swatch-label"><strong>Critical</strong>NOTAM</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-notam-high)"></div>     <div class="swatch-label"><strong>High</strong>NOTAM</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-notam-normal)"></div>   <div class="swatch-label"><strong>Normal</strong>NOTAM</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-notam-low)"></div>      <div class="swatch-label"><strong>Low</strong>NOTAM</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-wx-vmc)"></div>  <div class="swatch-label"><strong>VMC</strong>Weather</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-wx-mvfr)"></div> <div class="swatch-label"><strong>MVFR</strong>Weather</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-wx-ifr)"></div>  <div class="swatch-label"><strong>IFR</strong>Weather</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-wx-lifr)"></div> <div class="swatch-label"><strong>LIFR</strong>Weather</div></div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 2. Typography                                                     -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-2">
+        <h2><span class="sec-num">02</span>Typography</h2>
+        <p class="sec-desc">
+          Inter is the UI face. JetBrains Mono is used exclusively for aviation data
+          (ICAO codes, frequencies, coordinates, METAR/TAF, runway designators).
+        </p>
+
+        <h3>Sans &mdash; Inter</h3>
+        <div class="kit-preview block">
+          <div style="font:var(--fw-black) var(--fs-5xl)/1 var(--font-sans); letter-spacing:-0.03em;">EDDM / München</div>
+          <div style="font:var(--fw-bold) var(--fs-3xl)/1.2 var(--font-sans); margin-top:var(--space-3);">Heading 2 &mdash; 30px / 700</div>
+          <div style="font:var(--fw-semibold) var(--fs-xl)/1.3 var(--font-sans); margin-top:var(--space-2);">Heading 3 &mdash; 20px / 600</div>
+          <p style="margin-top:var(--space-4);">Body base &mdash; 16px / 400. Die primäre Schriftgröße für Fließtext in der Applikation. Used for all long-form content, navigation and form labels.</p>
+          <p style="font-size:var(--fs-sm); color:var(--color-text-secondary); margin-top:var(--space-2);">Small 14px &mdash; helper text, captions, table cells.</p>
+          <p style="font-size:var(--fs-xs); color:var(--color-text-muted); margin-top:var(--space-2);">Extra-small 12px &mdash; timestamps, meta, labels.</p>
+        </div>
+
+        <h3>Mono &mdash; JetBrains Mono</h3>
+        <div class="kit-preview block">
+          <div class="mono" style="font-size:var(--fs-2xl); font-weight:var(--fw-bold); color:var(--color-primary);">EDDF &nbsp; RWY 07L/25R</div>
+          <div class="mono" style="font-size:var(--fs-base); margin-top:var(--space-2);">TWR 119.900 &nbsp;&middot;&nbsp; GND 121.900 &nbsp;&middot;&nbsp; ATIS 114.250</div>
+          <div class="mono" style="font-size:var(--fs-sm); color:var(--color-info); margin-top:var(--space-2);">EDDM 191550Z 07012KT 9999 FEW045 18/06 Q1018 NOSIG</div>
+          <div class="mono" style="font-size:var(--fs-xs); color:var(--color-text-muted); margin-top:var(--space-2);">N 48° 21' 13.98" &nbsp; E 011° 47' 09.48"</div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 3. Spacing & Radius                                               -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-3">
+        <h2><span class="sec-num">03</span>Spacing &amp; Radius</h2>
+        <p class="sec-desc">4-px based scale. Only use tokens — never magic numbers.</p>
+
+        <h3>Spacing scale</h3>
+        <div class="kit-preview block">
+          <div class="flex flex-col gap-2" style="font-family:var(--font-mono); font-size:var(--fs-xs);">
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-1 · 4px</span>  <span style="height:12px; background:var(--color-primary); width:4px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-2 · 8px</span>  <span style="height:12px; background:var(--color-primary); width:8px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-3 · 12px</span> <span style="height:12px; background:var(--color-primary); width:12px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-4 · 16px</span> <span style="height:12px; background:var(--color-primary); width:16px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-6 · 24px</span> <span style="height:12px; background:var(--color-primary); width:24px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-8 · 32px</span> <span style="height:12px; background:var(--color-primary); width:32px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-12 · 48px</span><span style="height:12px; background:var(--color-primary); width:48px;"></span></div>
+            <div class="flex" style="align-items:center;"><span style="width:120px;">--space-16 · 64px</span><span style="height:12px; background:var(--color-primary); width:64px;"></span></div>
+          </div>
+        </div>
+
+        <h3>Radius</h3>
+        <div class="kit-preview">
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2);border-radius:var(--radius-sm);"></div><div class="swatch-label"><strong>--radius-sm</strong>4px</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2);border-radius:var(--radius-md);"></div><div class="swatch-label"><strong>--radius-md</strong>6px</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2);border-radius:var(--radius-lg);"></div><div class="swatch-label"><strong>--radius-lg</strong>8px</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2);border-radius:var(--radius-xl);"></div><div class="swatch-label"><strong>--radius-xl</strong>12px</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2);border-radius:var(--radius-2xl);"></div><div class="swatch-label"><strong>--radius-2xl</strong>16px</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface-2);border-radius:var(--radius-full);"></div><div class="swatch-label"><strong>--radius-full</strong>pill</div></div>
+        </div>
+
+        <h3>Shadow</h3>
+        <div class="kit-preview">
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface);box-shadow:var(--shadow-sm);"></div><div class="swatch-label"><strong>--shadow-sm</strong>Hairline</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface);box-shadow:var(--shadow-md);"></div><div class="swatch-label"><strong>--shadow-md</strong>Card lift</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-surface);box-shadow:var(--shadow-lg);"></div><div class="swatch-label"><strong>--shadow-lg</strong>Modal / popover</div></div>
+          <div class="swatch"><div class="swatch-chip" style="background:var(--color-primary);box-shadow:var(--shadow-glow-primary);"></div><div class="swatch-label"><strong>--shadow-glow-primary</strong>Primary glow</div></div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 4. Iconography                                                    -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-4">
+        <h2><span class="sec-num">04</span>Iconography</h2>
+        <p class="sec-desc">FontAwesome 6 Free (solid). Use aviation icons for domain concepts, generic icons for UI.</p>
+
+        <h3>Aviation &amp; domain</h3>
+        <div class="kit-preview" style="font-size:var(--fs-xl);">
+          <div class="tooltip-host"><i class="fa-solid fa-plane-up"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-plane-arrival"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-plane-departure"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-map-location-dot"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-tower-cell"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-wind"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-cloud-sun"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-cloud-bolt"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-temperature-half"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-compass"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-route"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-road"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-walkie-talkie"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-satellite-dish"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="tooltip-host"><i class="fa-solid fa-shield-halved"></i></div>
+        </div>
+
+        <h3>UI &amp; navigation</h3>
+        <div class="kit-preview" style="font-size:var(--fs-xl);">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <i class="fa-solid fa-bars"></i>
+          <i class="fa-solid fa-grid-2"></i>
+          <i class="fa-solid fa-house"></i>
+          <i class="fa-solid fa-bell"></i>
+          <i class="fa-solid fa-gear"></i>
+          <i class="fa-solid fa-user"></i>
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+          <i class="fa-solid fa-chevron-right"></i>
+          <i class="fa-solid fa-chevron-down"></i>
+          <i class="fa-solid fa-xmark"></i>
+          <i class="fa-solid fa-check"></i>
+          <i class="fa-solid fa-download"></i>
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <i class="fa-solid fa-circle-info"></i>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 5. Layout Primitives                                              -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-5">
+        <h2><span class="sec-num">05</span>Layout Primitives</h2>
+        <p class="sec-desc">
+          The app follows a three-part shell: <strong>sidebar</strong> + <strong>top bar</strong> + <strong>content area</strong>.
+          See mockups §20–22 for complete compositions.
+        </p>
+        <div class="kit-preview canvas">
+          <div class="demo-shell" style="min-height:280px;">
+            <div class="sidebar" style="min-height:auto;">
+              <div class="sidebar-brand">
+                <span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span>
+                <span>Aero<span class="brand-accent">Fly</span></span>
+              </div>
+              <div>
+                <div class="sidebar-section-title">Navigation</div>
+                <div class="sidebar-nav">
+                  <a class="nav-item is-active"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-map"></i><span>Charts</span></a>
+                </div>
+              </div>
+            </div>
+            <div class="demo-main">
+              <div class="topbar">
+                <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Search…"></div>
+                <div class="topbar-actions">
+                  <span class="status-pill status-online"><span class="dot"></span>Online</span>
+                  <button class="icon-button"><i class="fa-solid fa-bell"></i></button>
+                </div>
+              </div>
+              <div class="demo-body" style="padding:var(--space-6);">
+                <div class="page-hero">
+                  <div><h1 style="font-size:var(--fs-2xl);">Content area</h1><p>Page hero goes here.</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 6. Buttons                                                        -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-6">
+        <h2><span class="sec-num">06</span>Buttons</h2>
+        <p class="sec-desc">Use <code>.btn</code> + one variant. Sizes: <code>.btn-sm</code>, default, <code>.btn-lg</code>.</p>
+
+        <h3>Variants</h3>
+        <div class="kit-preview">
+          <button class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-down"></i>Primary</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-success"><i class="fa-solid fa-check"></i>Success</button>
+          <button class="btn btn-danger"><i class="fa-solid fa-trash"></i>Danger</button>
+          <button class="btn btn-outline">Outline</button>
+          <button class="btn btn-ghost">Ghost</button>
+          <button class="btn btn-icon" aria-label="Settings"><i class="fa-solid fa-gear"></i></button>
+        </div>
+
+        <h3>Sizes</h3>
+        <div class="kit-preview">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary btn-lg">Large</button>
+        </div>
+
+        <h3>States</h3>
+        <div class="kit-preview">
+          <button class="btn btn-primary" disabled>Disabled</button>
+          <button class="btn btn-primary btn-loading">Loading…</button>
+          <button class="btn btn-outline"><i class="fa-solid fa-download"></i>With icon</button>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 7. Form Elements                                                  -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-7">
+        <h2><span class="sec-num">07</span>Form Elements</h2>
+        <p class="sec-desc">Inputs are 42px tall. Use <code>.form-group</code> wrapper with <code>.form-label</code>, <code>.form-help</code>, <code>.form-error</code>.</p>
+
+        <div class="kit-preview grid-2">
+          <div>
+            <div class="form-group">
+              <label class="form-label">ICAO Code</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-plane-up input-icon"></i>
+                <input class="input" type="text" placeholder="z.B. EDDM" value="EDDM">
+              </div>
+              <div class="form-help">4-letter ICAO designator</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="input" type="email" placeholder="name@example.com" aria-invalid="true">
+              <div class="form-error"><i class="fa-solid fa-circle-exclamation"></i>Invalid email address</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Search aerodromes</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input class="input" type="search" placeholder="ICAO, name, city…">
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label class="form-label">Region</label>
+              <select class="select"><option>Bayern</option><option>Hessen</option><option>Berlin</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Remarks</label>
+              <textarea class="textarea" placeholder="Optional notes…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Filters</label>
+              <div class="flex gap-3" style="flex-wrap:wrap;">
+                <label class="check"><input type="checkbox" checked> International</label>
+                <label class="check"><input type="checkbox"> Regional</label>
+                <label class="check"><input type="checkbox"> GA only</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Units</label>
+              <div class="flex gap-3" style="flex-wrap:wrap;">
+                <label class="radio"><input type="radio" name="u" checked> Metric</label>
+                <label class="radio"><input type="radio" name="u"> Imperial</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span><span>Show NOTAMs</span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 8. Badges & Status                                                -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-8">
+        <h2><span class="sec-num">08</span>Badges &amp; Status</h2>
+        <p class="sec-desc">Compact labels for state, category, and metadata.</p>
+
+        <h3>Generic badges</h3>
+        <div class="kit-preview">
+          <span class="badge badge-neutral">Neutral</span>
+          <span class="badge badge-info"><span class="dot"></span>Info</span>
+          <span class="badge badge-success"><span class="dot"></span>Active</span>
+          <span class="badge badge-warning"><span class="dot"></span>Pending</span>
+          <span class="badge badge-danger"><span class="dot"></span>Error</span>
+          <span class="badge badge-solid-primary">Solid primary</span>
+          <span class="badge badge-solid-success">Solid success</span>
+          <span class="badge badge-pill badge-info">Pill</span>
+          <span class="badge badge-lg badge-success">Large</span>
+        </div>
+
+        <h3>Frequency badges (aviation)</h3>
+        <div class="kit-preview">
+          <span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.300</span></span>
+          <span class="freq-badge freq-gnd"><span class="freq-type">GND</span><span class="freq-value">121.700</span></span>
+          <span class="freq-badge freq-atis"><span class="freq-type">ATIS</span><span class="freq-value">126.025</span></span>
+          <span class="freq-badge freq-afis"><span class="freq-type">AFIS</span><span class="freq-value">122.600</span></span>
+          <span class="freq-badge freq-app"><span class="freq-type">APP</span><span class="freq-value">120.775</span></span>
+          <span class="freq-badge freq-del"><span class="freq-type">DEL</span><span class="freq-value">121.825</span></span>
+          <span class="freq-badge freq-dep"><span class="freq-type">DEP</span><span class="freq-value">119.375</span></span>
+          <span class="freq-badge freq-info"><span class="freq-type">INFO</span><span class="freq-value">126.650</span></span>
+        </div>
+
+        <h3>NOTAM severity &amp; Weather category</h3>
+        <div class="kit-preview">
+          <span class="notam-badge notam-critical">Critical</span>
+          <span class="notam-badge notam-high">High</span>
+          <span class="notam-badge notam-normal">Normal</span>
+          <span class="notam-badge notam-low">Low</span>
+          <span class="wx-badge wx-vmc">VMC</span>
+          <span class="wx-badge wx-mvfr">MVFR</span>
+          <span class="wx-badge wx-ifr">IFR</span>
+          <span class="wx-badge wx-lifr">LIFR</span>
+        </div>
+
+        <h3>System status</h3>
+        <div class="kit-preview">
+          <span class="status-pill status-online"><span class="dot"></span>System online</span>
+          <span class="status-pill status-degraded"><span class="dot"></span>Degraded</span>
+          <span class="status-pill status-offline"><span class="dot"></span>Offline</span>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 9. Cards                                                          -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-9">
+        <h2><span class="sec-num">09</span>Cards</h2>
+        <p class="sec-desc">
+          <code>.card</code> is the default. <code>.card-glass</code> is the signature surface for
+          content placed over the gradient background. <code>.card-accent-*</code> adds a colored left border.
+        </p>
+
+        <h3>Base, bordered, elevated</h3>
+        <div class="kit-preview grid-3">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Default card</span><i class="fa-solid fa-ellipsis-vertical" style="color:var(--color-text-muted);"></i></div>
+            <p style="color:var(--color-text-secondary);font-size:var(--fs-sm);">Basic card with border and padding.</p>
+          </div>
+          <div class="card card-elevated">
+            <div class="card-header"><span class="card-title">Elevated</span></div>
+            <p style="color:var(--color-text-secondary);font-size:var(--fs-sm);">Lifted with <code>--shadow-md</code>.</p>
+          </div>
+          <div class="card card-accent-left">
+            <div class="card-header"><span class="card-title">Accent left</span></div>
+            <p style="color:var(--color-text-secondary);font-size:var(--fs-sm);">Primary accent on leading edge.</p>
+          </div>
+        </div>
+
+        <h3>Glass card (on gradient)</h3>
+        <div class="kit-preview canvas">
+          <div class="card-glass" style="width:100%;">
+            <div class="card-header"><span class="card-title">Glassmorphism</span><span class="badge badge-info">blur 16px</span></div>
+            <p style="color:var(--color-text-secondary);font-size:var(--fs-sm);">Semi-transparent surface with backdrop blur. Use over gradient / image backgrounds.</p>
+          </div>
+        </div>
+
+        <h3>Stat cards</h3>
+        <div class="kit-preview grid-3">
+          <div class="stat-card">
+            <span class="stat-label">Aerodromes indexed</span>
+            <span class="stat-value">412</span>
+            <span class="stat-trend"><i class="fa-solid fa-arrow-up"></i>+8 this week</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Active NOTAMs</span>
+            <span class="stat-value">1,847</span>
+            <span class="stat-trend neg"><i class="fa-solid fa-arrow-down"></i>-3.2%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">API uptime</span>
+            <span class="stat-value">99.97%</span>
+            <span class="stat-trend"><i class="fa-solid fa-circle" style="font-size:8px;"></i>SLA met</span>
+          </div>
+        </div>
+
+        <h3>Tiles (quick actions)</h3>
+        <div class="kit-preview grid-3">
+          <div class="tile"><i class="fa-solid fa-calculator"></i><span>Fuel Calc</span></div>
+          <div class="tile"><i class="fa-solid fa-scale-balanced"></i><span>W&amp;B Tool</span></div>
+          <div class="tile"><i class="fa-solid fa-route"></i><span>Route Planner</span></div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 10. Navigation                                                    -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-10">
+        <h2><span class="sec-num">10</span>Navigation</h2>
+        <p class="sec-desc">Sidebar for primary nav; top bar for global search and status; breadcrumbs + tabs for local nav.</p>
+
+        <h3>Sidebar</h3>
+        <div class="kit-preview canvas">
+          <div class="sidebar">
+            <div class="sidebar-brand">
+              <span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span>
+              <span>Aero<span class="brand-accent">Fly</span></span>
+            </div>
+            <div>
+              <div class="sidebar-section-title">Navigation</div>
+              <div class="sidebar-nav">
+                <a class="nav-item is-active"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+                <a class="nav-item"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
+                <a class="nav-item"><i class="fa-solid fa-map"></i><span>Charts</span></a>
+                <a class="nav-item"><i class="fa-solid fa-wind"></i><span>Weather</span></a>
+                <a class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i><span>NOTAMs</span><span class="nav-badge">14</span></a>
+                <a class="nav-item"><i class="fa-solid fa-book"></i><span>Documents</span></a>
+              </div>
+            </div>
+            <div>
+              <div class="sidebar-section-title">System</div>
+              <div class="sidebar-nav">
+                <a class="nav-item"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+                <a class="nav-item"><i class="fa-solid fa-circle-info"></i><span>API Docs</span></a>
+              </div>
+            </div>
+            <div class="sidebar-foot">
+              <div class="avatar">DM</div>
+              <div style="font-size:var(--fs-sm); line-height:1.3;">
+                <div style="font-weight:var(--fw-bold);">Capt. Miller</div>
+                <div style="color:var(--color-text-muted); font-size:var(--fs-xs);">Premium Plan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Top bar</h3>
+        <div class="kit-preview block" style="padding:0;overflow:hidden;">
+          <div class="topbar">
+            <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="ICAO Kennung eingeben (z.B. EDDM)…"></div>
+            <div class="topbar-actions">
+              <span class="status-pill status-online"><span class="dot"></span>System online</span>
+              <div class="lang-toggle"><button class="is-active">DE</button><button>EN</button></div>
+              <button class="icon-button" aria-label="Notifications"><i class="fa-solid fa-bell"></i></button>
+              <button class="icon-button" aria-label="Settings"><i class="fa-solid fa-gear"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <h3>Breadcrumbs &amp; Tabs</h3>
+        <div class="kit-preview block">
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="#">Home</a><span class="sep">/</span>
+            <a href="#">Aerodromes</a><span class="sep">/</span>
+            <span class="current">EDDM — München</span>
+          </nav>
+          <div class="tabs" style="margin-top:var(--space-4);">
+            <button class="tab is-active">Overview</button>
+            <button class="tab">Runways</button>
+            <button class="tab">Frequencies</button>
+            <button class="tab">Charts</button>
+            <button class="tab">NOTAMs</button>
+          </div>
+        </div>
+
+        <h3>Language toggle</h3>
+        <div class="kit-preview">
+          <div class="lang-toggle"><button class="is-active">DE</button><button>EN</button></div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 11. Data Display                                                  -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-11">
+        <h2><span class="sec-num">11</span>Data Display</h2>
+
+        <h3>Table (sortable, hoverable)</h3>
+        <div class="kit-preview block">
+          <div class="card" style="padding:0; overflow:hidden;">
+            <table class="table table-hoverable">
+              <thead>
+                <tr>
+                  <th class="sort-header">ICAO <i class="fa-solid fa-sort-up"></i></th>
+                  <th>Name</th>
+                  <th>Region</th>
+                  <th class="sort-header">Elev <i class="fa-solid fa-sort"></i></th>
+                  <th>RWY</th>
+                  <th>TWR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="icao">EDDF</td><td>Frankfurt Main</td><td>Hessen</td><td class="mono">364 ft</td><td class="mono">07L/25R · 07C/25C · 07R/25L · 18/36</td><td><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">119.900</span></span></td></tr>
+                <tr><td class="icao">EDDM</td><td>München</td><td>Bayern</td><td class="mono">1487 ft</td><td class="mono">08L/26R · 08R/26L</td><td><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.700</span></span></td></tr>
+                <tr><td class="icao">EDDB</td><td>Berlin Brandenburg</td><td>Berlin</td><td class="mono">157 ft</td><td class="mono">07L/25R · 07R/25L</td><td><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">119.700</span></span></td></tr>
+                <tr><td class="icao">EDDH</td><td>Hamburg</td><td>Hamburg</td><td class="mono">53 ft</td><td class="mono">05/23 · 15/33</td><td><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">126.900</span></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3>Key-value grid</h3>
+        <div class="kit-preview">
+          <div class="card" style="min-width:320px;">
+            <dl class="kv-grid">
+              <dt>ICAO</dt><dd style="color:var(--color-primary);font-weight:700;">EDDM</dd>
+              <dt>IATA</dt><dd>MUC</dd>
+              <dt>Elevation</dt><dd>1487 ft</dd>
+              <dt>Coordinates</dt><dd>N 48°21'13" E 011°47'09"</dd>
+              <dt>Type</dt><dd>International</dd>
+            </dl>
+          </div>
+        </div>
+
+        <h3>Pagination</h3>
+        <div class="kit-preview">
+          <div class="pagination">
+            <button disabled><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="is-active">1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>4</button>
+            <button>…</button>
+            <button>42</button>
+            <button><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <h3>Empty state</h3>
+        <div class="kit-preview block">
+          <div class="empty-state">
+            <i class="fa-solid fa-plane-slash"></i>
+            <h4>No aerodromes found</h4>
+            <p>Try a different ICAO, city name, or remove filters.</p>
+            <div class="mt-4"><button class="btn btn-outline">Clear filters</button></div>
+          </div>
+        </div>
+
+        <h3>Skeleton loader</h3>
+        <div class="kit-preview block">
+          <div class="card" style="max-width:480px;">
+            <span class="skeleton" style="width:40%; height:16px; margin-bottom:var(--space-3);"></span>
+            <span class="skeleton" style="width:80%; height:12px; margin-bottom:var(--space-2);"></span>
+            <span class="skeleton" style="width:65%; height:12px; margin-bottom:var(--space-3);"></span>
+            <span class="skeleton" style="width:100%; height:96px;"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 12. Feedback                                                      -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-12">
+        <h2><span class="sec-num">12</span>Feedback</h2>
+
+        <h3>Alerts</h3>
+        <div class="kit-preview block">
+          <div class="alert alert-info" style="margin-bottom:var(--space-3);"><i class="fa-solid fa-circle-info"></i><div class="alert-body"><strong>AIRAC cycle 2026-04</strong> wurde erfolgreich geladen. 14 neue NOTAMs verarbeitet.</div></div>
+          <div class="alert alert-success" style="margin-bottom:var(--space-3);"><i class="fa-solid fa-circle-check"></i><div class="alert-body"><strong>Sync complete.</strong> All aerodromes up to date.</div></div>
+          <div class="alert alert-warning" style="margin-bottom:var(--space-3);"><i class="fa-solid fa-triangle-exclamation"></i><div class="alert-body"><strong>METAR älter als 30 Minuten.</strong> Daten könnten veraltet sein.</div></div>
+          <div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i><div class="alert-body"><strong>DFS-Quelle nicht erreichbar.</strong> Letzter erfolgreicher Sync: vor 2 Stunden.</div></div>
+        </div>
+
+        <h3>Toasts</h3>
+        <div class="kit-preview block">
+          <div class="toast success" style="margin-bottom:var(--space-3);"><i class="fa-solid fa-circle-check toast-icon"></i><div class="toast-body">Aerodrome EDDM saved to favorites.</div><i class="fa-solid fa-xmark toast-close"></i></div>
+          <div class="toast" style="margin-bottom:var(--space-3);"><i class="fa-solid fa-circle-info toast-icon"></i><div class="toast-body">New NOTAM A5543/26 for EDDM.</div><i class="fa-solid fa-xmark toast-close"></i></div>
+          <div class="toast warning" style="margin-bottom:var(--space-3);"><i class="fa-solid fa-triangle-exclamation toast-icon"></i><div class="toast-body">Offline mode — showing cached data.</div><i class="fa-solid fa-xmark toast-close"></i></div>
+          <div class="toast danger"><i class="fa-solid fa-circle-xmark toast-icon"></i><div class="toast-body">Failed to load chart. Retry?</div><i class="fa-solid fa-xmark toast-close"></i></div>
+        </div>
+
+        <h3>Modal</h3>
+        <div class="kit-preview block">
+          <div class="modal-backdrop">
+            <div class="modal">
+              <div class="modal-header">
+                <span class="modal-title">Confirm download</span>
+                <button class="icon-button"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <div class="modal-body">Sync the full EDDM chart bundle (~ 14 MB)? This will replace the cached version.</div>
+              <div class="modal-foot">
+                <button class="btn btn-ghost">Cancel</button>
+                <button class="btn btn-primary">Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Drawer</h3>
+        <div class="kit-preview block">
+          <div class="drawer-container">
+            <div style="padding:var(--space-5); color:var(--color-text-secondary);">Page content dims behind drawer.</div>
+            <div class="drawer">
+              <div class="drawer-header"><strong>Filters</strong><button class="icon-button"><i class="fa-solid fa-xmark"></i></button></div>
+              <div class="form-group">
+                <label class="form-label">Region</label>
+                <select class="select"><option>All</option><option>Bayern</option><option>Hessen</option></select>
+              </div>
+              <label class="check"><input type="checkbox" checked> International</label><br>
+              <label class="check" style="margin-top:var(--space-2);"><input type="checkbox"> GA only</label>
+              <div style="margin-top:var(--space-5);"><button class="btn btn-primary" style="width:100%;">Apply</button></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Tooltip, progress, spinner</h3>
+        <div class="kit-preview">
+          <div class="tooltip-host">
+            <button class="btn btn-secondary">Hover me</button>
+            <span class="tooltip">Delivery frequency</span>
+          </div>
+          <div style="flex:1; min-width:200px;"><div class="progress"><div class="progress-bar" style="width:68%;"></div></div></div>
+          <span class="spinner"></span>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 13. AI Summary Card                                               -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-13">
+        <h2><span class="sec-num">13</span>AI Summary Card</h2>
+        <p class="sec-desc">Signature surface for AI-generated briefings (NOTAM digest, weather summary, document synthesis). The pulse ring signals "live / auto-updating".</p>
+        <div class="kit-preview canvas">
+          <div class="ai-card" style="width:100%;">
+            <div class="ai-head">
+              <div class="ai-icon"><i class="fa-solid fa-brain"></i></div>
+              <div>
+                <div class="ai-title">KI-Zusammenfassung der Dokumente</div>
+                <div class="ai-subtitle">Based on AIP SUP, AD 2.20 and 14 active NOTAMs · updated 2 min ago</div>
+              </div>
+            </div>
+            <div class="grid-12">
+              <div class="col-span-8" style="font-size:var(--fs-sm); line-height:1.65;">
+                <p style="margin-bottom:var(--space-3);"><strong>Runway status:</strong> Hauptbahn 08R aufgrund von Gummiresten-Entfernung zwischen 22:00–04:00 UTC gesperrt.</p>
+                <p><strong>Taxi-Hinweis:</strong> Taxiway Bravo für Flugzeuge mit Spannweite &gt; 36 m nicht passierbar.</p>
+              </div>
+              <div class="col-span-4">
+                <div class="card" style="background:var(--color-bg); padding:var(--space-4);">
+                  <div style="font-size:10px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:var(--space-2);letter-spacing:0.1em;">Empfohlene Frequenzen</div>
+                  <div class="mono" style="font-size:var(--fs-sm); display:grid; gap:var(--space-1);">
+                    <div style="display:flex;justify-content:space-between;"><span>Delivery</span><span style="color:var(--color-primary);">121.700</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span>Tower</span><span style="color:var(--color-primary);">118.700</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span>ATIS</span><span style="color:var(--color-primary);">123.125</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 14. Aerodrome Card                                                -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-14">
+        <h2><span class="sec-num">14</span>Aerodrome Card</h2>
+        <p class="sec-desc">Primary result unit in search and favorites. Click-through to the detail page.</p>
+        <div class="kit-preview grid-3">
+          <div class="aerodrome-card">
+            <div class="ad-head">
+              <div>
+                <div class="ad-icao">EDDF</div>
+                <div class="ad-name">Frankfurt am Main</div>
+              </div>
+              <span class="wx-badge wx-vmc">VMC</span>
+            </div>
+            <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Hessen · Germany</div>
+            <div class="ad-freqs">
+              <span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">119.900</span></span>
+              <span class="freq-badge freq-gnd"><span class="freq-type">GND</span><span class="freq-value">121.900</span></span>
+            </div>
+            <div class="ad-stats">
+              <div><span class="lbl">Elev</span><span class="val">364 ft</span></div>
+              <div><span class="lbl">RWY</span><span class="val">4</span></div>
+              <div><span class="lbl">NOTAM</span><span class="val" style="color:var(--color-danger);">12</span></div>
+            </div>
+          </div>
+          <div class="aerodrome-card">
+            <div class="ad-head">
+              <div>
+                <div class="ad-icao">EDDM</div>
+                <div class="ad-name">München</div>
+              </div>
+              <span class="wx-badge wx-vmc">VMC</span>
+            </div>
+            <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Bayern · Germany</div>
+            <div class="ad-freqs">
+              <span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.700</span></span>
+              <span class="freq-badge freq-atis"><span class="freq-type">ATIS</span><span class="freq-value">123.125</span></span>
+            </div>
+            <div class="ad-stats">
+              <div><span class="lbl">Elev</span><span class="val">1487 ft</span></div>
+              <div><span class="lbl">RWY</span><span class="val">2</span></div>
+              <div><span class="lbl">NOTAM</span><span class="val" style="color:var(--color-warning);">5</span></div>
+            </div>
+          </div>
+          <div class="aerodrome-card">
+            <div class="ad-head">
+              <div>
+                <div class="ad-icao">EDDH</div>
+                <div class="ad-name">Hamburg</div>
+              </div>
+              <span class="wx-badge wx-mvfr">MVFR</span>
+            </div>
+            <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Hamburg · Germany</div>
+            <div class="ad-freqs">
+              <span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">126.900</span></span>
+              <span class="freq-badge freq-gnd"><span class="freq-type">GND</span><span class="freq-value">121.850</span></span>
+            </div>
+            <div class="ad-stats">
+              <div><span class="lbl">Elev</span><span class="val">53 ft</span></div>
+              <div><span class="lbl">RWY</span><span class="val">2</span></div>
+              <div><span class="lbl">NOTAM</span><span class="val">2</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 15. Runway Diagram                                                -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-15">
+        <h2><span class="sec-num">15</span>Runway Diagram</h2>
+        <p class="sec-desc">Inline SVG — scales to parent. Runway designators rotated to match the true heading; wind arrow overlay shows reported wind.</p>
+        <div class="kit-preview canvas">
+          <div class="runway-diagram" style="width:100%;">
+            <svg viewBox="0 0 600 360" aria-label="Runway diagram EDDM">
+              <defs>
+                <pattern id="rwyDashes" width="24" height="6" patternUnits="userSpaceOnUse">
+                  <rect width="14" height="6" fill="var(--color-runway-marker)"></rect>
+                </pattern>
+              </defs>
+
+              <!-- Runway 08L/26R -->
+              <g transform="translate(60 130) rotate(-6)">
+                <rect x="0" y="0" width="480" height="38" fill="var(--color-runway)" rx="3"></rect>
+                <rect x="0" y="16" width="480" height="6" fill="url(#rwyDashes)"></rect>
+                <!-- Designators -->
+                <text x="10"  y="26" fill="var(--color-runway-marker)" font-family="JetBrains Mono" font-size="14" font-weight="700">08L</text>
+                <text x="452" y="26" fill="var(--color-runway-marker)" font-family="JetBrains Mono" font-size="14" font-weight="700">26R</text>
+                <!-- Length -->
+                <text x="240" y="-8" text-anchor="middle" fill="var(--color-text-secondary)" font-family="JetBrains Mono" font-size="11">4000 m · 13123 ft</text>
+              </g>
+
+              <!-- Runway 08R/26L -->
+              <g transform="translate(60 230) rotate(-6)">
+                <rect x="0" y="0" width="480" height="38" fill="var(--color-runway)" rx="3"></rect>
+                <rect x="0" y="16" width="480" height="6" fill="url(#rwyDashes)"></rect>
+                <text x="10"  y="26" fill="var(--color-runway-marker)" font-family="JetBrains Mono" font-size="14" font-weight="700">08R</text>
+                <text x="452" y="26" fill="var(--color-runway-marker)" font-family="JetBrains Mono" font-size="14" font-weight="700">26L</text>
+                <text x="240" y="56" text-anchor="middle" fill="var(--color-text-secondary)" font-family="JetBrains Mono" font-size="11">4000 m · 13123 ft</text>
+              </g>
+
+              <!-- Taxiway hint -->
+              <line x1="300" y1="168" x2="300" y2="232" stroke="var(--color-taxiway)" stroke-width="6" stroke-linecap="round" opacity="0.9"></line>
+
+              <!-- Compass / wind indicator -->
+              <g transform="translate(510 60)">
+                <circle cx="0" cy="0" r="42" fill="none" stroke="var(--color-border-strong)" stroke-width="2"></circle>
+                <text x="0" y="-48" text-anchor="middle" fill="var(--color-text-muted)" font-family="Inter" font-size="11" font-weight="700">N</text>
+                <!-- Wind arrow -->
+                <g transform="rotate(70)">
+                  <line x1="0" y1="32" x2="0" y2="-32" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round"></line>
+                  <polygon points="0,-36 -6,-24 6,-24" fill="var(--color-primary)"></polygon>
+                </g>
+                <text x="0" y="60" text-anchor="middle" fill="var(--color-primary)" font-family="JetBrains Mono" font-size="12" font-weight="700">070°/12kt</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 16. Frequency List                                                -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-16">
+        <h2><span class="sec-num">16</span>Frequency List</h2>
+        <p class="sec-desc">Flat list format. Color stripe communicates frequency type at a glance.</p>
+        <div class="kit-preview block">
+          <div class="freq-list">
+            <div class="freq-row">
+              <div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-del)">DEL</span></div>
+              <div class="freq-col-name">Clearance Delivery<span class="freq-sub">IFR/VFR</span></div>
+              <div class="freq-col-value">121.825</div>
+            </div>
+            <div class="freq-row">
+              <div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-gnd)">GND</span></div>
+              <div class="freq-col-name">Apron / Ground<span class="freq-sub">Apron Control North</span></div>
+              <div class="freq-col-value">121.700</div>
+            </div>
+            <div class="freq-row">
+              <div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-twr)">TWR</span></div>
+              <div class="freq-col-name">Tower<span class="freq-sub">München Turm</span></div>
+              <div class="freq-col-value">118.700</div>
+            </div>
+            <div class="freq-row">
+              <div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-app)">APP</span></div>
+              <div class="freq-col-name">Approach<span class="freq-sub">München Radar</span></div>
+              <div class="freq-col-value">120.775</div>
+            </div>
+            <div class="freq-row">
+              <div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-atis)">ATIS</span></div>
+              <div class="freq-col-name">ATIS<span class="freq-sub">Arrival &amp; Departure</span></div>
+              <div class="freq-col-value">123.125</div>
+            </div>
+            <div class="freq-row">
+              <div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-info)">INFO</span></div>
+              <div class="freq-col-name">D-ATIS<span class="freq-sub">Datalink</span></div>
+              <div class="freq-col-value">136.025</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 17. NOTAM List                                                    -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-17">
+        <h2><span class="sec-num">17</span>NOTAM List</h2>
+        <p class="sec-desc">Severity color stripe on the left. Use the <code>is-critical/high/normal/low</code> modifier classes.</p>
+        <div class="kit-preview block">
+          <div class="notam-list">
+            <div class="notam-item is-critical">
+              <div class="notam-head">
+                <span class="notam-id">A5543/26</span>
+                <span class="notam-badge notam-critical">Critical · RWY</span>
+              </div>
+              <div class="notam-body">ILS RWY 08L out of service due to antenna calibration.</div>
+              <div class="notam-time mt-4" style="margin-top:var(--space-2);">19 APR 22:00 – 20 APR 04:00 UTC</div>
+            </div>
+            <div class="notam-item is-high">
+              <div class="notam-head">
+                <span class="notam-id">B1202/26</span>
+                <span class="notam-badge notam-high">High · OBST</span>
+              </div>
+              <div class="notam-body">Multiple birds reported in vicinity of approach sector.</div>
+              <div class="notam-time" style="margin-top:var(--space-2);">19 APR 06:00 – 20 APR 18:00 UTC</div>
+            </div>
+            <div class="notam-item is-normal">
+              <div class="notam-head">
+                <span class="notam-id">C0781/26</span>
+                <span class="notam-badge notam-normal">Normal · ADMIN</span>
+              </div>
+              <div class="notam-body">PPR required for all non-commercial flights on weekends.</div>
+              <div class="notam-time" style="margin-top:var(--space-2);">Permanent</div>
+            </div>
+            <div class="notam-item is-low">
+              <div class="notam-head">
+                <span class="notam-id">D0020/26</span>
+                <span class="notam-badge notam-low">Low · INFO</span>
+              </div>
+              <div class="notam-body">New taxiway signage installed near Gate A14.</div>
+              <div class="notam-time" style="margin-top:var(--space-2);">17 APR 00:00 – Permanent</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 18. Weather & METAR                                               -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-18">
+        <h2><span class="sec-num">18</span>Weather &amp; METAR</h2>
+        <p class="sec-desc">Composite widget with tile metrics, weather category badge, and raw METAR.</p>
+        <div class="kit-preview grid-2 canvas">
+          <div class="wx-widget">
+            <div class="flex" style="justify-content:space-between;align-items:center;">
+              <strong>Live Weather</strong>
+              <span class="wx-badge wx-vmc">VMC</span>
+            </div>
+            <div class="wx-tiles">
+              <div class="wx-tile"><span class="lbl">Wind</span><span class="val">070/12</span></div>
+              <div class="wx-tile"><span class="lbl">Visibility</span><span class="val">10km+</span></div>
+              <div class="wx-tile"><span class="lbl">Temp</span><span class="val">18°C</span></div>
+            </div>
+            <div class="metar">
+              <span class="metar-label">Raw METAR</span>
+              <div class="metar-raw">EDDM 191550Z 07012KT 9999 FEW045 18/06 Q1018 NOSIG</div>
+            </div>
+          </div>
+          <div class="wx-widget" style="border-left-color:var(--color-wx-ifr);">
+            <div class="flex" style="justify-content:space-between;align-items:center;">
+              <strong>Live Weather</strong>
+              <span class="wx-badge wx-ifr">IFR</span>
+            </div>
+            <div class="wx-tiles">
+              <div class="wx-tile"><span class="lbl">Wind</span><span class="val">240/18G28</span></div>
+              <div class="wx-tile"><span class="lbl">Visibility</span><span class="val">1600m</span></div>
+              <div class="wx-tile"><span class="lbl">Temp</span><span class="val">04°C</span></div>
+            </div>
+            <div class="metar">
+              <span class="metar-label">Raw METAR</span>
+              <div class="metar-raw">EDDH 191550Z 24018G28KT 1600 -RA BR BKN006 OVC025 04/03 Q0995</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 19. Chart / PDF Viewer                                            -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-19">
+        <h2><span class="sec-num">19</span>Chart / PDF Viewer</h2>
+        <p class="sec-desc">Placeholder shell for the interactive map/chart engine. Controls slot at top right.</p>
+        <div class="kit-preview block">
+          <div class="chart-viewer">
+            <div class="chart-viewer-head">
+              <span>Airport Chart 10-9 (Interactive)</span>
+              <div class="ctrls">
+                <button class="icon-button"><i class="fa-solid fa-expand"></i></button>
+                <button class="icon-button"><i class="fa-solid fa-layer-group"></i></button>
+                <button class="icon-button"><i class="fa-solid fa-download"></i></button>
+              </div>
+            </div>
+            <div class="chart-viewer-body">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <div class="label">
+                <div>[ MAP RENDERING ENGINE ]</div>
+                <div style="font-size:var(--fs-xs); opacity:0.7; margin-top:var(--space-1); font-style:italic;">Vectorized PDF data active</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 20. MOCKUP: Search Page                                           -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-20">
+        <h2><span class="sec-num">20</span>Mockup: Search Page</h2>
+        <p class="sec-desc">Composition using sidebar, top bar, filter drawer, result grid of aerodrome cards.</p>
+        <div class="kit-preview canvas" style="padding:0;">
+          <div class="demo-shell">
+            <div class="sidebar">
+              <div class="sidebar-brand"><span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span><span>Aero<span class="brand-accent">Fly</span></span></div>
+              <div>
+                <div class="sidebar-section-title">Navigation</div>
+                <div class="sidebar-nav">
+                  <a class="nav-item"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+                  <a class="nav-item is-active"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-map"></i><span>Charts</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-wind"></i><span>Weather</span></a>
+                </div>
+              </div>
+            </div>
+            <div class="demo-main">
+              <div class="topbar">
+                <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="EDDM, Frankfurt, Hessen…" value="ed"></div>
+                <div class="topbar-actions">
+                  <span class="status-pill status-online"><span class="dot"></span>Online</span>
+                  <div class="lang-toggle"><button class="is-active">DE</button><button>EN</button></div>
+                  <button class="icon-button"><i class="fa-solid fa-bell"></i></button>
+                </div>
+              </div>
+              <div class="demo-body">
+                <div class="page-hero">
+                  <div>
+                    <h1>Aerodromes</h1>
+                    <p><i class="fa-solid fa-database"></i>412 indexed · showing 1–12 of 48 matches</p>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="btn btn-secondary"><i class="fa-solid fa-sliders"></i>Filters</button>
+                    <button class="btn btn-primary"><i class="fa-solid fa-download"></i>Export</button>
+                  </div>
+                </div>
+                <div class="flex gap-3 mt-4" style="margin-bottom:var(--space-6); flex-wrap:wrap;">
+                  <span class="badge badge-pill badge-info">Type: International <i class="fa-solid fa-xmark" style="margin-left:4px;"></i></span>
+                  <span class="badge badge-pill badge-info">Region: Bayern <i class="fa-solid fa-xmark" style="margin-left:4px;"></i></span>
+                  <span class="badge badge-pill badge-neutral">Clear all</span>
+                </div>
+                <div class="results-grid">
+                  <div class="aerodrome-card">
+                    <div class="ad-head"><div><div class="ad-icao">EDDF</div><div class="ad-name">Frankfurt Main</div></div><span class="wx-badge wx-vmc">VMC</span></div>
+                    <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Hessen</div>
+                    <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">119.900</span></span></div>
+                    <div class="ad-stats"><div><span class="lbl">Elev</span><span class="val">364 ft</span></div><div><span class="lbl">RWY</span><span class="val">4</span></div><div><span class="lbl">NOTAM</span><span class="val" style="color:var(--color-danger);">12</span></div></div>
+                  </div>
+                  <div class="aerodrome-card">
+                    <div class="ad-head"><div><div class="ad-icao">EDDM</div><div class="ad-name">München</div></div><span class="wx-badge wx-vmc">VMC</span></div>
+                    <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Bayern</div>
+                    <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.700</span></span></div>
+                    <div class="ad-stats"><div><span class="lbl">Elev</span><span class="val">1487 ft</span></div><div><span class="lbl">RWY</span><span class="val">2</span></div><div><span class="lbl">NOTAM</span><span class="val" style="color:var(--color-warning);">5</span></div></div>
+                  </div>
+                  <div class="aerodrome-card">
+                    <div class="ad-head"><div><div class="ad-icao">EDDB</div><div class="ad-name">Berlin Brandenburg</div></div><span class="wx-badge wx-mvfr">MVFR</span></div>
+                    <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Berlin</div>
+                    <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">119.700</span></span></div>
+                    <div class="ad-stats"><div><span class="lbl">Elev</span><span class="val">157 ft</span></div><div><span class="lbl">RWY</span><span class="val">2</span></div><div><span class="lbl">NOTAM</span><span class="val">3</span></div></div>
+                  </div>
+                  <div class="aerodrome-card">
+                    <div class="ad-head"><div><div class="ad-icao">EDDH</div><div class="ad-name">Hamburg</div></div><span class="wx-badge wx-ifr">IFR</span></div>
+                    <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Hamburg</div>
+                    <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">126.900</span></span></div>
+                    <div class="ad-stats"><div><span class="lbl">Elev</span><span class="val">53 ft</span></div><div><span class="lbl">RWY</span><span class="val">2</span></div><div><span class="lbl">NOTAM</span><span class="val">2</span></div></div>
+                  </div>
+                  <div class="aerodrome-card">
+                    <div class="ad-head"><div><div class="ad-icao">EDDS</div><div class="ad-name">Stuttgart</div></div><span class="wx-badge wx-vmc">VMC</span></div>
+                    <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Baden-Württemberg</div>
+                    <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.800</span></span></div>
+                    <div class="ad-stats"><div><span class="lbl">Elev</span><span class="val">1276 ft</span></div><div><span class="lbl">RWY</span><span class="val">1</span></div><div><span class="lbl">NOTAM</span><span class="val">1</span></div></div>
+                  </div>
+                  <div class="aerodrome-card">
+                    <div class="ad-head"><div><div class="ad-icao">EDDK</div><div class="ad-name">Köln/Bonn</div></div><span class="wx-badge wx-vmc">VMC</span></div>
+                    <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>NRW</div>
+                    <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.875</span></span></div>
+                    <div class="ad-stats"><div><span class="lbl">Elev</span><span class="val">302 ft</span></div><div><span class="lbl">RWY</span><span class="val">2</span></div><div><span class="lbl">NOTAM</span><span class="val">4</span></div></div>
+                  </div>
+                </div>
+                <div class="flex mt-6" style="justify-content:center; margin-top:var(--space-6);">
+                  <div class="pagination">
+                    <button disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="is-active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button><i class="fa-solid fa-chevron-right"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 21. MOCKUP: Aerodrome Detail                                      -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-21">
+        <h2><span class="sec-num">21</span>Mockup: Aerodrome Detail</h2>
+        <p class="sec-desc">ICAO hero, tabs, chart viewer + AI summary (main column), weather + NOTAMs + frequencies (right column).</p>
+        <div class="kit-preview canvas" style="padding:0;">
+          <div class="demo-shell">
+            <div class="sidebar">
+              <div class="sidebar-brand"><span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span><span>Aero<span class="brand-accent">Fly</span></span></div>
+              <div>
+                <div class="sidebar-section-title">Navigation</div>
+                <div class="sidebar-nav">
+                  <a class="nav-item"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+                  <a class="nav-item is-active"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-map"></i><span>Charts</span></a>
+                </div>
+              </div>
+            </div>
+            <div class="demo-main">
+              <div class="topbar">
+                <nav class="breadcrumbs"><a href="#">Search</a><span class="sep">/</span><span class="current">EDDM</span></nav>
+                <div class="topbar-actions"><span class="status-pill status-online"><span class="dot"></span>Online</span></div>
+              </div>
+              <div class="demo-body">
+                <div class="page-hero">
+                  <div>
+                    <h1>EDDM <span style="color:var(--color-text-muted); font-weight:var(--fw-light);">/</span> München</h1>
+                    <p><i class="fa-solid fa-location-dot"></i>Munich International Airport · Bayern, Germany</p>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="btn btn-secondary"><i class="fa-solid fa-download"></i>PDF Export</button>
+                    <button class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-down"></i>Sync Maps</button>
+                  </div>
+                </div>
+
+                <div class="tabs" style="margin-bottom:var(--space-6);">
+                  <button class="tab is-active">Overview</button>
+                  <button class="tab">Runways</button>
+                  <button class="tab">Frequencies</button>
+                  <button class="tab">Charts</button>
+                  <button class="tab">NOTAMs · 5</button>
+                </div>
+
+                <div class="grid-12">
+                  <div class="col-span-8" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                    <div class="chart-viewer">
+                      <div class="chart-viewer-head">
+                        <span>Airport Chart 10-9 (Interactive)</span>
+                        <div class="ctrls"><button class="icon-button"><i class="fa-solid fa-expand"></i></button><button class="icon-button"><i class="fa-solid fa-layer-group"></i></button></div>
+                      </div>
+                      <div class="chart-viewer-body" style="height:300px;">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <div class="label"><div>[ MAP RENDERING ENGINE ]</div></div>
+                      </div>
+                    </div>
+                    <div class="ai-card">
+                      <div class="ai-head">
+                        <div class="ai-icon"><i class="fa-solid fa-brain"></i></div>
+                        <div>
+                          <div class="ai-title">KI-Zusammenfassung</div>
+                          <div class="ai-subtitle">Basierend auf AIP + 14 aktiven NOTAMs</div>
+                        </div>
+                      </div>
+                      <p style="font-size:var(--fs-sm); color:var(--color-text);">Hauptbahn 08R aufgrund von Gummiresten-Entfernung zwischen 22:00–04:00 UTC gesperrt. Taxiway Bravo für Flugzeuge mit Spannweite > 36 m nicht passierbar.</p>
+                    </div>
+                  </div>
+                  <div class="col-span-4" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                    <div class="wx-widget">
+                      <div class="flex" style="justify-content:space-between;align-items:center;"><strong>Live Weather</strong><span class="wx-badge wx-vmc">VMC</span></div>
+                      <div class="wx-tiles">
+                        <div class="wx-tile"><span class="lbl">Wind</span><span class="val">070/12</span></div>
+                        <div class="wx-tile"><span class="lbl">Vis</span><span class="val">10+</span></div>
+                        <div class="wx-tile"><span class="lbl">Temp</span><span class="val">18°</span></div>
+                      </div>
+                      <div class="metar"><span class="metar-label">METAR</span><div class="metar-raw">EDDM 191550Z 07012KT 9999 FEW045 18/06 Q1018</div></div>
+                    </div>
+                    <div class="card">
+                      <div class="card-header"><span class="card-title">Critical NOTAMs</span><span class="badge badge-danger">3 new</span></div>
+                      <div class="notam-list">
+                        <div class="notam-item is-critical"><div class="notam-head"><span class="notam-id">A5543/26</span><span class="notam-badge notam-critical">RWY</span></div><div class="notam-body" style="font-size:var(--fs-xs);">ILS RWY 08L out of service.</div></div>
+                        <div class="notam-item is-high"><div class="notam-head"><span class="notam-id">B1202/26</span><span class="notam-badge notam-high">OBST</span></div><div class="notam-body" style="font-size:var(--fs-xs);">Birds near approach sector.</div></div>
+                      </div>
+                      <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:var(--space-3);">Alle 14 anzeigen</button>
+                    </div>
+                    <div class="card">
+                      <div class="card-header"><span class="card-title">Frequencies</span></div>
+                      <div class="freq-list" style="gap:var(--space-1);">
+                        <div class="freq-row" style="padding:var(--space-2);"><div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-twr)">TWR</span></div><div class="freq-col-name" style="font-size:var(--fs-xs);">München Turm</div><div class="freq-col-value" style="font-size:var(--fs-sm);">118.700</div></div>
+                        <div class="freq-row" style="padding:var(--space-2);"><div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-gnd)">GND</span></div><div class="freq-col-name" style="font-size:var(--fs-xs);">Apron North</div><div class="freq-col-value" style="font-size:var(--fs-sm);">121.700</div></div>
+                        <div class="freq-row" style="padding:var(--space-2);"><div class="freq-col-type"><span class="freq-pill" style="background:var(--color-freq-atis)">ATIS</span></div><div class="freq-col-name" style="font-size:var(--fs-xs);">Arrival</div><div class="freq-col-value" style="font-size:var(--fs-sm);">123.125</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 22. MOCKUP: Dashboard                                             -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-22">
+        <h2><span class="sec-num">22</span>Mockup: Dashboard</h2>
+        <p class="sec-desc">Landing screen: system health, favorite aerodromes, sync status, quick actions.</p>
+        <div class="kit-preview canvas" style="padding:0;">
+          <div class="demo-shell">
+            <div class="sidebar">
+              <div class="sidebar-brand"><span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span><span>Aero<span class="brand-accent">Fly</span></span></div>
+              <div>
+                <div class="sidebar-section-title">Navigation</div>
+                <div class="sidebar-nav">
+                  <a class="nav-item is-active"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-map"></i><span>Charts</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-wind"></i><span>Weather</span></a>
+                  <a class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i><span>NOTAMs</span><span class="nav-badge">14</span></a>
+                </div>
+              </div>
+            </div>
+            <div class="demo-main">
+              <div class="topbar">
+                <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Schnellsuche…"></div>
+                <div class="topbar-actions">
+                  <span class="status-pill status-online"><span class="dot"></span>Online</span>
+                  <div class="lang-toggle"><button class="is-active">DE</button><button>EN</button></div>
+                </div>
+              </div>
+              <div class="demo-body">
+                <div class="page-hero">
+                  <div><h1>Willkommen zurück, Capt. Miller</h1><p><i class="fa-solid fa-clock"></i>Letzter Sync: vor 4 Min · AIRAC 2026-04</p></div>
+                  <button class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-down"></i>Sync jetzt</button>
+                </div>
+                <div class="grid-12" style="margin-bottom:var(--space-6);">
+                  <div class="col-span-4 stat-card"><span class="stat-label">Aerodromes indexed</span><span class="stat-value">412</span><span class="stat-trend"><i class="fa-solid fa-arrow-up"></i>+8 this week</span></div>
+                  <div class="col-span-4 stat-card"><span class="stat-label">Active NOTAMs</span><span class="stat-value">1,847</span><span class="stat-trend neg"><i class="fa-solid fa-arrow-down"></i>-3.2%</span></div>
+                  <div class="col-span-4 stat-card"><span class="stat-label">API uptime</span><span class="stat-value">99.97%</span><span class="stat-trend"><i class="fa-solid fa-circle" style="font-size:8px;"></i>SLA met</span></div>
+                </div>
+                <div class="grid-12">
+                  <div class="col-span-8">
+                    <div class="card" style="margin-bottom:var(--space-4);">
+                      <div class="card-header"><span class="card-title">Favorites</span><button class="btn btn-ghost btn-sm">Manage</button></div>
+                      <div class="grid-12" style="gap:var(--space-3);">
+                        <div class="col-span-6">
+                          <div class="aerodrome-card" style="padding:var(--space-4);">
+                            <div class="ad-head"><div><div class="ad-icao">EDDF</div><div class="ad-name">Frankfurt Main</div></div><span class="wx-badge wx-vmc">VMC</span></div>
+                            <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">119.900</span></span></div>
+                          </div>
+                        </div>
+                        <div class="col-span-6">
+                          <div class="aerodrome-card" style="padding:var(--space-4);">
+                            <div class="ad-head"><div><div class="ad-icao">EDDM</div><div class="ad-name">München</div></div><span class="wx-badge wx-vmc">VMC</span></div>
+                            <div class="ad-freqs"><span class="freq-badge freq-twr"><span class="freq-type">TWR</span><span class="freq-value">118.700</span></span></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ai-card">
+                      <div class="ai-head">
+                        <div class="ai-icon"><i class="fa-solid fa-brain"></i></div>
+                        <div><div class="ai-title">Tagesbriefing</div><div class="ai-subtitle">3 neue kritische NOTAMs für deine Favoriten</div></div>
+                      </div>
+                      <p style="font-size:var(--fs-sm);">EDDF: RWY 25L geschlossen bis 20:00 UTC. EDDM: ILS 08L nicht verfügbar. EDDH: Starkwindwarnung bis 22:00 UTC.</p>
+                    </div>
+                  </div>
+                  <div class="col-span-4" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                    <div class="card">
+                      <div class="card-header"><span class="card-title">Quick actions</span></div>
+                      <div class="grid-12" style="gap:var(--space-2);">
+                        <div class="col-span-6"><div class="tile" style="padding:var(--space-3);"><i class="fa-solid fa-calculator"></i><span>Fuel</span></div></div>
+                        <div class="col-span-6"><div class="tile" style="padding:var(--space-3);"><i class="fa-solid fa-scale-balanced"></i><span>W&amp;B</span></div></div>
+                        <div class="col-span-6"><div class="tile" style="padding:var(--space-3);"><i class="fa-solid fa-route"></i><span>Route</span></div></div>
+                        <div class="col-span-6"><div class="tile" style="padding:var(--space-3);"><i class="fa-solid fa-wind"></i><span>Wind</span></div></div>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="card-header"><span class="card-title">Sync status</span><span class="status-pill status-online"><span class="dot"></span>OK</span></div>
+                      <dl class="kv-grid">
+                        <dt>DFS AIP</dt><dd style="color:var(--color-success);">Up to date</dd>
+                        <dt>NOTAMs</dt><dd style="color:var(--color-success);">4 min ago</dd>
+                        <dt>METAR/TAF</dt><dd style="color:var(--color-success);">2 min ago</dd>
+                        <dt>AIRAC</dt><dd>2026-04</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer style="margin-top:var(--space-16); padding-top:var(--space-8); border-top:1px solid var(--color-border-strong); color:var(--color-text-muted); font-size:var(--fs-sm);">
+        AeroFly Design Kit v2.0 · Dark-first · Bilingual DE/EN · Single source of truth per <code>CLAUDE.md</code>.
+      </footer>
+    </main>
   </div>
 
-  <!-- 6. Badges -->
-  <div class="section">
-    <h2>6. Frequency Badges</h2>
-    <div class="component-row">
-      <span class="badge badge-frequency-twr">TWR 118.300</span>
-      <span class="badge badge-frequency-gnd">GND 121.700</span>
-      <span class="badge badge-frequency-atis">ATIS 126.025</span>
-      <span class="badge badge-frequency-afis">AFIS 122.600</span>
-    </div>
-    <h3>NOTAM Badges</h3>
-    <div class="component-row">
-      <span class="badge badge-notam-active">NOTAM Active</span>
-      <span class="badge badge-notam-upcoming">NOTAM Upcoming</span>
-    </div>
-  </div>
+  <script>
+    // Theme toggle — persisted to localStorage
+    (function () {
+      const root = document.documentElement;
+      const key = 'aerofly-kit-theme';
+      const saved = localStorage.getItem(key);
+      if (saved === 'light') root.setAttribute('data-theme', 'light');
+      const btn = document.getElementById('themeToggle');
+      const label = document.getElementById('themeLabel');
+      const icon = btn.querySelector('i');
 
-  <!-- 7. Aerodrome Card -->
-  <div class="section">
-    <h2>7. Aerodrome Card</h2>
-    <div class="card" style="max-width:400px;">
-      <div class="card-header">
-        <span class="card-icao">EDDF</span> — Frankfurt am Main
-      </div>
-      <p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">
-        Hessen &middot; Elev: 364 ft &middot; RWY 07L/25R, 07C/25C, 07R/25L, 18/36
-      </p>
-      <div class="component-row" style="margin-top:var(--space-2);">
-        <span class="badge badge-frequency-twr">TWR 119.900</span>
-        <span class="badge badge-frequency-gnd">GND 121.900</span>
-      </div>
-    </div>
-  </div>
+      function sync() {
+        const isDark = root.getAttribute('data-theme') !== 'light';
+        icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+        label.textContent = isDark ? 'Dark' : 'Light';
+      }
+      sync();
 
-  <!-- 8. Search -->
-  <div class="section">
-    <h2>8. Search Input</h2>
-    <input class="search-input" type="text" placeholder="Search aerodromes — ICAO, name, city..." />
-  </div>
-
-  <!-- 9. Table -->
-  <div class="section">
-    <h2>9. Data Table</h2>
-    <table class="table">
-      <thead>
-        <tr><th>ICAO</th><th>Name</th><th>City</th><th>Elevation</th><th>Runways</th></tr>
-      </thead>
-      <tbody>
-        <tr><td class="card-icao">EDDF</td><td>Frankfurt Main</td><td>Frankfurt</td><td>364 ft</td><td>4</td></tr>
-        <tr><td class="card-icao">EDDM</td><td>München</td><td>München</td><td>1487 ft</td><td>2</td></tr>
-        <tr><td class="card-icao">EDDB</td><td>Berlin Brandenburg</td><td>Berlin</td><td>157 ft</td><td>2</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Future sections -->
-  <div class="section">
-    <h2>10+. Additional Components</h2>
-    <p class="placeholder">Add new components as numbered sections following the pattern above. Examples: Runway diagram, Chart viewer, NOTAM list, Map overlay, Language toggle, Navigation bar, Modal dialogs, Toast notifications, Loading states.</p>
-  </div>
+      btn.addEventListener('click', () => {
+        const isDark = root.getAttribute('data-theme') !== 'light';
+        if (isDark) {
+          root.setAttribute('data-theme', 'light');
+          localStorage.setItem(key, 'light');
+        } else {
+          root.setAttribute('data-theme', 'dark');
+          localStorage.setItem(key, 'dark');
+        }
+        sync();
+      });
+    })();
+  </script>
 </body>
 </html>

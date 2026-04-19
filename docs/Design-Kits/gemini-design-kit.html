@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PilotHub | UI Design Kit v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0b0f1a;
+            --surface: #1e293b;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: #f8fafc; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+        }
+
+        /* Pilot-Specific Styling */
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            border-right: 3px solid var(--accent);
+        }
+
+        .scroll-custom::-webkit-scrollbar { width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: transparent; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .ai-pulse {
+            position: relative;
+        }
+        .ai-pulse::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 1rem;
+            border: 2px solid var(--accent);
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.02); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex h-screen w-full">
+
+    <nav class="w-64 border-r border-slate-800 flex flex-col p-6 space-y-8 z-20 bg-[#0f172a]">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg">
+                <i class="fas fa-plane-up text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">Pilot<span class="text-blue-500">Hub</span></span>
+        </div>
+
+        <div class="space-y-1">
+            <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-4">Navigation</p>
+            <a href="#" class="nav-item active flex items-center gap-4 py-3 px-2 rounded-md transition-all">
+                <i class="fas fa-grid-2 w-5"></i> <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item flex items-center gap-4 py-3 px-2 rounded-md text-slate-400 transition-all">
+                <i class="fas fa-map w-5"></i> <span>Charts</span>
+            </a>
+            <a href="#" class="nav-item flex items-center gap-4 py-3 px-2 rounded-md text-slate-400 transition-all">
+                <i class="fas fa-wind w-5"></i> <span>Weather</span>
+            </a>
+            <a href="#" class="nav-item flex items-center gap-4 py-3 px-2 rounded-md text-slate-400 transition-all">
+                <i class="fas fa-book w-5"></i> <span>Documents</span>
+            </a>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Pilot+Admin&background=2563eb&color=fff" alt="User">
+                </div>
+                <div class="text-sm">
+                    <p class="font-bold">Capt. Miller</p>
+                    <p class="text-xs text-slate-500">Premium Plan</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+        
+        <header class="h-16 border-b border-slate-800 flex items-center justify-between px-8 bg-[#0f172a]/50 backdrop-blur-md">
+            <div class="flex items-center bg-slate-800/50 rounded-full px-4 py-1.5 w-96 border border-slate-700">
+                <i class="fas fa-search text-slate-500 mr-3"></i>
+                <input type="text" placeholder="ICAO Kennung eingeben (z.B. EDDM)..." class="bg-transparent border-none text-sm w-full focus:outline-none">
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 text-xs font-bold text-green-500 bg-green-500/10 px-3 py-1 rounded-full">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> SYSTEM ONLINE
+                </div>
+                <button class="text-slate-400 hover:text-white transition"><i class="fas fa-bell"></i></button>
+                <button class="text-slate-400 hover:text-white transition"><i class="fas fa-gear"></i></button>
+            </div>
+        </header>
+
+        <div class="flex-1 p-8 overflow-y-auto scroll-custom bg-gradient-to-br from-[#0b0f1a] to-[#1e293b]">
+            
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-4xl font-extrabold tracking-tight mb-2">EDDM / München</h2>
+                    <p class="text-slate-400 flex items-center gap-2 text-lg">
+                        <i class="fas fa-location-dot"></i> Munich International Airport, Germany
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-semibold transition flex items-center gap-2 border border-slate-700">
+                        <i class="fas fa-download"></i> PDF Export
+                    </button>
+                    <button class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold transition flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                        <i class="fas fa-cloud-arrow-down"></i> Sync Maps
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6">
+                
+                <div class="col-span-12 lg:col-span-8 space-y-6">
+                    <div class="glass-card overflow-hidden">
+                        <div class="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+                            <span class="font-bold text-sm tracking-widest uppercase opacity-70">Airport Chart 10-9 (Interactive)</span>
+                            <div class="flex gap-2">
+                                <button class="p-2 hover:bg-white/10 rounded"><i class="fas fa-expand"></i></button>
+                                <button class="p-2 hover:bg-white/10 rounded"><i class="fas fa-layer-group"></i></button>
+                            </div>
+                        </div>
+                        <div class="h-[500px] bg-[#05080f] flex items-center justify-center relative">
+                            <i class="fas fa-map-location-dot text-slate-800 text-9xl opacity-20"></i>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                                <p class="text-slate-500 font-mono text-sm">[ MAP RENDERING ENGINE ]</p>
+                                <p class="text-[10px] text-slate-600 mt-2 italic">Vectorized PDF Data active</p>
+                            </div>
+                            <div class="absolute bottom-6 right-6 flex flex-col gap-2">
+                                <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-700 text-[10px] mono">
+                                    <p class="text-blue-400">RWY 08L: 13,123ft</p>
+                                    <p class="text-blue-400">RWY 08R: 13,123ft</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 ai-pulse border-blue-500/30 bg-blue-600/5">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/40">
+                                <i class="fas fa-brain text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-xl font-bold text-blue-400 mb-2">KI-Zusammenfassung der Dokumente</h4>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="text-sm text-slate-300 leading-relaxed">
+                                        <p class="mb-2"><strong class="text-white">Runway Status:</strong> Die Hauptbahn 08R ist aufgrund von Gummiresten-Entfernung zwischen 22:00-04:00 UTC gesperrt.</p>
+                                        <p><strong class="text-white">Taxi-Hinweis:</strong> Taxiway Bravo ist für Flugzeuge mit einer Spannweite über 36m nicht passierbar.</p>
+                                    </div>
+                                    <div class="bg-slate-900/50 p-4 rounded-xl border border-white/5">
+                                        <p class="text-xs uppercase font-bold text-slate-500 mb-2">Empfohlene Frequenzen</p>
+                                        <div class="space-y-2 font-mono text-sm">
+                                            <div class="flex justify-between"><span>Delivery:</span> <span class="text-blue-400">121.700</span></div>
+                                            <div class="flex justify-between"><span>Tower:</span> <span class="text-blue-400">118.700</span></div>
+                                            <div class="flex justify-between"><span>ATIS:</span> <span class="text-blue-400">123.125</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-4 space-y-6">
+                    
+                    <div class="glass-card p-6 border-l-4 border-emerald-500">
+                        <div class="flex justify-between mb-6">
+                            <h3 class="font-bold">Live Weather</h3>
+                            <span class="bg-emerald-500/20 text-emerald-500 text-[10px] px-2 py-0.5 rounded font-bold">VMC</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500 uppercase mb-1">Wind</p>
+                                <p class="text-2xl font-black mono">070/12</p>
+                            </div>
+                            <div class="h-12 w-[1px] bg-slate-800"></div>
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500 uppercase mb-1">Visibility</p>
+                                <p class="text-2xl font-black mono">10km+</p>
+                            </div>
+                            <div class="h-12 w-[1px] bg-slate-800"></div>
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500 uppercase mb-1">Temp</p>
+                                <p class="text-2xl font-black mono">18°C</p>
+                            </div>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+                            <p class="text-[10px] text-slate-500 mb-2 mono">RAW METAR</p>
+                            <p class="text-xs mono text-blue-300 leading-relaxed">EDDM 081550Z 07012KT 9999 FEW045 18/06 Q1018 NOSIG</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold">Critical NOTAMs</h3>
+                            <span class="text-xs text-slate-500">3 New</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="p-3 bg-red-500/10 border-l-2 border-red-500 rounded-r-lg">
+                                <p class="text-[10px] font-bold text-red-500 uppercase mb-1">A5543/26 - RWY</p>
+                                <p class="text-xs text-slate-300">ILS RWY 08L out of service due to antenna calibration.</p>
+                            </div>
+                            <div class="p-3 bg-amber-500/10 border-l-2 border-amber-500 rounded-r-lg">
+                                <p class="text-[10px] font-bold text-amber-500 uppercase mb-1">B1202/26 - OBST</p>
+                                <p class="text-xs text-slate-300">Multiple birds reported in vicinity of approach sector.</p>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 text-xs text-slate-400 hover:text-white transition">Alle 14 NOTAMs anzeigen...</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-card p-4 flex flex-col items-center justify-center gap-2 hover:bg-white/5 cursor-pointer transition">
+                            <i class="fas fa-calculator text-blue-500 text-xl"></i>
+                            <span class="text-xs font-bold uppercase tracking-tighter">Fuel Calc</span>
+                        </div>
+                        <div class="glass-card p-4 flex flex-col items-center justify-center gap-2 hover:bg-white/5 cursor-pointer transition">
+                            <i class="fas fa-balance-scale text-blue-500 text-xl"></i>
+                            <span class="text-xs font-bold uppercase tracking-tighter">W&B Tool</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

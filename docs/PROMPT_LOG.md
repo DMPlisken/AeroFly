@@ -59,3 +59,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Load already-scraped data into Docker, not demo seeds (`feat/8-aerodrome-listing`)
 
 > Wir haben schon alle Daten von den Flughäfen gescreate. Die solltest du alle lokal in deinem Docker auch zur Verfügung haben. Und das Scraten sollte nur dafür notwendig sein, wenn Updates verfügbar sind, die eben abzudaten.
+
+### 2026-04-19 — Run housekeeping after vertical slice + import (`feat/8-aerodrome-listing`)
+
+> do housepeeping

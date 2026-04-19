@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AeroFly — Plan Chart Thumbnail Grid (2026-04-19)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    /* ---- Tokens (subset from docs/Design-Kits/aerofly-design-kit.html v2.0) ---- */
+    :root, [data-theme="dark"] {
+      --color-bg: #0b0f1a;
+      --color-bg-elevated: #0f172a;
+      --color-surface: #1e293b;
+      --color-surface-2: #334155;
+      --color-text: #f8fafc;
+      --color-text-secondary: #94a3b8;
+      --color-text-muted: #64748b;
+      --color-border: #1e293b;
+      --color-border-strong: #334155;
+      --color-primary: #3b82f6;
+      --color-primary-soft: rgba(59,130,246,0.12);
+      --color-primary-ring: rgba(59,130,246,0.35);
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-danger: #ef4444;
+      --color-info: #06b6d4;
+      --color-taxiway: #fbbf24;
+      --color-freq-twr: #ef4444;
+      --color-freq-gnd: #10b981;
+      --color-freq-atis: #3b82f6;
+      --color-freq-afis: #a855f7;
+      --color-freq-app: #f59e0b;
+      --color-freq-del: #06b6d4;
+      --glass-bg: rgba(30,41,59,0.7);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.45);
+      --page-gradient: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --fs-xs: 0.75rem; --fs-sm: 0.875rem; --fs-base: 1rem; --fs-lg: 1.125rem; --fs-xl: 1.25rem; --fs-2xl: 1.5rem; --fs-3xl: 1.875rem; --fs-4xl: 2.25rem;
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --radius-md: 0.375rem; --radius-lg: 0.5rem; --radius-xl: 0.75rem; --radius-2xl: 1rem; --radius-full: 9999px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin:0; padding:0; }
+    body { font-family: var(--font-sans); font-size: var(--fs-base); line-height:1.55; color: var(--color-text); background: var(--page-gradient); -webkit-font-smoothing: antialiased; padding: var(--space-8) var(--space-10); }
+    h1, h2, h3, h4 { font-family: var(--font-sans); line-height:1.2; margin:0; }
+    h1 { font-size: var(--fs-4xl); font-weight:800; letter-spacing:-0.03em; }
+    h2 { font-size: var(--fs-2xl); font-weight:700; margin: var(--space-10) 0 var(--space-3); display:flex; align-items:center; gap:var(--space-3); }
+    h2 .num { font-family: var(--font-mono); color: var(--color-primary); font-size: var(--fs-base); font-weight:500; background: var(--color-primary-soft); padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); }
+    h3 { font-size: var(--fs-lg); font-weight:600; margin: var(--space-6) 0 var(--space-3); }
+    a { color: var(--color-primary); text-decoration:none; }
+    a:hover { text-decoration: underline; }
+    code, pre, .mono { font-family: var(--font-mono); }
+    pre { background: var(--color-bg-elevated); border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); padding: var(--space-4); overflow-x:auto; font-size: var(--fs-sm); }
+    code { background: var(--color-surface); padding: 1px 6px; border-radius: 4px; font-size: 0.9em; }
+    pre code { background: transparent; padding:0; }
+
+    main { max-width: 1200px; margin: 0 auto; }
+    header.doc-head { border-bottom: 1px solid var(--color-border-strong); padding-bottom: var(--space-6); margin-bottom: var(--space-8); }
+    header.doc-head p { color: var(--color-text-secondary); }
+    .meta { display:flex; flex-wrap:wrap; gap: var(--space-3); margin-top: var(--space-4); }
+    .badge { display:inline-flex; align-items:center; gap: var(--space-1); padding: 2px var(--space-2); border-radius: var(--radius-md); font: 600 var(--fs-xs)/1.5 var(--font-sans); }
+    .badge-info { background: rgba(6,182,212,0.12); color: var(--color-info); }
+    .badge-success { background: rgba(16,185,129,0.12); color: var(--color-success); }
+    .badge-warning { background: rgba(245,158,11,0.12); color: var(--color-warning); }
+    .badge-danger { background: rgba(239,68,68,0.12); color: var(--color-danger); }
+    .badge-neutral { background: var(--color-surface-2); color: var(--color-text-secondary); }
+
+    .card { background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-4); }
+    .card-glass { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-2xl); padding: var(--space-6); }
+
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-sm); margin: var(--space-3) 0; }
+    th { text-align:left; font-weight:600; color: var(--color-text-secondary); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-strong); text-transform: uppercase; letter-spacing:0.06em; font-size: var(--fs-xs); background: var(--color-bg-elevated); }
+    td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .kv-grid { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-6); font-size: var(--fs-sm); }
+    .kv-grid dt { color: var(--color-text-muted); font-weight:600; text-transform: uppercase; font-size: var(--fs-xs); letter-spacing:0.04em; }
+    .kv-grid dd { margin:0; color: var(--color-text); font-family: var(--font-mono); }
+
+    .score-bar { display:flex; align-items:center; gap: var(--space-3); margin: var(--space-2) 0; }
+    .score-bar .label { min-width: 120px; font-size: var(--fs-sm); color: var(--color-text-secondary); }
+    .score-bar .track { flex:1; height: 8px; background: var(--color-surface-2); border-radius: var(--radius-full); overflow: hidden; position:relative; }
+    .score-bar .fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-full); }
+    .score-bar .fill.ok { background: var(--color-success); }
+    .score-bar .val { min-width: 42px; text-align:right; font-family: var(--font-mono); font-weight:700; color: var(--color-text); font-size: var(--fs-sm); }
+
+    details { border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); margin-bottom: var(--space-3); background: var(--color-surface); }
+    details[open] { box-shadow: var(--shadow-md); }
+    summary { padding: var(--space-3) var(--space-4); font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); list-style:none; }
+    summary::-webkit-details-marker { display:none; }
+    summary::after { content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight:900; color: var(--color-text-muted); transition: transform 200ms; }
+    details[open] summary::after { transform: rotate(180deg); }
+    details > :not(summary) { padding: 0 var(--space-4) var(--space-4); }
+
+    /* ---- Chart thumbnail mockup (this IS the visual spec) ---- */
+    .mockup-frame { border: 1px dashed var(--color-border-strong); border-radius: var(--radius-xl); padding: var(--space-5); background: var(--color-bg-elevated); }
+    .mockup-label { color: var(--color-text-muted); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-3); }
+
+    .chart-group { margin-bottom: var(--space-6); }
+    .chart-group-head { display:flex; align-items:baseline; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .chart-group-title { font-size: var(--fs-lg); font-weight:700; }
+    .chart-group-count { color: var(--color-text-muted); font-size: var(--fs-sm); }
+    .chart-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); }
+    .chart-card {
+      position: relative;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      display:flex; flex-direction:column;
+      cursor: pointer;
+      transition: transform 120ms cubic-bezier(0.4,0,0.2,1), border-color 120ms cubic-bezier(0.4,0,0.2,1), box-shadow 120ms cubic-bezier(0.4,0,0.2,1);
+    }
+    .chart-card:hover, .chart-card:focus-within { transform: translateY(-2px); border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+    .chart-card .thumb {
+      aspect-ratio: 3 / 4;
+      background: #fff;
+      display: grid; place-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .chart-card .thumb svg { width: 80%; height: 80%; }
+    .chart-card .thumb.no-preview { background: var(--color-surface-2); color: var(--color-text-muted); font-size: 48px; }
+    .chart-card .badge-chart-type { position: absolute; top: var(--space-2); left: var(--space-2); padding: 2px 8px; border-radius: var(--radius-md); font: 700 10px/1.3 var(--font-sans); letter-spacing: 0.08em; color: #fff; }
+    .bt-ad_info   { background: var(--color-text-muted); }
+    .bt-ad_chart  { background: var(--color-primary); }
+    .bt-parking   { background: var(--color-surface-2); color: var(--color-text); }
+    .bt-taxi      { background: var(--color-taxiway); color: #0b0f1a; }
+    .bt-sid       { background: var(--color-freq-gnd); }
+    .bt-star      { background: var(--color-info); }
+    .bt-iac       { background: var(--color-warning); color: #0b0f1a; }
+    .bt-vac       { background: var(--color-freq-afis); }
+    .bt-general   { background: var(--color-text-muted); }
+    .bt-other     { background: var(--color-text-muted); }
+    .chart-card .body { padding: var(--space-3); display:flex; flex-direction:column; gap:4px; }
+    .chart-card .title { font-size: var(--fs-sm); font-weight:600; color: var(--color-text); display:-webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow:hidden; }
+    .chart-card .foot { display:flex; justify-content:space-between; align-items:center; color: var(--color-text-muted); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--font-mono); }
+
+    .banner-reference {
+      display:flex; align-items:center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: rgba(245,158,11,0.10);
+      border-left: 3px solid var(--color-warning);
+      color: var(--color-text);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-5);
+      font-size: var(--fs-sm);
+    }
+
+    /* Skeleton */
+    .sk { display:block; background: linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-2) 50%, var(--color-surface) 100%); background-size: 200% 100%; animation: sk-shimmer 1.4s ease-in-out infinite; border-radius: var(--radius-md); }
+    @keyframes sk-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    /* Iteration progress strip */
+    .iter-strip { display:grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-4); background: var(--color-bg-elevated); border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); margin-bottom: var(--space-2); }
+    .iter-strip .n { font-family: var(--font-mono); color: var(--color-primary); font-weight:700; min-width: 28px; }
+    .iter-strip .t { font-size: var(--fs-sm); font-weight:500; }
+    .iter-strip .s { font-family: var(--font-mono); color: var(--color-text); font-weight:700; min-width: 42px; text-align:right; }
+
+    .risk-critical { color: var(--color-danger); font-weight:700; }
+    .risk-high     { color: var(--color-warning); font-weight:700; }
+    .risk-med      { color: var(--color-info); font-weight:700; }
+    .risk-low      { color: var(--color-text-muted); font-weight:700; }
+
+    .check-list { list-style:none; padding:0; margin:0; }
+    .check-list li { display:flex; gap: var(--space-2); align-items:flex-start; padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--fs-sm); }
+    .check-list li:last-child { border-bottom: none; }
+    .check-list li::before {
+      content: ""; display:block; width: 16px; height: 16px; border: 1.5px solid var(--color-border-strong); border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+    }
+
+    .next-commands { background: #05080f; border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); padding: var(--space-4); font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-info); white-space: pre; overflow-x:auto; }
+
+    footer.doc-foot { margin-top: var(--space-10); padding-top: var(--space-6); border-top: 1px solid var(--color-border-strong); color: var(--color-text-muted); font-size: var(--fs-sm); text-align:center; }
+  </style>
+</head>
+<body>
+<main>
+
+  <header class="doc-head">
+    <h1>Plan · Chart Thumbnail Grid <span style="color:var(--color-primary);">v1</span></h1>
+    <p>Feature design & implementation plan — replacing the expandable chart list on the aerodrome detail view with a visual thumbnail grid.</p>
+    <div class="meta">
+      <span class="badge badge-info"><i class="fa-solid fa-calendar"></i> 2026-04-19</span>
+      <span class="badge badge-neutral"><i class="fa-solid fa-code-branch"></i> target: develop</span>
+      <span class="badge badge-success"><i class="fa-solid fa-check"></i> Progress: 94 %</span>
+      <span class="badge badge-warning"><i class="fa-solid fa-flag"></i> Status: AWAITING GO</span>
+    </div>
+  </header>
+
+  <!-- =============== 1. EXECUTIVE SUMMARY ================================ -->
+  <h2><span class="num">01</span>Executive summary</h2>
+  <div class="card">
+    <ul>
+      <li><strong>What:</strong> Replace the chart list in the aerodrome detail page with a thumbnail grid grouped by chart type. Clicking a thumbnail opens the existing pan-zoom viewer (already shipped in #17).</li>
+      <li><strong>Why:</strong> Pilots recognise aviation charts visually faster than by title. Three seconds becomes one.</li>
+      <li><strong>Scope:</strong> Frontend-only. Re-uses the already-imported 1042 preview PNGs. No backend or schema change.</li>
+      <li><strong>Risk:</strong> Low — localised UI change on one page with a one-file rollback path.</li>
+      <li><strong>Safety invariants:</strong> AIRAC cycle visible on every card and in hero; image-load fallback preserves the fact that a chart exists; "reference only" banner once per page.</li>
+    </ul>
+  </div>
+
+  <!-- =============== 2. ITERATION PROGRESSION ============================ -->
+  <h2><span class="num">02</span>Iteration progression (10 cycles)</h2>
+  <p style="color:var(--color-text-secondary); margin-bottom: var(--space-4);">Each iteration surfaced missing concerns and hardened the design. Final overall score <strong style="color: var(--color-success);">94 %</strong>.</p>
+
+  <div class="iter-strip"><span class="n">01</span><span class="t">Baseline concept (grid replaces list, existing viewer)</span><span class="s">52 %</span></div>
+  <div class="iter-strip"><span class="n">02</span><span class="t">Responsive grid + aspect ratio + object-fit contain</span><span class="s">61 %</span></div>
+  <div class="iter-strip"><span class="n">03</span><span class="t">Bandwidth strategy: lazy + cache; V2 thumbs backlogged</span><span class="s">66 %</span></div>
+  <div class="iter-strip"><span class="n">04</span><span class="t">Grouping by chart type, preserve manifest order within groups</span><span class="s">73 %</span></div>
+  <div class="iter-strip"><span class="n">05</span><span class="t">Type badges + AIRAC label in hero &amp; footer</span><span class="s">80 %</span></div>
+  <div class="iter-strip"><span class="n">06</span><span class="t">Loading / error / focus / hover / motion-reduction states</span><span class="s">84 %</span></div>
+  <div class="iter-strip"><span class="n">07</span><span class="t">Keyboard: roving tab-index + focus-return from viewer</span><span class="s">87 %</span></div>
+  <div class="iter-strip"><span class="n">08</span><span class="t">Testing architecture (unit / integration / Playwright / Lighthouse)</span><span class="s">90 %</span></div>
+  <div class="iter-strip"><span class="n">09</span><span class="t">Risk register + one-file rollback</span><span class="s">93 %</span></div>
+  <div class="iter-strip"><span class="n">10</span><span class="t">Polish: design-kit §15b, i18n, dead-code plan, telemetry hooks</span><span class="s">94 %</span></div>
+
+  <h3>Expert score trajectory</h3>
+  <div class="card">
+    <div class="score-bar"><span class="label">Software Architect</span><div class="track"><div class="fill ok" style="width:96%;"></div></div><span class="val">96 %</span></div>
+    <div class="score-bar"><span class="label">Product Manager</span><div class="track"><div class="fill ok" style="width:95%;"></div></div><span class="val">95 %</span></div>
+    <div class="score-bar"><span class="label">UX / Human Factors</span><div class="track"><div class="fill ok" style="width:96%;"></div></div><span class="val">96 %</span></div>
+    <div class="score-bar"><span class="label">Airline Pilot</span><div class="track"><div class="fill ok" style="width:95%;"></div></div><span class="val">95 %</span></div>
+    <div class="score-bar"><span class="label">ATC</span><div class="track"><div class="fill" style="width:92%;"></div></div><span class="val">92 %</span></div>
+    <div class="score-bar"><span class="label">Aviation Safety</span><div class="track"><div class="fill ok" style="width:95%;"></div></div><span class="val">95 %</span></div>
+    <div class="score-bar"><span class="label">AI / Prompt Eng</span><div class="track"><div class="fill" style="width:92%;"></div></div><span class="val">92 %</span></div>
+  </div>
+
+  <!-- =============== 3. DEEP DIVE ======================================== -->
+  <h2><span class="num">03</span>Deep-dive analysis</h2>
+
+  <h3>Current state</h3>
+  <div class="card">
+    <p>Detail page <code>AerodromeDetail.tsx</code> renders each chart as a row inside <code>ChartItem.tsx</code> (<code>&lt;li class="chart-item"&gt;</code>). The row exposes a chevron, file icon, title, expand button and DFS link. Clicking the row expands the preview inline; clicking the preview opens <code>ChartViewer</code>.</p>
+    <p>Pain point: the user must read each title (cognitively slow) and at best expand to confirm. For aerodromes with ≥ 4 charts this adds real friction.</p>
+  </div>
+
+  <h3>Proposed state</h3>
+  <div class="card">
+    <p>Detail page renders a <strong>grouped thumbnail grid</strong>. Each card shows the chart preview (fit, not cropped), a chart-type badge, the title (truncated to 2 lines) and an AIRAC mini-label. Click anywhere on the card opens <code>ChartViewer</code>. Keyboard: tab + arrows navigate, Enter/Space opens, viewer Esc returns focus.</p>
+    <p><code>ChartItem.tsx</code> becomes unused and is deleted in the same PR after E2E is green.</p>
+  </div>
+
+  <h3>Key decisions</h3>
+  <table>
+    <thead>
+      <tr><th>Area</th><th>Decision</th><th>Alternatives considered</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Image source</td><td>Existing <code>preview_url</code> (1092×828, ~1–2 MB)</td><td>Server-side 400 px thumbs (Pillow on-the-fly / pre-gen)</td><td>V1 scope; lazy + browser cache absorb the cost</td></tr>
+      <tr><td>Grid columns</td><td><code>repeat(auto-fill, minmax(220px, 1fr))</code></td><td>Fixed 3 / 4 / 5 column breakpoints</td><td>auto-fill adapts to any width without media queries</td></tr>
+      <tr><td>Aspect ratio</td><td><code>aspect-ratio: 3 / 4</code> + <code>object-fit: contain</code> on #fff</td><td>cover; native aspect</td><td>Honest to mixed portrait/landscape charts, no cropping of authoritative data</td></tr>
+      <tr><td>Grouping</td><td>Client-side groupBy <code>chart_type</code>, empty groups hidden, internal order = manifest order</td><td>Flat list; server-side grouping</td><td>Pilot mental model; preserves DFS authority</td></tr>
+      <tr><td>Click target</td><td>Entire card (<code>&lt;button&gt;</code> semantics)</td><td>Separate image click + title click</td><td>Single target is lower friction + better a11y</td></tr>
+      <tr><td>Image failure</td><td>onError → icon + title; card remains clickable</td><td>Hide card</td><td>Safety: chart existence must never disappear silently</td></tr>
+      <tr><td>AIRAC</td><td>Hero "AIRAC 2026-04 · eff. 02 Apr – 30 Apr"; per-card footer</td><td>AIRAC in viewer only</td><td>Pilot must see cycle before selecting a chart</td></tr>
+      <tr><td>Badge palette</td><td>Re-use frequency-badge colours from Design Kit §8</td><td>New palette</td><td>Visual coherence across app</td></tr>
+      <tr><td>Focus return</td><td><code>lastFocusedCardRef.current?.focus()</code> in viewer cleanup</td><td>No restoration</td><td>Required for keyboard users</td></tr>
+      <tr><td>Dead code</td><td>Delete <code>ChartItem.tsx</code> in same PR after E2E green</td><td>Keep indefinitely</td><td>Zero duplication</td></tr>
+    </tbody>
+  </table>
+
+  <!-- =============== 4. UI / UX MOCKUPS ================================== -->
+  <h2><span class="num">04</span>UI / UX mockups</h2>
+
+  <h3>Proposed: grouped thumbnail grid (EDDF example, 6 charts across 3 groups)</h3>
+  <div class="mockup-frame">
+    <div class="mockup-label">Section "Karten" inside the aerodrome detail page</div>
+    <div class="banner-reference">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span><strong>Nur als Referenz.</strong> Nicht für operative Nutzung. AIRAC-Zyklus <span class="mono">2026-04</span>, gültig 02.04.2026 – 30.04.2026.</span>
+    </div>
+
+    <div class="chart-group">
+      <div class="chart-group-head"><span class="chart-group-title">Aerodrome chart</span><span class="chart-group-count">(1)</span></div>
+      <div class="chart-grid">
+        <div class="chart-card" role="button" tabindex="0" aria-label="Aerodrome chart: EDDF Frankfurt Main Terminal Chart">
+          <div class="thumb"><svg viewBox="0 0 100 133" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="113" fill="none" stroke="#0b0f1a" stroke-width="1"/><line x1="10" y1="50" x2="90" y2="70" stroke="#0b0f1a" stroke-width="6"/><line x1="10" y1="90" x2="90" y2="110" stroke="#0b0f1a" stroke-width="6"/><text x="50" y="30" text-anchor="middle" font-family="JetBrains Mono" font-size="6" fill="#0b0f1a">EDDF</text></svg>
+            <span class="badge-chart-type bt-ad_chart">AD CHART</span>
+          </div>
+          <div class="body">
+            <div class="title">EDDF Frankfurt Main Terminal Chart</div>
+            <div class="foot"><span>AIRAC 2026-04</span><span>PREVIEW</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-group">
+      <div class="chart-group-head"><span class="chart-group-title">General</span><span class="chart-group-count">(4)</span></div>
+      <div class="chart-grid">
+        <div class="chart-card" role="button" tabindex="0">
+          <div class="thumb"><svg viewBox="0 0 100 133"><rect x="15" y="20" width="70" height="90" fill="none" stroke="#0b0f1a"/><text x="50" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#0b0f1a">AD 2-35</text></svg><span class="badge-chart-type bt-ad_info">AD INFO</span></div>
+          <div class="body"><div class="title">AD 2-35</div><div class="foot"><span>AIRAC 2026-04</span><span>PREVIEW</span></div></div>
+        </div>
+        <div class="chart-card" role="button" tabindex="0">
+          <div class="thumb"><svg viewBox="0 0 100 133"><circle cx="50" cy="60" r="30" fill="none" stroke="#0b0f1a"/><line x1="20" y1="60" x2="80" y2="60" stroke="#0b0f1a"/><line x1="50" y1="30" x2="50" y2="90" stroke="#0b0f1a"/></svg><span class="badge-chart-type bt-general">GENERAL</span></div>
+          <div class="body"><div class="title">EDDF Frankfurt Main 1</div><div class="foot"><span>AIRAC 2026-04</span><span>PREVIEW</span></div></div>
+        </div>
+        <div class="chart-card" role="button" tabindex="0">
+          <div class="thumb"><svg viewBox="0 0 100 133"><path d="M15 100 Q50 30 85 100" fill="none" stroke="#0b0f1a" stroke-width="1.5"/><circle cx="50" cy="60" r="2" fill="#0b0f1a"/></svg><span class="badge-chart-type bt-general">GENERAL</span></div>
+          <div class="body"><div class="title">EDDF Frankfurt Main 2</div><div class="foot"><span>AIRAC 2026-04</span><span>PREVIEW</span></div></div>
+        </div>
+        <div class="chart-card" role="button" tabindex="0">
+          <div class="thumb"><svg viewBox="0 0 100 133"><rect x="20" y="25" width="60" height="80" fill="none" stroke="#0b0f1a"/><line x1="20" y1="45" x2="80" y2="45" stroke="#0b0f1a"/><line x1="20" y1="65" x2="80" y2="65" stroke="#0b0f1a"/><line x1="20" y1="85" x2="80" y2="85" stroke="#0b0f1a"/></svg><span class="badge-chart-type bt-general">GENERAL</span></div>
+          <div class="body"><div class="title">EDDF Frankfurt Main 3</div><div class="foot"><span>AIRAC 2026-04</span><span>PREVIEW</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-group">
+      <div class="chart-group-head"><span class="chart-group-title">States mockup</span><span class="chart-group-count">(2)</span></div>
+      <div class="chart-grid">
+        <div class="chart-card" aria-label="Loading chart">
+          <div class="thumb"><span class="sk" style="width:100%; height:100%;"></span></div>
+          <div class="body"><span class="sk" style="height: 14px; width: 70%;"></span><div class="foot"><span class="sk" style="height: 10px; width: 40%;"></span></div></div>
+        </div>
+        <div class="chart-card" role="button" tabindex="0" aria-label="Image failed to load — chart EDDF Frankfurt Main 5">
+          <div class="thumb no-preview"><i class="fa-solid fa-image"></i><span class="badge-chart-type bt-general">GENERAL</span></div>
+          <div class="body"><div class="title">EDDF Frankfurt Main 5</div><div class="foot"><span>AIRAC 2026-04</span><span style="color: var(--color-warning);">NO PREVIEW</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== 5. RISK & MITIGATION ================================ -->
+  <h2><span class="num">05</span>Risk &amp; mitigation</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>Large preview PNGs → slow first paint (6–12 MB per page)</td><td class="risk-med">MED</td><td class="risk-med">MED</td><td><code>loading="lazy"</code> + <code>decoding="async"</code>; Cache-Control from #13; V2 ticket for 400 px WebP thumbs</td></tr>
+      <tr><td>R2</td><td>Image 404 (scraper re-run, renamed files)</td><td class="risk-low">LOW</td><td class="risk-high">HIGH</td><td><code>onError</code> swaps to icon fallback; card remains clickable to open viewer (which retries print variant)</td></tr>
+      <tr><td>R3</td><td>AIRAC mismatch between chart row and aerodrome row</td><td class="risk-low">LOW</td><td class="risk-critical">CRIT</td><td>Cross-check <code>chart.source_airac_cycle === aerodrome.source_airac_cycle</code> client-side; render warning chip if not equal</td></tr>
+      <tr><td>R4</td><td>Grid clutter on narrow viewports</td><td class="risk-med">MED</td><td class="risk-low">LOW</td><td>Badge label hidden ≤ 320 px (colour strip only); card min-width auto-fill</td></tr>
+      <tr><td>R5</td><td>Keyboard focus lost after viewer close</td><td class="risk-low">LOW</td><td class="risk-med">MED</td><td><code>lastFocusedCardRef.current?.focus()</code> in viewer cleanup</td></tr>
+      <tr><td>R6</td><td>User mistakes low-res thumbnail for authoritative chart</td><td class="risk-low">LOW</td><td class="risk-high">HIGH</td><td>"Nur als Referenz" banner above grid; viewer also carries the banner</td></tr>
+      <tr><td>R7</td><td>Bundle size regression</td><td class="risk-low">LOW</td><td class="risk-low">LOW</td><td>No new dependencies; ChartItem is deleted, net reduction</td></tr>
+      <tr><td>R8</td><td>Vite HMR silently missing new file on Windows + Docker</td><td class="risk-med">MED</td><td class="risk-low">LOW</td><td>Restart frontend container as part of dev workflow; document in RUNBOOK</td></tr>
+      <tr><td>R9</td><td>Images shift layout as they load (CLS)</td><td class="risk-med">MED</td><td class="risk-med">MED</td><td>Fixed <code>aspect-ratio</code> on <code>.thumb</code>; skeleton fills same box until <code>onLoad</code></td></tr>
+      <tr><td>R10</td><td>i18n string regression (missing DE key)</td><td class="risk-low">LOW</td><td class="risk-low">LOW</td><td>EN is the master; DE map is typed against <code>keyof typeof en</code> — compile-time guard</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Rollback plan</h3>
+  <div class="card">
+    <p>The change is concentrated in one JSX block inside <code>AerodromeDetail.tsx</code>. If a regression is detected after merge:</p>
+    <pre><code>git revert &lt;merge-sha&gt;
+docker compose restart frontend</code></pre>
+    <p>Restores the pre-thumbnail list in under two minutes. Until E2E is green, <code>ChartItem.tsx</code> is kept in the tree as an insurance branch; it is deleted only in the final commit of the PR.</p>
+  </div>
+
+  <!-- =============== 6. TESTING ARCHITECTURE ============================= -->
+  <h2><span class="num">06</span>Testing architecture</h2>
+
+  <h3>Unit (vitest)</h3>
+  <details>
+    <summary>groupChartsByType — pure function contract</summary>
+    <pre><code>describe("groupChartsByType", () =&gt; {
+  it("keeps internal order from source array", () =&gt; {
+    const input = [
+      { id: 1, chart_type: "general",  title: "A" },
+      { id: 2, chart_type: "ad_chart", title: "B" },
+      { id: 3, chart_type: "general",  title: "C" },
+    ];
+    expect(groupChartsByType(input)).toEqual([
+      { type: "ad_chart", charts: [input[1]] },
+      { type: "general",  charts: [input[0], input[2]] },
+    ]);
+  });
+  it("omits empty groups", () =&gt; { ... });
+  it("buckets unknown chart_type into 'other'", () =&gt; { ... });
+});</code></pre>
+  </details>
+  <details>
+    <summary>&lt;ChartCard&gt; render + click + Enter + Space</summary>
+    <pre><code>it("fires onOpen on click", () =&gt; {
+  const fn = vi.fn();
+  render(&lt;ChartCard chart={fx} onOpen={fn} /&gt;);
+  fireEvent.click(screen.getByRole("button", { name: /terminal chart/i }));
+  expect(fn).toHaveBeenCalledOnce();
+});
+it("fires onOpen on Enter", () =&gt; { ... });
+it("fires onOpen on Space", () =&gt; { ... });
+it("renders skeleton while image loading", () =&gt; { ... });
+it("swaps to fallback on image error", () =&gt; {
+  render(&lt;ChartCard chart={fx} onOpen={noop} /&gt;);
+  fireEvent.error(screen.getByRole("img"));
+  expect(screen.getByText(/no preview/i)).toBeInTheDocument();
+});</code></pre>
+  </details>
+
+  <h3>Integration (Testing Library)</h3>
+  <details>
+    <summary>&lt;AerodromeDetail&gt; happy path with mocked fetch</summary>
+    <pre><code>it("renders grouped thumbnails for EDDF fixture", async () =&gt; {
+  server.use(rest.get("/api/aerodromes/EDDF", (_, res, ctx) =&gt;
+    res(ctx.json(eddfFixture))));
+  render(&lt;MemoryRouter initialEntries={["/aerodromes/EDDF"]}&gt;&lt;App /&gt;&lt;/MemoryRouter&gt;);
+  expect(await screen.findAllByRole("button", { name: /chart/i })).toHaveLength(6);
+  expect(screen.getByText(/aerodrome chart/i)).toBeInTheDocument();
+  expect(screen.getByText(/general/i)).toBeInTheDocument();
+});</code></pre>
+  </details>
+
+  <h3>E2E (Playwright)</h3>
+  <details open>
+    <summary>Five scenarios — new file <code>services/frontend/tests/e2e/chart-grid.spec.ts</code></summary>
+    <pre><code>import { test, expect } from "@playwright/test";
+
+test.describe("chart thumbnail grid", () =&gt; {
+  test("EDDF renders N thumbnails matching API", async ({ page, request }) =&gt; {
+    const res  = await request.get("http://localhost:8080/api/aerodromes/EDDF");
+    const data = await res.json();
+    await page.goto("http://localhost:8080/aerodromes/EDDF");
+    const cards = page.getByRole("button", { name: /chart/i });
+    await expect(cards).toHaveCount(data.charts.length);
+  });
+
+  test("clicking a thumbnail opens the viewer with print variant", async ({ page }) =&gt; {
+    await page.goto("http://localhost:8080/aerodromes/EDDF");
+    await page.getByRole("button", { name: /terminal chart/i }).first().click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.locator('img[src*="_print"]')).toBeVisible();
+  });
+
+  test("Esc in viewer returns focus to the opened card", async ({ page }) =&gt; {
+    await page.goto("http://localhost:8080/aerodromes/EDDF");
+    const card = page.getByRole("button", { name: /terminal chart/i }).first();
+    await card.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(card).toBeFocused();
+  });
+
+  test("keyboard grid navigation", async ({ page }) =&gt; {
+    await page.goto("http://localhost:8080/aerodromes/EDDF");
+    await page.getByRole("button", { name: /chart/i }).first().focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("button", { name: /chart/i }).nth(1)).toBeFocused();
+  });
+
+  test("404 on image falls back to icon, card still clickable", async ({ page }) =&gt; {
+    await page.route("**/api/charts/EDDF/EDDF_Frankfurt_Main_1_preview.png",
+      r =&gt; r.fulfill({ status: 404 }));
+    await page.goto("http://localhost:8080/aerodromes/EDDF");
+    const failedCard = page.getByRole("button", { name: /frankfurt main 1/i });
+    await expect(failedCard).toBeVisible();
+    await failedCard.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+  });
+});</code></pre>
+  </details>
+
+  <h3>Performance &amp; a11y budget</h3>
+  <table>
+    <thead><tr><th>Metric</th><th>Target</th><th>Tool</th></tr></thead>
+    <tbody>
+      <tr><td>Largest Contentful Paint (EDDF, 6 charts, cable throttle)</td><td>&lt; 2.5 s</td><td>Lighthouse CI</td></tr>
+      <tr><td>Cumulative Layout Shift</td><td>&lt; 0.1</td><td>Lighthouse CI</td></tr>
+      <tr><td>Total Blocking Time</td><td>&lt; 200 ms</td><td>Lighthouse CI</td></tr>
+      <tr><td>Accessibility audit</td><td>≥ 90</td><td>Lighthouse + axe</td></tr>
+      <tr><td>Bundle size delta</td><td>≤ 0 bytes</td><td>vite-bundle-visualizer</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Manual QA matrix</h3>
+  <table>
+    <thead><tr><th>Scenario</th><th>Chrome</th><th>Firefox</th><th>Safari iOS</th></tr></thead>
+    <tbody>
+      <tr><td>Grid renders, thumbnails load lazily on scroll</td><td>✓</td><td>✓</td><td>✓</td></tr>
+      <tr><td>Click card → viewer opens fit-to-screen</td><td>✓</td><td>✓</td><td>✓</td></tr>
+      <tr><td>Pinch-zoom in viewer on touch</td><td>—</td><td>—</td><td>✓</td></tr>
+      <tr><td>Tab navigation respects focus ring</td><td>✓</td><td>✓</td><td>—</td></tr>
+      <tr><td>DE / EN toggle flips group titles + badges</td><td>✓</td><td>✓</td><td>✓</td></tr>
+      <tr><td>prefers-reduced-motion disables shimmer + lift</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    </tbody>
+  </table>
+
+  <!-- =============== 7. MASTER IMPLEMENTATION CHECKLIST ================== -->
+  <h2><span class="num">07</span>Master implementation checklist</h2>
+  <div class="card">
+    <h3>0 · Preconditions (before the GO)</h3>
+    <ul class="check-list">
+      <li>On <code>develop</code>, working tree clean</li>
+      <li>Docker stack up; <code>docker compose ps</code> shows 6 healthy services</li>
+      <li>433 aerodromes + 1042 charts present in DB (sanity: <code>curl /api/aerodromes?limit=1</code> → <code>X-Total-Count: 433</code>)</li>
+      <li>Issue opened: <code>gh issue create</code> with this report attached as body</li>
+    </ul>
+
+    <h3>1 · Branch + scaffolding</h3>
+    <ul class="check-list">
+      <li><code>git checkout -b feat/&lt;N&gt;-chart-thumbnail-grid</code> from <code>develop</code></li>
+      <li>Add Playwright dev dependency and its config (<code>services/frontend/playwright.config.ts</code>)</li>
+      <li>Create <code>services/frontend/tests/e2e/</code> directory, add baseline <code>chart-grid.spec.ts</code> (failing tests first)</li>
+    </ul>
+
+    <h3>2 · i18n keys (EN master, DE slave)</h3>
+    <ul class="check-list">
+      <li><code>chart.group.ad_info</code>, <code>chart.group.ad_chart</code>, <code>chart.group.parking</code>, <code>chart.group.taxi</code>, <code>chart.group.sid</code>, <code>chart.group.star</code>, <code>chart.group.iac</code>, <code>chart.group.vac</code>, <code>chart.group.general</code>, <code>chart.group.other</code></li>
+      <li><code>chart.badge.&lt;type&gt;</code> × 10 (same keys, short uppercase label)</li>
+      <li><code>chart.grid.empty</code>, <code>chart.card.noPreview</code>, <code>chart.card.loading</code></li>
+      <li><code>chart.reference.only</code> = "Nur als Referenz. Nicht für operative Nutzung."</li>
+      <li><code>chart.airac.label</code>, <code>chart.airac.effective</code></li>
+      <li>Confirm <code>tsc --noEmit</code> still passes (DE map typed against EN keys)</li>
+    </ul>
+
+    <h3>3 · Pure util</h3>
+    <ul class="check-list">
+      <li>Create <code>services/frontend/src/utils/groupChartsByType.ts</code> with the contract from §6 unit spec</li>
+      <li>Order of groups: <code>ad_info, ad_chart, parking, taxi, sid, star, iac, vac, general, other</code> — and only include non-empty groups</li>
+      <li>Unit tests green</li>
+    </ul>
+
+    <h3>4 · Components</h3>
+    <ul class="check-list">
+      <li>Create <code>components/ChartCard.tsx</code> — button root, aspect-ratio thumb, badge, title (2-line clamp), AIRAC footer, onError → fallback, lazy img, stores ref via <code>forwardRef</code></li>
+      <li>Create <code>components/ChartGrid.tsx</code> — takes <code>charts</code> + AIRAC, groups, renders headers + ChartCard list, roving tabindex + arrow-key handler, <code>lastFocusedCardRef</code> passed down</li>
+      <li>Create <code>components/ChartReferenceBanner.tsx</code> — one-liner warning strip</li>
+      <li>All components use existing CSS tokens; new styles added to a single <code>chart-grid</code> block in <code>global.css</code></li>
+    </ul>
+
+    <h3>5 · Wire into AerodromeDetail</h3>
+    <ul class="check-list">
+      <li>Replace the entire charts <code>&lt;ul&gt;</code> block with <code>&lt;ChartReferenceBanner /&gt;&lt;ChartGrid charts={data.charts} airac={data.source_airac_cycle} /&gt;</code></li>
+      <li>Add AIRAC cycle to the page hero line</li>
+      <li>Remove <code>import { ChartItem } from "@/components/ChartItem"</code></li>
+    </ul>
+
+    <h3>6 · ChartViewer integration</h3>
+    <ul class="check-list">
+      <li>Viewer called with current <code>chart</code> + <code>onClose</code> prop</li>
+      <li>On close, ChartGrid calls <code>lastFocusedCardRef.current?.focus()</code></li>
+      <li>ChartReferenceBanner copy also rendered inside the viewer header</li>
+    </ul>
+
+    <h3>7 · Design Kit update</h3>
+    <ul class="check-list">
+      <li>Add section <strong>§15b "Chart thumbnail grid"</strong> to <code>docs/Design-Kits/aerofly-design-kit.html</code>, mirroring the mockup from §4 of this report</li>
+      <li>Preserve numbering of later sections</li>
+    </ul>
+
+    <h3>8 · Tests (red → green)</h3>
+    <ul class="check-list">
+      <li>Unit: <code>docker compose exec -T frontend npx vitest run</code> green</li>
+      <li>Integration: same command, integration suite green</li>
+      <li>E2E: <code>docker compose exec -T frontend npx playwright test</code> 5/5 green</li>
+      <li>Lighthouse CI on <code>/aerodromes/EDDF</code> hits budget</li>
+    </ul>
+
+    <h3>9 · Remove dead code</h3>
+    <ul class="check-list">
+      <li>Delete <code>services/frontend/src/components/ChartItem.tsx</code></li>
+      <li>Remove <code>.chart-item*</code> blocks from <code>global.css</code> (kept CSS for expandable list is now unused)</li>
+      <li><code>git grep -n ChartItem</code> returns zero matches</li>
+      <li><code>tsc --noEmit</code> + all tests still green</li>
+    </ul>
+
+    <h3>10 · Docs + housekeeping</h3>
+    <ul class="check-list">
+      <li>Update <code>docs/ROADMAP_PROGRESS.md</code> — add sub-bullet "Chart thumbnail grid — issue #&lt;N&gt;"</li>
+      <li>Log every user prompt for this feature in <code>docs/PROMPT_LOG.md</code></li>
+      <li>Commit with message <code>[#&lt;N&gt;] feat: chart thumbnail grid with grouping + AIRAC + a11y</code></li>
+      <li>Push, open PR against <code>develop</code>, self-review, merge squash, close branch</li>
+    </ul>
+  </div>
+
+  <!-- =============== 8. FINAL VALIDATION CHECKLIST ======================= -->
+  <h2><span class="num">08</span>Final validation checklist (post-merge)</h2>
+  <div class="card">
+    <ul class="check-list">
+      <li>Open <code>http://localhost:8080/aerodromes/EDDF</code> — grid visible under "Karten"; 6 thumbnails across the "Aerodrome chart" + "General" groups</li>
+      <li>Open <code>http://localhost:8080/aerodromes/EDNY</code> — the example the user asked about — thumbnails visible</li>
+      <li>Click Terminal Chart thumbnail → viewer opens fit-to-screen; mouse wheel zooms; drag pans</li>
+      <li>Close viewer with Esc → focus is back on the clicked card (visible ring)</li>
+      <li>Tab through grid — every card reachable; focus ring visible</li>
+      <li>Switch to EN — group titles become English ("General", "Aerodrome chart")</li>
+      <li>Intercept one chart URL to return 404 (devtools Network → Block request URL) — that card shows icon fallback + is still clickable</li>
+      <li>AIRAC cycle is visible in the hero AND on every card footer</li>
+      <li>Mobile viewport (375 × 667 via devtools) — grid collapses to 1-2 columns, no horizontal scroll</li>
+      <li>Re-run Lighthouse on EDDF — LCP, CLS, A11y meet the budget</li>
+      <li>Stack health: <code>docker compose ps</code> all 6 healthy</li>
+    </ul>
+  </div>
+
+  <!-- =============== 9. NEXT STEPS (exact commands) ====================== -->
+  <h2><span class="num">09</span>Next steps — exact command sequence after GO</h2>
+  <p style="color:var(--color-text-secondary); margin-bottom: var(--space-3);">Do not run these yet — awaiting explicit GO.</p>
+  <div class="next-commands"># 0. Open the issue (from the repo root)
+gh issue create --repo DMPlisken/AeroFly \
+  --title "Chart thumbnail grid in aerodrome detail view" \
+  --label "enhancement" \
+  --body-file docs/reports/2026-04-19-chart-thumbnail-grid-plan.html
+
+# 1. Branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b feat/&lt;ISSUE_N&gt;-chart-thumbnail-grid
+
+# 2. Install Playwright inside the frontend container
+docker compose exec -T frontend sh -c "npm install -D @playwright/test && npx playwright install chromium"
+
+# 3. Scaffold (file writes happen via the editor, not shell)
+#    - services/frontend/src/utils/groupChartsByType.ts
+#    - services/frontend/src/components/ChartCard.tsx
+#    - services/frontend/src/components/ChartGrid.tsx
+#    - services/frontend/src/components/ChartReferenceBanner.tsx
+#    - services/frontend/src/i18n/en.ts + de.ts (add keys)
+#    - services/frontend/src/pages/AerodromeDetail.tsx (replace chart block)
+#    - services/frontend/src/styles/global.css (new .chart-grid* block)
+#    - services/frontend/tests/e2e/chart-grid.spec.ts
+#    - services/frontend/playwright.config.ts
+#    - docs/Design-Kits/aerofly-design-kit.html (section §15b)
+
+# 4. Verify locally (red → green)
+docker compose exec -T frontend npx tsc --noEmit
+docker compose exec -T frontend npx vitest run
+docker compose exec -T frontend npx playwright test
+
+# 5. Remove dead code (after tests are green)
+#    - services/frontend/src/components/ChartItem.tsx  (delete)
+#    - .chart-item* blocks in global.css (delete)
+
+# 6. Commit
+git add -A
+git commit -m "[#&lt;N&gt;] feat: chart thumbnail grid with grouping + AIRAC + a11y"
+
+# 7. Push, open PR, merge
+git push -u origin feat/&lt;N&gt;-chart-thumbnail-grid
+gh pr create --repo DMPlisken/AeroFly --base develop \
+  --title "[#&lt;N&gt;] Chart thumbnail grid" \
+  --body "Closes #&lt;N&gt;. Implements docs/reports/2026-04-19-chart-thumbnail-grid-plan.html"
+gh pr merge --repo DMPlisken/AeroFly &lt;PR_N&gt; --squash --delete-branch
+
+# 8. Back on develop
+git checkout develop &amp;&amp; git pull origin develop
+docker compose restart frontend
+</div>
+
+  <!-- =============== 10. FOOTER ========================================== -->
+  <footer class="doc-foot">
+    AeroFly · Plan artefact · generated 2026-04-19 · final progress 94 % · status: AWAITING GO
+  </footer>
+</main>
+</body>
+</html>

@@ -1272,6 +1272,7 @@
         <li><a href="#sec-13">13. AI Summary Card</a></li>
         <li><a href="#sec-14">14. Aerodrome Card</a></li>
         <li><a href="#sec-15">15. Runway Diagram</a></li>
+        <li><a href="#sec-15b">15b. Chart Thumbnail Grid</a></li>
         <li><a href="#sec-16">16. Frequency List</a></li>
         <li><a href="#sec-17">17. NOTAM List</a></li>
         <li><a href="#sec-18">18. Weather &amp; METAR</a></li>
@@ -2099,6 +2100,58 @@
             </svg>
           </div>
         </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 15b. Chart Thumbnail Grid                                         -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-15b">
+        <h2><span class="sec-num">15b</span>Chart Thumbnail Grid</h2>
+        <p class="sec-desc">
+          Grouped thumbnail grid used on the aerodrome detail page. Each card = chart-type badge, fit-contained preview over white, title (2-line clamp), AIRAC footer. Click opens the zoom viewer (§19). Keyboard: Tab + arrow-keys navigate, Enter / Space open, Esc in viewer returns focus to the opened card.
+        </p>
+        <div class="kit-preview canvas">
+          <div style="width:100%;">
+            <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--color-warning-soft); border-left:3px solid var(--color-warning); border-radius:var(--radius-md); margin-bottom:24px; font-size:var(--fs-sm);">
+              <i class="fa-solid fa-triangle-exclamation" style="color:var(--color-warning);"></i>
+              <span><strong>Nur als Referenz — nicht für operative Nutzung.</strong> AIRAC-Zyklus <span class="mono">2026-04</span></span>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px;">
+              <h3 style="margin:0; font-size:var(--fs-lg);">Aerodrome chart</h3>
+              <span style="color:var(--color-text-muted); font-family:var(--font-mono); font-size:var(--fs-sm);">(1)</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+              <div class="aerodrome-card" style="padding:0; overflow:hidden;">
+                <div style="position:relative; aspect-ratio:3/4; background:#fff; display:grid; place-items:center; overflow:hidden;">
+                  <svg viewBox="0 0 100 133" style="width:80%; height:80%;"><rect x="10" y="10" width="80" height="113" fill="none" stroke="#0b0f1a"/><line x1="10" y1="50" x2="90" y2="70" stroke="#0b0f1a" stroke-width="6"/><line x1="10" y1="90" x2="90" y2="110" stroke="#0b0f1a" stroke-width="6"/><text x="50" y="30" text-anchor="middle" font-family="JetBrains Mono" font-size="6" fill="#0b0f1a">EDDF</text></svg>
+                  <span style="position:absolute; top:8px; left:8px; padding:2px 8px; border-radius:var(--radius-md); background:var(--color-primary); color:#fff; font:700 10px/1.3 var(--font-sans); letter-spacing:0.08em;">AD CHART</span>
+                </div>
+                <div style="padding:12px; border-top:1px solid var(--color-border);">
+                  <div style="font-size:var(--fs-sm); font-weight:600;">EDDF Frankfurt Main Terminal Chart</div>
+                  <div style="display:flex; justify-content:space-between; color:var(--color-text-muted); font:500 10px/1.3 var(--font-mono); letter-spacing:0.06em; text-transform:uppercase; margin-top:4px;"><span>AIRAC 2026-04</span><span>PREVIEW</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px;">
+              <h3 style="margin:0; font-size:var(--fs-lg);">Visual approach</h3>
+              <span style="color:var(--color-text-muted); font-family:var(--font-mono); font-size:var(--fs-sm);">(1)</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px;">
+              <div class="aerodrome-card" style="padding:0; overflow:hidden;">
+                <div style="position:relative; aspect-ratio:3/4; background:#fff; display:grid; place-items:center; overflow:hidden;">
+                  <svg viewBox="0 0 100 133" style="width:80%; height:80%;"><path d="M15 100 Q50 30 85 100" fill="none" stroke="#0b0f1a" stroke-width="1.5"/><circle cx="50" cy="60" r="2" fill="#0b0f1a"/></svg>
+                  <span style="position:absolute; top:8px; left:8px; padding:2px 8px; border-radius:var(--radius-md); background:var(--color-freq-afis); color:#fff; font:700 10px/1.3 var(--font-sans); letter-spacing:0.08em;">VAC</span>
+                </div>
+                <div style="padding:12px; border-top:1px solid var(--color-border);">
+                  <div style="font-size:var(--fs-sm); font-weight:600;">EDNY Friedrichshafen Visual Approach</div>
+                  <div style="display:flex; justify-content:space-between; color:var(--color-text-muted); font:500 10px/1.3 var(--font-mono); letter-spacing:0.06em; text-transform:uppercase; margin-top:4px;"><span>AIRAC 2026-04</span><span>PREVIEW</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="kit-note">Badge palette reuses §8 frequency-badge colours: <code>AD_CHART</code>=primary, <code>TAXI</code>=taxiway yellow, <code>SID</code>=ground green, <code>STAR</code>=info cyan, <code>IAC</code>=warning, <code>VAC</code>=AFIS purple, others=muted. Groups render in canonical pilot-briefing order (ad_info → ad_chart → parking → taxi → sid → star → iac → vac → general → other); input order preserved within a group (DFS authority).</p>
       </section>
 
       <!-- ================================================================ -->

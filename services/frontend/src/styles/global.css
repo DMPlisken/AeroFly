@@ -857,6 +857,7 @@ a:hover {
   height: 100% !important;
   background: #fff;
   cursor: grab;
+  overflow: hidden;
 }
 
 .chart-viewer-stage:active {
@@ -864,14 +865,19 @@ a:hover {
 }
 
 .chart-viewer-content {
-  width: 100%;
-  height: 100%;
-  display: grid !important;
-  place-items: center;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .chart-viewer-image {
-  max-width: none;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   user-select: none;
   -webkit-user-select: none;
 }

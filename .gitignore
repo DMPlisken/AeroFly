@@ -54,3 +54,17 @@ logs/
 
 # Alembic
 alembic/versions/__pycache__/
+
+# Playwright / browser automation artefacts
+.playwright/
+playwright-report/
+test-results/
+*.har
+
+# DFS scraper working data (raw PDFs / HTML dumps)
+data/
+scripts/dfs_*.html
+scripts/dfs_*.png
+
+# Keep .env.example tracked even though .env is ignored
+!.env.example

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="AeroFly">
+  <rect width="32" height="32" rx="7" fill="#3b82f6"/>
+  <path
+    d="M16 5 L17.4 7.2 L17.4 13 L26 17.2 L26 18.8 L17.4 17 L17.4 23 L19.6 24.8 L19.6 26 L16 25 L12.4 26 L12.4 24.8 L14.6 23 L14.6 17 L6 18.8 L6 17.2 L14.6 13 L14.6 7.2 Z"
+    fill="#ffffff"
+    stroke="#ffffff"
+    stroke-width="0.4"
+    stroke-linejoin="round"/>
+</svg>

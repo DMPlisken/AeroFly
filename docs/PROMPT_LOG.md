@@ -95,3 +95,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — GO — implement chart thumbnail grid per plan (`develop`)
 
 > go
+
+### 2026-04-19 — Add favicon for browser tabs (`develop`)
+
+> Gebe der App ein schönes Favikon Vor allem für die Browser-Tabs.

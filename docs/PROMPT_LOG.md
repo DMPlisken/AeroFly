@@ -19,3 +19,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Run housekeeping workflow (`feat/2-design-kit-v2`)
 
 > do housekeeping
+
+### 2026-04-19 — Start Phase 1 (scope selection) (`develop`)
+
+> start with phase 1
+
+### 2026-04-19 — Phase 1 start choices (DB schema + all options, open issue) (`develop`)
+
+> 1a; 2d; 3a

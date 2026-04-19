@@ -1,0 +1,77 @@
+# DRAFT — requires pilot verification before F1-gate use.
+icao: EDDF
+source_chart: AD_2-*_print.png
+source_airac_cycle: 2026-04
+approved_by: null
+approved_at: null
+
+geo:
+  latitude_deg: 50.033333
+  longitude_deg: 8.570556
+  elevation_ft: 364
+  magnetic_variation_deg: 2.0
+  reference_temp_c: unverified
+  operator: "Fraport AG"
+  operator_de: "Fraport AG"
+  city: "Frankfurt"
+  city_de: "Frankfurt am Main"
+
+runways:
+  - designator_le: "07C"
+    designator_he: "25C"
+    true_heading_le_deg: unverified
+    true_heading_he_deg: unverified
+    length_m: 4000
+    width_m: 60
+    surface: asphalt
+    ils_le: true
+    ils_he: true
+  - designator_le: "07R"
+    designator_he: "25L"
+    true_heading_le_deg: unverified
+    true_heading_he_deg: unverified
+    length_m: 4000
+    width_m: 45
+    surface: asphalt
+    ils_le: true
+    ils_he: true
+  - designator_le: "07L"
+    designator_he: "25R"
+    true_heading_le_deg: unverified
+    true_heading_he_deg: unverified
+    length_m: 2800
+    width_m: 45
+    surface: asphalt
+    ils_le: true
+    ils_he: false
+  - designator_le: "18"
+    designator_he: "36"
+    true_heading_le_deg: unverified
+    true_heading_he_deg: unverified
+    length_m: 4000
+    width_m: 45
+    surface: asphalt
+    ils_le: false
+    ils_he: false
+
+frequencies:
+  - type: twr
+    callsign: "Frankfurt Tower"
+    callsign_de: "Langen Tower"
+    frequency_mhz: "119.900"
+    operational_hours: unverified
+  - type: gnd
+    callsign: "Frankfurt Apron"
+    callsign_de: "Apron Frankfurt"
+    frequency_mhz: "121.800"
+    operational_hours: unverified
+  - type: atis
+    callsign: "Frankfurt ATIS"
+    callsign_de: "Frankfurt ATIS"
+    frequency_mhz: "118.025"
+    operational_hours: unverified
+  - type: del
+    callsign: "Langen Delivery"
+    callsign_de: "Langen Delivery"
+    frequency_mhz: "121.900"
+    operational_hours: unverified

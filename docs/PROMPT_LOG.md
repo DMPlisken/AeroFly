@@ -99,3 +99,15 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Add favicon for browser tabs (`develop`)
 
 > Gebe der App ein schönes Favikon Vor allem für die Browser-Tabs.
+
+### 2026-04-19 — Proposal: extract structured info from scraped charts (OCR/parser) (`develop`)
+
+> ok - wie gest es mit dem erkennen der notwendigen informationen wie z.B. frequenzen, pisten, elevation, datum der info und anderes sowie das ocr oder chart parser. mache mir einen vorschlag dazu. noch keine implementierung. berate dich mit deinem team bestehend aus: Software Architect / Product Manager / UX / Airline Pilot / ATC / Aviation Safety Expert / AI/Prompt Engineer
+
+### 2026-04-19 — Rock-solid plan with 20 iterations + interactive HTML (`develop`)
+
+> ich brauche von dir lösungen, damit alles rock-solid ist. keine risiken - hier geht es um leben und tod. führt mindestens 20 iterationen des gleichen brainstormings vor und challenged die möglichkeiten. ich brauche alle informationen aber absolut zuverlässig. … ich hätte den plan gerne auch als interaktives HTML …
+
+### 2026-04-20 — GO komplett — alle 9 Phasen, Safety-Gate vor GA (`develop`)
+
+> 3

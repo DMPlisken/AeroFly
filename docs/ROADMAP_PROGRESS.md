@@ -26,7 +26,7 @@
 - [ ] Rate limiting
 
 ### Frontend
-- [ ] Design Kit creation (`docs/Design-Kits/aerofly-design-kit.html`)
+- [x] Design Kit creation (`docs/Design-Kits/aerofly-design-kit.html`) — v2.0 dark-first glassmorphism, 22 sections incl. 3 page mockups, issue #2
 - [ ] Aerodrome search page
 - [ ] Aerodrome detail view (map, runways, frequencies, charts)
 - [ ] Bilingual UI (DE/EN)

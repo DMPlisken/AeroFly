@@ -6,8 +6,8 @@
 - [x] Project scaffolding & GitHub setup
 - [x] Docker Compose stack (PostgreSQL, Redis, Meilisearch, Nginx)
 - [x] CI pipeline (GitHub Actions)
-- [ ] Database schema design (aerodromes, runways, frequencies, NOTAMs)
-- [ ] Alembic migrations for all services
+- [x] Database schema design (aerodromes, runways, frequencies, charts, NOTAMs, AIRAC) — issue #4, authoritative `ingest` schema
+- [x] Alembic migrations for all services — issue #4, data-ingestion (6 tables + 9 enums), search + gateway (baseline schemas)
 
 ### Data Ingestion
 - [ ] DFS AIP parser — aerodrome directory (AD 2)

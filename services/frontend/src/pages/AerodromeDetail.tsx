@@ -5,7 +5,7 @@ import {
   getAerodrome,
   type AerodromeDetail as AerodromeDetailType,
 } from "@/api/aerodromes";
-import { ChartItem } from "@/components/ChartItem";
+import { ChartGrid } from "@/components/ChartGrid";
 import { FrequencyBadge } from "@/components/FrequencyBadge";
 import { useI18n, type Locale } from "@/i18n";
 
@@ -163,15 +163,7 @@ export function AerodromeDetailPage() {
             <div className="card-header">
               <span className="card-title">{t("detail.section.charts")}</span>
             </div>
-            {data.charts.length === 0 ? (
-              <p style={{ color: "var(--color-text-muted)" }}>{t("detail.empty.charts")}</p>
-            ) : (
-              <ul className="chart-list">
-                {data.charts.map((c, i) => (
-                  <ChartItem key={c.id} chart={c} defaultOpen={i === 0} />
-                ))}
-              </ul>
-            )}
+            <ChartGrid charts={data.charts} airac={data.source_airac_cycle ?? null} />
           </div>
 
           <div className="card">

@@ -87,3 +87,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-19 — Run housekeeping after chart viewer (`feat/17-chart-zoom-viewer`)
 
 > do housekeeping
+
+### 2026-04-19 — Design & plan: chart thumbnail grid (`develop`)
+
+> Handle as a team consisting of: Software Architect / Product Manager / UX / Airline Pilot / ATC / Aviation Safety Expert / AI Engineer. I want you to Design & Plan following feature: thumbnails instead of extendable lines. In der Detailübersichtseite eines Flughafens, zum Beispiel EDNY Friedrichshafen, haben wir unter dem Menüpunkt Karten Expendables Lines … statt diesen Expendable Lines möchte ich einfach die Thumbnails haben, so dass man sofort sieht, was hinter der einzelnen Bezeichnung ist … 10 iterations, HTML report, no implementation until GO.
+
+### 2026-04-19 — GO — implement chart thumbnail grid per plan (`develop`)
+
+> go

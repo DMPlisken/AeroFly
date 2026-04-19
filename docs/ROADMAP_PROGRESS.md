@@ -29,7 +29,7 @@
 ### Frontend
 - [x] Design Kit creation (`docs/Design-Kits/aerofly-design-kit.html`) — v2.0 dark-first glassmorphism, 22 sections incl. 3 page mockups, issue #2
 - [x] Aerodrome search page — issue #8, paginated, filterable, Vite proxy to gateway
-- [x] Aerodrome detail view — issue #8 + #13 (inline chart images; runway/frequency/NOTAM sections stay "—" since the chart itself contains those)
+- [x] Aerodrome detail view — issue #8 + #13 + #17 + #19 (thumbnail grid grouped by chart type, click opens pan/zoom viewer, AIRAC visible per card)
 - [x] Bilingual UI (DE/EN) — issue #8, custom I18nProvider, every string translated, persisted via localStorage
 - [ ] Responsive layout — issue #15 (pending go/no-go decision)
 

@@ -159,3 +159,19 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-20 22:30 — Build async extraction trigger with progress indicator (`develop`)
 
 > ja mache das - aber bitte asynchron mit einer fortschrittsanzeige
+
+### 2026-04-20 22:45 — User reports no button visible (`develop`)
+
+> Und da ist kein Button.
+
+### 2026-04-20 22:40 — EDDF extraction incomplete: 2/4 Pisten, 0 Freqs, fehlende Höhe (`develop`)
+
+> Das hast du für Frankfurt ausgelesen. Frankfurt hat vier Start- und Landebahnen und natürlich auch verschiedene, viele Frequenzen. Die hast du alle nicht ausgelesen. Elevation hast du nicht ausgelesen, also Höhe. Region und Yata auch nicht, aber das ist jetzt nicht so wichtig.
+
+### 2026-04-20 22:50 — Approved option 1: multi-chart aggregation (`develop`)
+
+> 1
+
+### 2026-04-20 23:10 — Pisten und Freqs sind klar erkennbar — diagnose deep (`develop`)
+
+> das ist schlecht. sowohl die pisten als auch die frequenzen sind einfach und klar zu erkennen

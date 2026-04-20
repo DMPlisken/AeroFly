@@ -154,7 +154,7 @@ class OpenAIVisionProvider(ExtractionProvider):
                 ))
 
             raw_text = response.choices[0].message.content or ""
-            parsed = json.loads(raw_text)
+            parsed = _extract_json(raw_text)
 
             return ProviderResult(
                 raw_response={
@@ -186,3 +186,25 @@ class OpenAIVisionProvider(ExtractionProvider):
                     request_id=request_id,
                 ))
             raise
+
+
+def _extract_json(text: str) -> dict:
+    """Parse JSON from a response body that may have wrapping prose or
+    markdown fences. Matches the robustness of claude_vision._extract_json.
+    """
+    text = (text or "").strip()
+    if not text:
+        return {}
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.lower().startswith("json"):
+            text = text[4:]
+        text = text.strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            return json.loads(text[start : end + 1])
+        raise

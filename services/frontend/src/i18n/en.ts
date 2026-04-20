@@ -200,6 +200,14 @@ export const en = {
   // Misc
   "action.retry": "Retry",
   "action.backToSearch": "Back to search",
+
+  // Extraction panel (#34)
+  "extraction.trigger": "Refresh data",
+  "extraction.running": "Running…",
+  "extraction.working": "Extracting…",
+  "extraction.hint": "Runs a 2-of-2 LLM consensus extraction (Claude + OpenAI). Typically 30–120 s.",
+  "extraction.completed": "{fields} fields written · {at}",
+  "extraction.failed": "Failed: {error}",
 } as const;
 
 export type TranslationKey = keyof typeof en;

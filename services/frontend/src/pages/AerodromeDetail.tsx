@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import {
@@ -6,7 +6,9 @@ import {
   type AerodromeDetail as AerodromeDetailType,
 } from "@/api/aerodromes";
 import { ChartGrid } from "@/components/ChartGrid";
+import { ExtractionPanel } from "@/components/ExtractionPanel";
 import { FrequencyBadge } from "@/components/FrequencyBadge";
+import { useExtractionJob } from "@/hooks/useExtractionJob";
 import { useI18n, type Locale } from "@/i18n";
 
 function ilsLabel(
@@ -31,14 +33,25 @@ export function AerodromeDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchAerodrome = useCallback(() => {
     setLoading(true);
     setError(null);
-    getAerodrome(icao.toUpperCase())
+    return getAerodrome(icao.toUpperCase())
       .then((res) => setData(res))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [icao]);
+
+  useEffect(() => {
+    fetchAerodrome();
+  }, [fetchAerodrome]);
+
+  const { job, error: extractionError, triggerExtraction, isActive } =
+    useExtractionJob(icao.toUpperCase(), () => {
+      // When a job completes, re-fetch the aerodrome so the newly-written
+      // fields (runways / frequencies / coords / city) render immediately.
+      fetchAerodrome();
+    });
 
   if (loading) {
     return <p style={{ color: "var(--color-text-muted)" }}>{t("detail.loading")}</p>;
@@ -99,6 +112,14 @@ export function AerodromeDetailPage() {
           </p>
         </div>
       </div>
+
+      <ExtractionPanel
+        icao={data.icao}
+        job={job}
+        error={extractionError}
+        isActive={isActive}
+        onTrigger={triggerExtraction}
+      />
 
       <div className="grid-12">
         <div className="col-span-8" style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>

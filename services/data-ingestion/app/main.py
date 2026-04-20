@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from app.api.aerodromes import router as aerodromes_router
 from app.api.charts import router as charts_router
+from app.api.extraction import router as extraction_router
+from app.api.extraction import trigger_router as extraction_trigger_router
 from app.api.usage import router as usage_router
 
 app = FastAPI(
@@ -17,6 +19,8 @@ app = FastAPI(
 app.include_router(aerodromes_router)
 app.include_router(charts_router)
 app.include_router(usage_router)
+app.include_router(extraction_router)
+app.include_router(extraction_trigger_router)
 
 
 @app.get("/health", tags=["health"])

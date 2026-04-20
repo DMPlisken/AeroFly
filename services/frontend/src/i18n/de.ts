@@ -191,4 +191,12 @@ export const de: Record<TranslationKey, string> = {
 
   "action.retry": "Erneut versuchen",
   "action.backToSearch": "Zurück zur Suche",
+
+  // Extraction panel (#34)
+  "extraction.trigger": "Daten aktualisieren",
+  "extraction.running": "Wird ausgeführt…",
+  "extraction.working": "Extraktion läuft…",
+  "extraction.hint": "Startet eine LLM-Extraktion (Claude + OpenAI) mit 2-von-2-Konsens. Dauert typisch 30–120 s.",
+  "extraction.completed": "{fields} Felder geschrieben · {at}",
+  "extraction.failed": "Fehlgeschlagen: {error}",
 };

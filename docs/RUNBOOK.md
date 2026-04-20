@@ -51,21 +51,50 @@ This runs `alembic upgrade head` inside each migration-owning container
 - `search.*` — empty (projections land when Meilisearch sync track starts)
 - `gateway.*` — empty (API tables land when Gateway API track starts)
 
+## Scrape DFS aerodrome data
+
+The scraper downloads preview + print PNGs for every document attached
+to a DFS BasicVFR airport chapter page. Output lands in
+`data/aerodromes/<ICAO>/` together with a `manifest.json` that tags
+each document with a coarse `chart_type` (`aerodrome` / `terminal` /
+`supplement` / `other`) so downstream extraction can pick the right
+page per field group.
+
+Requires Playwright and its Chromium binary. Run from the host (not
+inside a container):
+
+```bash
+# One-time install of Playwright + Chromium
+pip install playwright
+playwright install chromium
+
+# --- Bulk mode: discover all 433 airports and scrape each ---
+python scripts/scrape_dfs_aip.py --edition 2026APR02
+python scripts/scrape_dfs_aip.py --edition 2026APR02 --limit 5   # smoke test
+
+# --- Per-aerodrome (on-demand) mode: scrape one ICAO ---
+python scripts/scrape_dfs_aip.py --edition 2026APR02 --icao EDDM
+```
+
+Per-aerodrome mode requires that `data/aerodromes/airport_index.json`
+already exists (produced by a prior bulk run). It looks up the airport's
+chapter hash from the cached index and skips A-Z discovery, so it's
+fast enough to run on user request.
+
 ## Load real aerodrome data (433 German aerodromes)
 
-If the DFS scraper has already run and populated the `data/` directory
-on the host, import everything into the database:
+Once the scraper has populated the `data/` directory, import everything
+into the database:
 
 ```bash
 bash scripts/import-scraped-data.sh          # additive, idempotent
 bash scripts/import-scraped-data.sh --wipe   # TRUNCATE aerodromes first
 ```
 
-This reads every `data/aerodromes/*/manifest.json` (produced by issue #1
-Playwright scraper) and inserts one aerodrome row plus its chart
-document references. Structured fields (runways, frequencies,
-coordinates) are not in the manifest — they require the HTML/chart
-parser (follow-up).
+This reads every `data/aerodromes/*/manifest.json` and inserts one
+aerodrome row plus its chart document references. Structured fields
+(runways, frequencies, coordinates) are not in the manifest — they
+require the LLM chart-extraction pipeline (Phase 1+ under issue #22).
 
 Subsequent AIRAC updates only need to re-run the scraper and this
 import: existing rows with matching `source_url` are skipped.

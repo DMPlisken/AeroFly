@@ -111,3 +111,23 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-20 — GO komplett — alle 9 Phasen, Safety-Gate vor GA (`develop`)
 
 > 3
+
+### 2026-04-20 19:45 — Weiter after compact (`develop`)
+
+> weiter
+
+### 2026-04-20 19:55 — Clarify branch/sections/image-guard; restate on-demand rule (`develop`)
+
+> 1 - i dont understand - clarify; 2 thats fine; 3 clarify - not clear for me; 4 4 use as stored; 5 finish scraper first. / in general i want the information scraped and read from claude and openai always only on user request. not all just on storage. and if work is done everything/all outputs shall be stored. update always only on user request per aerodrom
+
+### 2026-04-20 20:00 — Confirm: 1b; sections 2.2/2.12/2.13/2.18/2.20; 4a retry on fail (`develop`)
+
+> 1b; 3 add the 4 and add also 2.20; 4 a and if it fails beacause to large shrink it and retry
+
+### 2026-04-20 20:10 — VFR focus; IFR nice-to-have; free hand on issue scope (`develop`)
+
+> 1 i am focused on all vfr relevant information. if you get additional ifr information its good but not Absolutely Necessary. 2 Just focus on VFR. 3 You can decide yourself.
+
+### 2026-04-20 20:55 — Continue / run housekeeping for #29 (`feat/29-scraper-per-icao-chart-types`)
+
+> continue

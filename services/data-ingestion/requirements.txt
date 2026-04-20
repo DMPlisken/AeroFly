@@ -15,8 +15,8 @@ prometheus-client==0.21.1
 
 # Chart-extraction pipeline (phase 0 onwards) — safety-critical tooling.
 # Libraries listed but not yet called: extraction runs only after Gate α.
-anthropic==0.39.0
-openai==1.55.0
+anthropic==0.96.0
+openai==2.32.0
 pytesseract==0.3.13
 PyYAML==6.0.2
 

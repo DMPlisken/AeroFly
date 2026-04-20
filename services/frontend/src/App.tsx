@@ -7,6 +7,7 @@ import { AerodromeDetailPage } from "@/pages/AerodromeDetail";
 import { Dashboard } from "@/pages/Dashboard";
 import { NotFound } from "@/pages/NotFound";
 import { SearchPage } from "@/pages/Search";
+import { UsagePage } from "@/pages/Usage";
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/aerodromes/:icao" element={<AerodromeDetailPage />} />
+                <Route path="/usage" element={<UsagePage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

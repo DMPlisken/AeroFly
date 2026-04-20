@@ -53,6 +53,13 @@ export function Sidebar() {
       <div>
         <div className="sidebar-section-title">{t("nav.section.system")}</div>
         <div className="sidebar-nav">
+          <NavLink
+            to="/usage"
+            className={({ isActive }) => `nav-item${isActive ? " is-active" : ""}`}
+          >
+            <i className="fa-solid fa-chart-line" />
+            <span>{t("nav.usage")}</span>
+          </NavLink>
           <a className="nav-item" href="/api/docs" target="_blank" rel="noreferrer">
             <i className="fa-solid fa-circle-info" />
             <span>{t("nav.apiDocs")}</span>

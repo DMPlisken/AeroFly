@@ -5,13 +5,17 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import logging
 import os
 import time
 from pathlib import Path
 
+from ..image_guard import downscale_png, is_image_size_error
 from ..prompts import load as load_prompt
 from ..usage_tracker import UsageRecord, UsageTracker
 from .base import ExtractionProvider, FieldGroup, ProviderNotConfigured, ProviderResult
+
+log = logging.getLogger(__name__)
 
 
 class ClaudeVisionProvider(ExtractionProvider):
@@ -39,6 +43,43 @@ class ClaudeVisionProvider(ExtractionProvider):
             self._client = Anthropic(api_key=self.api_key)
         return self._client
 
+    def _call_api(self, image_b64: str, prompt_text: str):
+        client = self._get_client()
+        return client.messages.create(
+            model=self.MODEL_ID,
+            max_tokens=4096,
+            system=[
+                {
+                    "type": "text",
+                    "text": prompt_text,
+                    # Prompt caching: system prompt is identical across every
+                    # aerodrome for a given field group. `ephemeral` lets
+                    # Anthropic charge 10 % of the base rate on cache hits
+                    # (5 min TTL) — massively reduces cost of a batch run.
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": image_b64,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": "Return ONLY the JSON object matching the described schema.",
+                        },
+                    ],
+                }
+            ],
+        )
+
     def extract(
         self,
         *,
@@ -54,46 +95,49 @@ class ClaudeVisionProvider(ExtractionProvider):
 
         image_bytes = image_path.read_bytes()
         image_hash = hashlib.sha256(image_bytes).hexdigest()
-        image_b64 = base64.standard_b64encode(image_bytes).decode()
 
-        client = self._get_client()
-        start = time.monotonic()
         request_id: str | None = None
+        start = time.monotonic()
         try:
-            # Prompt caching: the system prompt is identical across every
-            # aerodrome for a given field group. Marking it `ephemeral`
-            # lets Anthropic charge 10 % of the base rate on cache hits
-            # (5 min TTL) — massively reduces cost of a batch run.
-            response = client.messages.create(
-                model=self.MODEL_ID,
-                max_tokens=4096,
-                system=[
-                    {
-                        "type": "text",
-                        "text": prompt_text,
-                        "cache_control": {"type": "ephemeral"},
-                    }
-                ],
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": "image/png",
-                                    "data": image_b64,
-                                },
-                            },
-                            {
-                                "type": "text",
-                                "text": "Return ONLY the JSON object matching the described schema.",
-                            },
-                        ],
-                    }
-                ],
-            )
+            # Attempt 1: send as stored on disk.
+            try:
+                response = self._call_api(
+                    base64.standard_b64encode(image_bytes).decode(),
+                    prompt_text,
+                )
+            except Exception as exc:
+                if not is_image_size_error(exc):
+                    raise
+
+                # Record the oversize failure as its own audit row so the
+                # /usage dashboard shows that a retry was needed.
+                first_latency = int((time.monotonic() - start) * 1000)
+                if self.tracker is not None:
+                    self.tracker.record(UsageRecord(
+                        provider="claude",
+                        model=self.MODEL_ID,
+                        purpose=f"extract:{field_group}",
+                        aerodrome_icao=aerodrome_icao,
+                        source_chart_id=source_chart_id,
+                        latency_ms=first_latency,
+                        success=False,
+                        error_code="image_size_rejected",
+                    ))
+
+                ds = downscale_png(image_bytes)
+                if ds.new_size is None:
+                    # Already within bounds, yet still rejected — no safe retry.
+                    raise
+                log.warning(
+                    "claude: retrying %s after downscale %s -> %s",
+                    image_path.name, ds.original_size, ds.new_size,
+                )
+                start = time.monotonic()  # reset so latency_ms reflects the retry call only
+                response = self._call_api(
+                    base64.standard_b64encode(ds.png_bytes).decode(),
+                    prompt_text,
+                )
+
             latency_ms = int((time.monotonic() - start) * 1000)
             request_id = getattr(response, "id", None)
 

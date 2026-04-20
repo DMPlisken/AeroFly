@@ -131,3 +131,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-20 20:55 — Continue / run housekeeping for #29 (`feat/29-scraper-per-icao-chart-types`)
 
 > continue
+
+### 2026-04-20 21:05 — Start image-size guard #28 (`develop`)
+
+> start #28

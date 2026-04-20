@@ -23,8 +23,13 @@ class RiskClass(str, Enum):
     LOW = "low"            # freetext remarks, secondary notes
 
 
+# Product decision 2026-04-20: pipeline uses exclusively Claude + OpenAI as
+# vision extractors. Tesseract is used SEPARATELY as a grounding check,
+# NOT as a vote. Consensus therefore needs 2-of-2 LLM agreement across all
+# risk classes; the grounding check is an orthogonal hard gate applied by
+# the orchestrator (see `parser.grounding`).
 MIN_SOURCES_FOR_CONSENSUS: dict[RiskClass, int] = {
-    RiskClass.CRITICAL: 3,
+    RiskClass.CRITICAL: 2,
     RiskClass.HIGH: 2,
     RiskClass.NORMAL: 2,
     RiskClass.LOW: 1,
@@ -32,10 +37,8 @@ MIN_SOURCES_FOR_CONSENSUS: dict[RiskClass, int] = {
 
 
 class SourceKind(str, Enum):
-    LLM_A = "llm_a"          # e.g. Claude Vision
-    LLM_B = "llm_b"          # e.g. GPT-4V / Gemini
-    OCR = "ocr"              # Tesseract on LLM-reported bbox
-    HTML = "html"            # DFS HTML re-scrape (most trusted)
+    LLM_A = "llm_a"          # Claude Vision
+    LLM_B = "llm_b"          # OpenAI Vision (GPT-4o)
 
 
 @dataclass
@@ -121,44 +124,10 @@ def reach_consensus(
         groups.setdefault(key, []).append(kind)
         value_by_key[key] = nv
 
-    # 3) HTML anchor: if the HTML source is present AND ≥ 1 other source agrees, accept.
-    html_votes = [k for kind, nv, _ in normalized if kind == SourceKind.HTML
-                  for k in [(_hashable(nv), kind)]]
-    if html_votes:
-        html_key = html_votes[0][0]
-        agreers = [k for k in groups[html_key] if k != SourceKind.HTML]
-        if agreers:
-            value = value_by_key[html_key]
-            if not _passes_domain(value, domain_validator):
-                return ConsensusDecision(
-                    persisted_value=None,
-                    result="rejected_domain",
-                    contributing_sources=[SourceKind.HTML, *agreers],
-                    needs_human_review=(risk is RiskClass.CRITICAL),
-                    error_note="HTML + agreers passed consensus but domain validator rejected",
-                )
-            return ConsensusDecision(
-                persisted_value=value,
-                result="accepted_html_anchored",
-                contributing_sources=[SourceKind.HTML, *agreers],
-                rejected_sources=[
-                    kind for kind, _, _ in normalized
-                    if kind != SourceKind.HTML and kind not in agreers
-                ] + parse_failed,
-            )
-        # HTML disagrees with every other source → disagreement (HTML wins but we still
-        # refuse to persist, because if other sources disagree with HTML, we likely have
-        # the wrong chart or an OCR bug).
-        return ConsensusDecision(
-            persisted_value=None,
-            result="rejected_disagreement",
-            contributing_sources=[],
-            rejected_sources=[k for k, _, _ in normalized] + parse_failed,
-            needs_human_review=(risk is RiskClass.CRITICAL),
-            error_note="HTML source disagrees with all others",
-        )
-
-    # 4) Plain majority, constrained by risk class.
+    # 3) Plain majority, constrained by risk class.
+    # (HTML-anchor branch removed 2026-04-20 per product decision — pipeline
+    # uses exclusively Claude + OpenAI vision; grounding is handled
+    # orthogonally by `parser.grounding`.)
     best_key = max(groups, key=lambda k: len(groups[k]))
     best_count = len(groups[best_key])
     best_value = value_by_key[best_key]

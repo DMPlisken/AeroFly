@@ -224,6 +224,21 @@
   </div>
 </div>
 
+<!-- ============================================================= AMENDMENT 2026-04-20 -->
+<div class="card warning">
+  <h3 style="margin-top:0;"><i class="fa-solid fa-pen-to-square"></i> Amendment · 2026-04-20 · Pipeline-Simplifizierung</h3>
+  <p>Nach Diskussion des Originalplans hat der Auftraggeber die Pipeline auf zwei Vision-Provider beschränkt (Claude Sonnet 4.6 + OpenAI GPT-4o). Die folgenden Anpassungen gelten gegenüber §04 – §05 des Originalplans:</p>
+  <ul>
+    <li><strong>Quellen:</strong> ausschließlich Claude Vision + OpenAI Vision. <s>HTML Re-Scrape</s>, <s>Tesseract als Votum</s> fallen weg.</li>
+    <li><strong>Tesseract bleibt — aber als <em>Grounding-Check</em>, nicht als Votum.</strong> Nach jeder 2-von-2-Übereinstimmung wird die Bbox mit Tesseract ausgelesen und geprüft, ob der Wert dort literalisch vorkommt. Fehlende Bestätigung → fail-closed.</li>
+    <li><strong>Konsens-Schwelle:</strong> CRITICAL = 2-von-2 (statt 3-von-3), HIGH / NORMAL = 2-von-2, LOW = 1-von-N.</li>
+    <li><strong>Menschliches Review-Gate:</strong> entfällt im Happy Path. 2-von-2 + Grounding → direkte öffentliche Anzeige mit <code>derived · 2/2 grounded</code> Chip. Human Review bleibt <em>freiwillig</em> via Audit-Trail.</li>
+    <li><strong>Gewinn:</strong> keine Drittprovider-Abhängigkeit, keine Abhängigkeit von DFS-Session-Cookies, einfacheres Deployment. <strong>Verlust:</strong> geringere Redundanz gegen <em>korrelierte</em> Halluzinationen (beide LLMs "erinnern" sich an einen bekannten Wert) — Tesseract-Grounding als harte Gegenmaßnahme.</li>
+  </ul>
+  <p>Alle anderen Safety-Invarianten (I1 – I6), das Audit-Schema, Fail-closed-Semantik, Golden-Fixtures mit F1-Gate, Adversarial-Set, AIRAC-Invariante, Beacon-Drift-Check, "Nur als Referenz"-Banner und der <code>X-Aerofly-Derived: true</code>-Header bleiben <strong>unverändert</strong>.</p>
+  <p style="margin-bottom:0;"><strong>Finaler Score unverändert 98 %</strong> — Tesseract bleibt als dritte deterministische Prüfinstanz im System, nur in anderer Rolle (Grounding statt Voting).</p>
+</div>
+
 <!-- ============================================================= TOC -->
 <div class="toc">
   <a href="#sec-01"><span class="num">01</span>Executive summary</a>

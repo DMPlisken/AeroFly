@@ -1,16 +1,20 @@
-"""Phase 0 Spike — orchestrates a multi-source extraction on a few aerodromes.
+"""Phase 0 Spike — Claude + OpenAI vision consensus, grounded with Tesseract.
 
-This script does NOT write to the database. It produces a standalone JSON
-report under `data/spike-reports/<date>.json` plus prints a terminal summary.
+Does NOT write to the database. Produces a standalone JSON report with:
+ - Provider status (configured / missing keys)
+ - Per-aerodrome: each provider's raw response + extracted fields
+ - Consensus decision per field
+ - Grounding result (Tesseract) per accepted value
+ - Summary stats
 
-Run (inside data-ingestion container with ANTHROPIC_API_KEY + OPENAI_API_KEY
-set in the environment):
+Run inside the data-ingestion container once `ANTHROPIC_API_KEY` and
+`OPENAI_API_KEY` are set in the environment:
 
     python scripts/spike_extract.py --icaos EDDM,EDDF,EDDH,EDDB,EDDG
 
-Status: scaffolding only. The actual provider calls are deferred until
-Gate α — each provider raises NotImplementedError on call. Once API keys
-are available, enabling the calls is local to `parser/providers/*.py`.
+Exit codes:
+    0  all providers configured and extraction completed
+    2  fewer than 2 providers configured (fail-closed: cannot evaluate)
 """
 
 from __future__ import annotations
@@ -36,14 +40,14 @@ else:
     sys.path.insert(0, str(_PROJECT_ROOT / "services" / "data-ingestion"))
     _DATA_ROOT = _PROJECT_ROOT / "data" / "aerodromes"
 
+from app.parser.grounding import tesseract_available  # noqa: E402
 from app.parser.providers.base import ProviderNotConfigured  # noqa: E402
 from app.parser.providers.claude_vision import ClaudeVisionProvider  # noqa: E402
 from app.parser.providers.openai_vision import OpenAIVisionProvider  # noqa: E402
-from app.parser.providers.tesseract import TesseractProvider  # noqa: E402
 
 
 def find_ad2_chart(icao: str) -> Path | None:
-    """Locate the AD 2-X print PNG for an aerodrome (the page with structured text)."""
+    """Locate the AD 2-X print PNG for an aerodrome (page with structured text)."""
     aerodrome_dir = _DATA_ROOT / icao.upper()
     if not aerodrome_dir.exists():
         return None
@@ -58,8 +62,6 @@ def main() -> int:
         default="EDDM,EDDF",
         help="comma-separated ICAO list (default: EDDM,EDDF)",
     )
-    # /app/data is mounted read-only inside the container — spike reports go to
-    # a writable location by default.
     default_dir = Path("/tmp") if _IN_CONTAINER else (_PROJECT_ROOT / "data" / "spike-reports")
     default_report = default_dir / f"spike-report-{datetime.now(tz=timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
     parser.add_argument(
@@ -70,44 +72,47 @@ def main() -> int:
     args = parser.parse_args()
 
     icaos = [s.strip().upper() for s in args.icaos.split(",") if s.strip()]
-    providers = [
-        ClaudeVisionProvider(),
-        OpenAIVisionProvider(),
-        TesseractProvider(),
-    ]
+    providers = [ClaudeVisionProvider(), OpenAIVisionProvider()]
 
-    # Report which providers are configured so the reader knows what the spike
-    # actually tested vs what was missing.
     provider_status = {
         p.name: "CONFIGURED" if p.is_configured() else "MISSING_CREDENTIALS"
         for p in providers
     }
+    ground_available = tesseract_available()
+
     print("=== Provider status ===")
     for name, state in provider_status.items():
         mark = "OK " if state == "CONFIGURED" else "-- "
         print(f"  {mark} {name}: {state}")
+    print(f"  {'OK ' if ground_available else '-- '} tesseract (grounding): "
+          f"{'installed' if ground_available else 'MISSING_BINARY'}")
     print()
 
     report: dict = {
         "generated_at": datetime.now(tz=timezone.utc).isoformat(),
         "icaos": icaos,
         "providers": provider_status,
+        "tesseract_available": ground_available,
         "results": [],
         "limitations": [],
     }
 
-    # Hard-stop: if fewer than 2 providers are available the spike cannot
-    # even demonstrate the consensus logic. Print a clear message and exit.
     configured = [p for p in providers if p.is_configured()]
     if len(configured) < 2:
         report["limitations"].append(
-            "Fewer than 2 providers configured — consensus cannot be evaluated. "
-            "Set ANTHROPIC_API_KEY and OPENAI_API_KEY, and ensure tesseract-ocr "
-            "is installed, before running the real spike."
+            "Fewer than 2 providers configured — 2-of-2 consensus cannot be "
+            "evaluated. Set ANTHROPIC_API_KEY and OPENAI_API_KEY, then re-run."
         )
         _write_report(args.report_out, report)
         print("Not enough providers configured. Report:", args.report_out)
         return 2
+
+    if not ground_available:
+        report["limitations"].append(
+            "Tesseract binary missing — grounding check skipped. Install via "
+            "the data-ingestion Dockerfile (tesseract-ocr + tesseract-ocr-deu "
+            "+ tesseract-ocr-eng) or `apt-get install` in the running container."
+        )
 
     for icao in icaos:
         image = find_ad2_chart(icao)
@@ -122,6 +127,7 @@ def main() -> int:
                 icao_block["providers"][p.name] = {
                     "model_version": result.model_version,
                     "prompt_version": result.prompt_version,
+                    "input_image_sha256": result.input_image_sha256,
                     "raw": result.raw_response,
                 }
             except ProviderNotConfigured as exc:

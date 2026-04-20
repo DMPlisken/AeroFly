@@ -2,6 +2,11 @@
 
 These tests are the safety core. Every permutation that could produce a
 false-positive acceptance needs a test here.
+
+Product decision 2026-04-20: pipeline uses exclusively Claude + OpenAI as
+vision extractors; consensus therefore needs 2-of-2 LLM agreement across
+all risk classes. Tesseract grounding is an orthogonal gate (see
+`parser.grounding`).
 """
 
 from decimal import Decimal
@@ -9,7 +14,6 @@ from decimal import Decimal
 import pytest
 
 from app.parser.consensus import (
-    ConsensusDecision,
     RiskClass,
     SourceKind,
     SourceVote,
@@ -30,20 +34,19 @@ def _vote(kind: SourceKind, value):
 
 
 class TestAcceptance:
-    def test_3_of_3_accepts_critical(self):
+    def test_2_of_2_accepts_critical(self):
         decision = reach_consensus(
             field="frequency_mhz",
             risk=RiskClass.CRITICAL,
             votes=[
                 _vote(SourceKind.LLM_A, "118.700"),
                 _vote(SourceKind.LLM_B, "118.700"),
-                _vote(SourceKind.OCR, "118.700"),
             ],
             domain_validator=validate_frequency_mhz,
         )
         assert decision.persisted_value == Decimal("118.700")
-        assert decision.result == "accepted_3_of_3"
-        assert len(decision.contributing_sources) == 3
+        assert decision.result == "accepted_2_of_3"
+        assert len(decision.contributing_sources) == 2
 
     def test_2_of_2_accepts_high(self):
         decision = reach_consensus(
@@ -58,19 +61,6 @@ class TestAcceptance:
         assert decision.persisted_value == 1487
         assert decision.result == "accepted_2_of_3"
 
-    def test_html_plus_one_wins(self):
-        decision = reach_consensus(
-            field="elevation_ft",
-            risk=RiskClass.HIGH,
-            votes=[
-                _vote(SourceKind.HTML, "1487"),
-                _vote(SourceKind.LLM_A, "1487"),
-            ],
-            domain_validator=validate_elevation_ft,
-        )
-        assert decision.result == "accepted_html_anchored"
-        assert decision.persisted_value == 1487
-
     def test_normalization_collapses_units(self):
         """4000 m and 13123 ft must be considered the same value."""
         decision = reach_consensus(
@@ -79,7 +69,6 @@ class TestAcceptance:
             votes=[
                 _vote(SourceKind.LLM_A, "4000 m"),
                 _vote(SourceKind.LLM_B, "13123 ft"),
-                _vote(SourceKind.OCR, "4000"),
             ],
             domain_validator=validate_runway_length_m,
         )
@@ -90,37 +79,32 @@ class TestAcceptance:
 
 
 class TestRejection:
-    def test_critical_with_only_2_of_3_rejected(self):
+    def test_critical_1_of_2_rejected(self):
+        """One LLM silent, other reports → not enough for consensus."""
         decision = reach_consensus(
             field="frequency_mhz",
             risk=RiskClass.CRITICAL,
             votes=[
                 _vote(SourceKind.LLM_A, "118.700"),
-                _vote(SourceKind.LLM_B, "118.700"),
-                _vote(SourceKind.OCR, "119.700"),  # disagrees
+                _vote(SourceKind.LLM_B, None),
             ],
             domain_validator=validate_frequency_mhz,
         )
         assert decision.persisted_value is None
-        assert decision.result == "rejected_disagreement"
         assert decision.needs_human_review is True
 
-    def test_all_disagree_rejected(self):
+    def test_disagreement_rejected(self):
         decision = reach_consensus(
-            field="elevation_ft",
-            risk=RiskClass.HIGH,
+            field="frequency_mhz",
+            risk=RiskClass.CRITICAL,
             votes=[
-                _vote(SourceKind.LLM_A, "1487"),
-                _vote(SourceKind.LLM_B, "1500"),
-                _vote(SourceKind.OCR, "1480"),
+                _vote(SourceKind.LLM_A, "118.700"),
+                _vote(SourceKind.LLM_B, "119.700"),
             ],
-            domain_validator=validate_elevation_ft,
+            domain_validator=validate_frequency_mhz,
         )
         assert decision.persisted_value is None
-        assert decision.result in (
-            "rejected_disagreement",
-            "rejected_insufficient_sources",
-        )
+        assert decision.needs_human_review is True
 
     def test_empty_votes_rejected(self):
         decision = reach_consensus(
@@ -140,21 +124,19 @@ class TestRejection:
             votes=[
                 _vote(SourceKind.LLM_A, None),
                 _vote(SourceKind.LLM_B, None),
-                _vote(SourceKind.OCR, None),
             ],
             domain_validator=validate_frequency_mhz,
         )
         assert decision.persisted_value is None
 
     def test_domain_violation_rejects_despite_consensus(self):
-        """Even 3/3 agreement cannot override physical impossibility."""
+        """Even 2/2 agreement cannot override physical impossibility."""
         decision = reach_consensus(
             field="frequency_mhz",
             risk=RiskClass.CRITICAL,
             votes=[
                 _vote(SourceKind.LLM_A, "999.999"),
                 _vote(SourceKind.LLM_B, "999.999"),
-                _vote(SourceKind.OCR, "999.999"),
             ],
             domain_validator=validate_frequency_mhz,
         )
@@ -162,33 +144,17 @@ class TestRejection:
         assert decision.result == "rejected_domain"
         assert decision.needs_human_review is True
 
-    def test_html_vs_others_disagreement_rejects(self):
-        """HTML says A, everyone else says B → reject, needs review."""
-        decision = reach_consensus(
-            field="elevation_ft",
-            risk=RiskClass.HIGH,
-            votes=[
-                _vote(SourceKind.HTML, "1500"),
-                _vote(SourceKind.LLM_A, "1487"),
-                _vote(SourceKind.LLM_B, "1487"),
-            ],
-            domain_validator=validate_elevation_ft,
-        )
-        assert decision.persisted_value is None
-        assert decision.result == "rejected_disagreement"
-
     def test_unit_parse_failure_counts_as_reject(self):
         decision = reach_consensus(
             field="length_m",
             risk=RiskClass.CRITICAL,
             votes=[
                 _vote(SourceKind.LLM_A, "4000 m"),
-                _vote(SourceKind.LLM_B, "4000"),
-                _vote(SourceKind.OCR, "garbage-text"),
+                _vote(SourceKind.LLM_B, "garbage-text"),
             ],
             domain_validator=validate_runway_length_m,
         )
-        # Only 2 out of 3 parseable → CRITICAL needs 3 → reject.
+        # Only 1 out of 2 parseable → CRITICAL needs 2 → reject.
         assert decision.persisted_value is None
 
     def test_low_risk_accepts_single_source(self):
@@ -206,19 +172,17 @@ class TestRejection:
 
 class TestClassicTraps:
     def test_mars_climate_orbiter_unit_mismatch(self):
-        """One source says 4000 (implied m), another says 4000 ft. They should NOT agree."""
+        """LLM_A says 4000 m, LLM_B says 4000 ft. They must NOT agree."""
         decision = reach_consensus(
             field="length_m",
             risk=RiskClass.CRITICAL,
             votes=[
                 _vote(SourceKind.LLM_A, "4000 m"),
                 _vote(SourceKind.LLM_B, "4000 ft"),   # 1219 m normalized
-                _vote(SourceKind.OCR, "4000 m"),
             ],
             domain_validator=validate_runway_length_m,
         )
-        # LLM_A and OCR agree at 4000 m; LLM_B normalizes to 1219 m.
-        # Only 2 of 3 → insufficient for CRITICAL.
+        # 1 of 2 at 4000 m, 1 of 2 at 1219 m → best count is 1 → fail.
         assert decision.persisted_value is None
 
     def test_frequency_off_grid_rejected(self):
@@ -228,9 +192,22 @@ class TestClassicTraps:
             votes=[
                 _vote(SourceKind.LLM_A, "118.123"),  # off the 25 / 8.33 kHz grid
                 _vote(SourceKind.LLM_B, "118.123"),
-                _vote(SourceKind.OCR, "118.123"),
             ],
             domain_validator=validate_frequency_mhz,
+        )
+        assert decision.persisted_value is None
+        assert decision.result == "rejected_domain"
+
+    def test_agreement_on_impossible_elevation_rejected(self):
+        """Correlated LLM hallucination of an impossible value — domain must catch it."""
+        decision = reach_consensus(
+            field="elevation_ft",
+            risk=RiskClass.HIGH,
+            votes=[
+                _vote(SourceKind.LLM_A, "99999"),
+                _vote(SourceKind.LLM_B, "99999"),
+            ],
+            domain_validator=validate_elevation_ft,
         )
         assert decision.persisted_value is None
         assert decision.result == "rejected_domain"

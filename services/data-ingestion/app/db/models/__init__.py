@@ -2,6 +2,7 @@
 
 from .aerodrome import Aerodrome
 from .airac_cycle import AiracCycle
+from .api_usage import ApiUsage
 from .chart import Chart
 from .frequency import Frequency
 from .notam import Notam
@@ -10,6 +11,7 @@ from .runway import Runway
 __all__ = [
     "Aerodrome",
     "AiracCycle",
+    "ApiUsage",
     "Chart",
     "Frequency",
     "Notam",

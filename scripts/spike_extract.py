@@ -40,10 +40,13 @@ else:
     sys.path.insert(0, str(_PROJECT_ROOT / "services" / "data-ingestion"))
     _DATA_ROOT = _PROJECT_ROOT / "data" / "aerodromes"
 
+from app.core.config import settings  # noqa: E402
+from app.db import get_session_factory  # noqa: E402
 from app.parser.grounding import tesseract_available  # noqa: E402
 from app.parser.providers.base import ProviderNotConfigured  # noqa: E402
 from app.parser.providers.claude_vision import ClaudeVisionProvider  # noqa: E402
 from app.parser.providers.openai_vision import OpenAIVisionProvider  # noqa: E402
+from app.parser.usage_tracker import UsageTracker  # noqa: E402
 
 
 def find_ad2_chart(icao: str) -> Path | None:
@@ -72,7 +75,12 @@ def main() -> int:
     args = parser.parse_args()
 
     icaos = [s.strip().upper() for s in args.icaos.split(",") if s.strip()]
-    providers = [ClaudeVisionProvider(), OpenAIVisionProvider()]
+    session_factory = get_session_factory(settings.database_url)
+    tracker = UsageTracker(session_factory)
+    providers = [
+        ClaudeVisionProvider(tracker=tracker),
+        OpenAIVisionProvider(tracker=tracker),
+    ]
 
     provider_status = {
         p.name: "CONFIGURED" if p.is_configured() else "MISSING_CREDENTIALS"
@@ -123,7 +131,9 @@ def main() -> int:
         icao_block: dict = {"icao": icao, "image": str(image), "providers": {}}
         for p in configured:
             try:
-                result = p.extract(image_path=image, field_group="geo")
+                result = p.extract(
+                    image_path=image, field_group="geo", aerodrome_icao=icao,
+                )
                 icao_block["providers"][p.name] = {
                     "model_version": result.model_version,
                     "prompt_version": result.prompt_version,

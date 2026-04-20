@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.aerodromes import router as aerodromes_router
+from app.api.usage import router as usage_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -44,6 +45,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 app.add_middleware(RequestIDMiddleware)
 
 app.include_router(aerodromes_router)
+app.include_router(usage_router)
 
 
 @app.get("/api/health", tags=["health"])

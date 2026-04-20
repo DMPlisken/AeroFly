@@ -175,3 +175,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-20 23:10 — Pisten und Freqs sind klar erkennbar — diagnose deep (`develop`)
 
 > das ist schlecht. sowohl die pisten als auch die frequenzen sind einfach und klar zu erkennen
+
+### 2026-04-21 — Egelsbach: filled runway glyph = paved per ICAO, prompt returned grass (`develop`)
+
+> egelsbach hat eine ausgefüllte piste auf der karte, das bedeutet nach icao dass es sich um eine befestigte/asphalt piste handelt. du hast rasen ausgegeben. Warum? da musst du den prompt dazu verbessern!
+
+### 2026-04-21 — EDDF ungenau: Piste 18 length null, surface other — Toleranz zu strikt (`feat/38-parallel-runways`)
+
+> warum ist frankfurt so ungenau? Die startbahn 18 geht ganz klar (auch die länge) aus der karte - eddf frankfurt main 2 - hervor.

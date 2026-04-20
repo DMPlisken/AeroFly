@@ -211,6 +211,104 @@ def test_runways_autofill_preserves_suffix_opposite():
         assert out[0]["designator_he"] == expected_he, f"LE={le} expected {expected_he}"
 
 
+# Parallel same-designator runways (observed on EDFE Egelsbach: paved 08/26 plus
+# a grass 08/26 strip with no L/R suffix).
+
+def test_runways_parallel_same_le_kept_distinct_by_surface():
+    """08 asphalt + 08 grass both reported → two agreed entries."""
+    a = {"runways": [
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev("1400 M"), "width_m": _ev("25 M"), "surface": _ev("asphalt")},
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev("670 M"), "width_m": _ev("30 M"), "surface": _ev("grass")},
+    ]}
+    b = {"runways": [
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev(1400), "width_m": _ev(25), "surface": _ev("asphalt")},
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev(670), "width_m": _ev(30), "surface": _ev("grass")},
+    ]}
+    out = _agreed_runways_on_chart(a, b)
+    assert len(out) == 2
+    surfaces = [r["surface"] for r in out]
+    assert RunwaySurface.ASPHALT in surfaces
+    assert RunwaySurface.GRASS in surfaces
+
+
+def test_runways_parallel_no_surface_split_by_length_bucket():
+    """No surface but different length → length bucket disambiguates."""
+    a = {"runways": [
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev(1400)},
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev(670)},
+    ]}
+    b = {"runways": [
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev(1400)},
+        {"designator_le": _ev("08"), "designator_he": _ev("26"),
+         "length_m": _ev(670)},
+    ]}
+    out = _agreed_runways_on_chart(a, b)
+    assert len(out) == 2
+
+
+# Disambiguation — multiple same-LE rows get suffixed for DB write.
+from app.services.extraction_runner import _disambiguate_designators
+
+
+def test_disambiguate_paved_keeps_raw_designator():
+    rows = [
+        {"designator_le": "08", "designator_he": "26",
+         "length_m": 1400, "width_m": 25, "surface": RunwaySurface.ASPHALT},
+        {"designator_le": "08", "designator_he": "26",
+         "length_m": 670, "width_m": 30, "surface": RunwaySurface.GRASS},
+    ]
+    out = _disambiguate_designators(rows)
+    assert len(out) == 2
+    # Sorted primary-first — paved keeps raw designator, grass gets G suffix.
+    primary = next(r for r in out if r["surface"] is RunwaySurface.ASPHALT)
+    grass = next(r for r in out if r["surface"] is RunwaySurface.GRASS)
+    assert primary["designator_le"] == "08"
+    assert primary["designator_he"] == "26"
+    assert grass["designator_le"] == "08G"
+    assert grass["designator_he"] == "26G"
+
+
+def test_disambiguate_single_runway_unchanged():
+    rows = [{"designator_le": "08", "designator_he": "26",
+             "length_m": 1400, "width_m": 25, "surface": RunwaySurface.ASPHALT}]
+    out = _disambiguate_designators(rows)
+    assert out[0]["designator_le"] == "08"
+
+
+def test_disambiguate_distinct_le_untouched():
+    rows = [
+        {"designator_le": "08L", "designator_he": "26R",
+         "length_m": 4000, "width_m": 60, "surface": RunwaySurface.ASPHALT},
+        {"designator_le": "08R", "designator_he": "26L",
+         "length_m": 4000, "width_m": 60, "surface": RunwaySurface.ASPHALT},
+    ]
+    out = _disambiguate_designators(rows)
+    # Distinct LE keys — no suffixing needed.
+    assert {r["designator_le"] for r in out} == {"08L", "08R"}
+
+
+def test_disambiguate_concrete_beats_asphalt():
+    rows = [
+        {"designator_le": "07", "designator_he": "25",
+         "length_m": 3000, "width_m": 45, "surface": RunwaySurface.ASPHALT},
+        {"designator_le": "07", "designator_he": "25",
+         "length_m": 4000, "width_m": 60, "surface": RunwaySurface.CONCRETE},
+    ]
+    out = _disambiguate_designators(rows)
+    # Concrete comes first in _SURFACE_PRIMARY_ORDER; asphalt gets suffix X.
+    primary = out[0]
+    assert primary["surface"] is RunwaySurface.CONCRETE
+    assert primary["designator_le"] == "07"
+    assert out[1]["designator_le"] == "07X"
+
+
 # ---------------------------------------------------------------------------
 # _agreed_frequencies_on_chart
 # ---------------------------------------------------------------------------

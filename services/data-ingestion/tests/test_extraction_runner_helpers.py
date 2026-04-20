@@ -128,6 +128,55 @@ def test_agree_int_with_unit_integer_input():
     assert _agree_int_with_unit(4000, 4000) == 4000
 
 
+# Relative tolerance (#38) — 4000 vs 3970 is a 0.75 % difference, which passes
+# 2 % rel_tol. The more-specific value (3970) wins.
+def test_agree_int_with_unit_relative_tolerance_picks_specific():
+    assert _agree_int_with_unit("4000 M", "3970 M", rel_tol=0.02) == 3970
+
+
+def test_agree_int_with_unit_relative_tolerance_both_specific_picks_first():
+    # 1467 and 1469 both have non-zero trailing digits; trailing-zeros tie
+    # → fall back to `ai` (first arg / Claude).
+    assert _agree_int_with_unit(1467, 1469, rel_tol=0.02) == 1467
+
+
+def test_agree_int_with_unit_relative_tolerance_exceeded():
+    # 10 % difference — too far, reject even with 2 % rel_tol.
+    assert _agree_int_with_unit(4000, 4400, rel_tol=0.02) is None
+
+
+def test_agree_int_with_unit_pure_absolute_mode_unchanged():
+    # Without rel_tol, 4000 vs 3970 still rejects (legacy callers unaffected).
+    assert _agree_int_with_unit("4000 M", "3970 M") is None
+
+
+# Surface matcher — compound forms vs canonical (#38)
+from app.services.extraction_runner import _agree_surface
+
+
+def test_agree_surface_exact_match():
+    assert _agree_surface("asphalt", "asphalt") == "asphalt"
+
+
+def test_agree_surface_compound_prefers_common():
+    # Claude said 'concrete', OpenAI said 'concrete/asphalt' — accept 'concrete'.
+    assert _agree_surface("concrete", "concrete/asphalt") == "concrete"
+    assert _agree_surface("concrete/asphalt", "concrete") == "concrete"
+
+
+def test_agree_surface_both_compound_picks_first_common_token():
+    assert _agree_surface("asphalt/concrete", "concrete/asphalt") in {"asphalt", "concrete"}
+
+
+def test_agree_surface_truly_disjoint_returns_none():
+    assert _agree_surface("asphalt", "grass") is None
+
+
+def test_agree_surface_null_sides():
+    assert _agree_surface(None, "asphalt") is None
+    assert _agree_surface("asphalt", None) is None
+
+
 # ---------------------------------------------------------------------------
 # _map_surface — enum lookup
 # ---------------------------------------------------------------------------

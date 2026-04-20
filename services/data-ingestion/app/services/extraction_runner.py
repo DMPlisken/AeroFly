@@ -267,7 +267,10 @@ class ExtractionRunner:
     def _run_runways(
         self, session, job, providers, aerodrome, candidates, base_pct, icao,
     ):
-        merged: dict[str, dict] = {}
+        # Merge across charts keyed by (designator_le, surface) so a paved
+        # 08/26 and a grass 08/26 parallel strip are kept distinct. The
+        # same keying rule as _agreed_runways_on_chart — see _runway_key.
+        merged: dict[tuple, dict] = {}
         charts_used: list[str] = []
         errors: list[str] = []
         for i, cand in enumerate(candidates, start=1):
@@ -282,7 +285,15 @@ class ExtractionRunner:
             entries = _agreed_runways_on_chart(a or {}, b or {})
             added_any = False
             for entry in entries:
-                key = entry["designator_le"]
+                surface = entry.get("surface")
+                surface_tok = (
+                    surface.value if isinstance(surface, RunwaySurface) else str(surface or "")
+                ).lower()
+                if surface_tok and surface_tok != "other":
+                    key: tuple = (entry["designator_le"], surface_tok)
+                else:
+                    length = entry.get("length_m")
+                    key = (entry["designator_le"], "", (length or 0) // 100)
                 if key not in merged:
                     merged[key] = entry
                     added_any = True
@@ -447,8 +458,24 @@ def _agree(a: Any, b: Any, *, float_tol: float = 0.01) -> Any | None:
     return None
 
 
-def _agree_int_with_unit(a: Any, b: Any) -> int | None:
-    """Elevation-style values like '1487 FT' or '453 M' — strip unit, compare ints."""
+def _agree_int_with_unit(
+    a: Any, b: Any,
+    *,
+    abs_tol: int = 2,
+    rel_tol: float = 0.0,
+) -> int | None:
+    """Elevation-style values like '1487 FT' or '453 M' — strip unit, compare ints.
+
+    Tolerance rules:
+      - Absolute: if |a - b| <= abs_tol → agree, pick ``a`` (first/Claude).
+      - Relative: if rel_tol > 0 and |a - b| <= max(a, b) * rel_tol →
+        agree, pick the MORE-SPECIFIC value (fewer trailing zeros).
+        Rationale: when Claude rounds to 4000 and OpenAI reads 3970, the
+        3970 is usually the AIP-exact value and should win.
+
+    Absolute wins by default (used for elevation where both should be
+    identical). Relative is opt-in for dimensions like runway length.
+    """
     av = _unwrap(a)
     bv = _unwrap(b)
     if av is None or bv is None:
@@ -457,7 +484,60 @@ def _agree_int_with_unit(a: Any, b: Any) -> int | None:
     bi = _parse_first_int(bv)
     if ai is None or bi is None:
         return None
-    return ai if abs(ai - bi) <= 2 else None
+    diff = abs(ai - bi)
+    if diff <= abs_tol:
+        return ai
+    if rel_tol > 0 and max(ai, bi) > 0 and diff <= max(ai, bi) * rel_tol:
+        # More specific value wins. "Specificity" = fewer trailing zeros.
+        def _trailing_zeros(n: int) -> int:
+            if n == 0:
+                return 0
+            z = 0
+            x = n
+            while x % 10 == 0:
+                z += 1
+                x //= 10
+            return z
+        return ai if _trailing_zeros(ai) <= _trailing_zeros(bi) else bi
+    return None
+
+
+def _agree_surface(a: Any, b: Any) -> str | None:
+    """Relaxed surface matcher.
+
+    Accepts compound forms like ``"concrete/asphalt"`` paired with ``"concrete"``:
+    if one is contained in the other, or they share a token after splitting
+    on ``/`` and ``,``, pick the SIMPLER canonical token. Observed on EDDF:
+    Claude says ``concrete`` and OpenAI says ``concrete/asphalt`` for
+    runway 18 — the strict equality in ``_agree`` treated this as a
+    disagreement.
+    """
+    av = _unwrap(a)
+    bv = _unwrap(b)
+    if av is None or bv is None:
+        return None
+    sa = str(av).strip().lower()
+    sb = str(bv).strip().lower()
+    if not sa or not sb:
+        return None
+    if sa == sb or "".join(sa.split()) == "".join(sb.split()):
+        return sa
+
+    def toks(s: str) -> list[str]:
+        return [t.strip() for t in s.replace(",", "/").split("/") if t.strip()]
+
+    tokens_a = toks(sa)
+    tokens_b = toks(sb)
+    common = [t for t in tokens_a if t in tokens_b]
+    if common:
+        # Prefer the canonical single-surface token.
+        return common[0]
+    # Prefix/suffix containment fallback (e.g. "asph" in "asphalt").
+    if sa in sb:
+        return sa
+    if sb in sa:
+        return sb
+    return None
 
 
 def _parse_first_int(s: Any) -> int | None:
@@ -569,24 +649,46 @@ def _agreed_runways_on_chart(a: dict, b: dict) -> list[dict]:
     both providers agree on LE we accept the runway and auto-derive HE
     when providers disagree or one is null. This recovers cases where
     OpenAI drops the HE (observed on EDDF chart 2 runway 18).
+
+    Parallel same-designator runways (observed on EDFE: paved 08/26 AND
+    grass 08/26 without L/R suffix) are kept distinct by keying on
+    ``(le, surface_token)``. Without surface info we fall back to keying
+    on ``(le, length_bucket)`` so length differences still separate
+    strips. Last resort: index by position if neither distinguishes.
     """
     rws_a = a.get("runways") or []
     rws_b = b.get("runways") or []
 
+    def _runway_key(rw: dict) -> tuple | None:
+        le = _unwrap(rw.get("designator_le"))
+        if not le:
+            return None
+        surface_raw = _unwrap(rw.get("surface"))
+        surface_tok = str(surface_raw).strip().lower() if surface_raw else ""
+        if surface_tok:
+            return (str(le).upper(), surface_tok)
+        # Fall back: bucket by length (rounded to 100 m) so parallel
+        # strips with different lengths still separate when surface is null.
+        length_raw = _unwrap(rw.get("length_m"))
+        length_bucket = _parse_first_int(length_raw) if length_raw is not None else None
+        if length_bucket is not None:
+            return (str(le).upper(), "", length_bucket // 100)
+        return (str(le).upper(), "")
+
     def keyed(lst):
-        out: dict[str, dict] = {}
+        out: dict[tuple, dict] = {}
         for rw in lst:
-            le = _unwrap(rw.get("designator_le"))
-            if le:
-                out[str(le).upper()] = rw
+            k = _runway_key(rw)
+            if k is not None and k not in out:  # first-seen wins on collision
+                out[k] = rw
         return out
 
     keyed_a = keyed(rws_a)
     keyed_b = keyed(rws_b)
 
     agreed: list[dict] = []
-    for le, rw_a in keyed_a.items():
-        rw_b = keyed_b.get(le)
+    for key, rw_a in keyed_a.items():
+        rw_b = keyed_b.get(key)
         if rw_b is None:
             continue
         le_agreed = _agree(rw_a.get("designator_le"), rw_b.get("designator_le"))
@@ -595,9 +697,13 @@ def _agreed_runways_on_chart(a: dict, b: dict) -> list[dict]:
         he_agreed = _resolve_he(rw_a, rw_b, str(le_agreed).upper())
         if not he_agreed:
             continue
-        length_m = _agree_int_with_unit(rw_a.get("length_m"), rw_b.get("length_m"))
-        width_m = _agree_int_with_unit(rw_a.get("width_m"), rw_b.get("width_m"))
-        surface_raw = _agree(rw_a.get("surface"), rw_b.get("surface"))
+        length_m = _agree_int_with_unit(
+            rw_a.get("length_m"), rw_b.get("length_m"), rel_tol=0.02,
+        )
+        width_m = _agree_int_with_unit(
+            rw_a.get("width_m"), rw_b.get("width_m"), rel_tol=0.10,
+        )
+        surface_raw = _agree_surface(rw_a.get("surface"), rw_b.get("surface"))
         surface = _map_surface(surface_raw) if surface_raw else RunwaySurface.OTHER
         agreed.append({
             "designator_le": str(le_agreed).upper(),
@@ -607,6 +713,69 @@ def _agreed_runways_on_chart(a: dict, b: dict) -> list[dict]:
             "surface": surface,
         })
     return agreed
+
+
+# Ranking for "primary" runway when multiple share a designator — paved
+# surfaces keep the canonical designator; unpaved get a suffix.
+_SURFACE_PRIMARY_ORDER = (
+    RunwaySurface.CONCRETE,
+    RunwaySurface.ASPHALT,
+    RunwaySurface.GRAVEL,
+    RunwaySurface.GRASS,
+    RunwaySurface.SAND,
+    RunwaySurface.SNOW,
+    RunwaySurface.WATER,
+    RunwaySurface.OTHER,
+)
+_SURFACE_RANK = {s: i for i, s in enumerate(_SURFACE_PRIMARY_ORDER)}
+
+# Suffix appended to non-primary runway designators when a parallel strip
+# shares the same heading. "G" for grass is the de-facto German convention
+# on small airfields ("08G" for 08 grass).
+_SURFACE_DESIGNATOR_SUFFIX = {
+    RunwaySurface.GRASS: "G",
+    RunwaySurface.GRAVEL: "V",
+    RunwaySurface.SAND: "S",
+    RunwaySurface.WATER: "W",
+    RunwaySurface.SNOW: "N",
+    RunwaySurface.OTHER: "X",
+}
+
+
+def _disambiguate_designators(rows: list[dict]) -> list[dict]:
+    """Ensure every `(designator_le, designator_he)` pair is unique by
+    appending a surface-based suffix to the non-primary strip when parallel
+    runways share a designator. Preference: paved surface keeps the raw
+    designator; grass / gravel / etc. get the suffix.
+    """
+    if not rows:
+        return rows
+    by_le: dict[str, list[dict]] = {}
+    for rw in rows:
+        by_le.setdefault(rw["designator_le"], []).append(rw)
+
+    out: list[dict] = []
+    for le, group in by_le.items():
+        if len(group) == 1:
+            out.append(group[0])
+            continue
+        # Sort with paved (concrete/asphalt) first. Stable tiebreak by length desc.
+        group.sort(
+            key=lambda r: (
+                _SURFACE_RANK.get(r.get("surface", RunwaySurface.OTHER), 99),
+                -(r.get("length_m") or 0),
+            )
+        )
+        # Primary keeps the raw designator. Rest get suffixed.
+        primary = group[0]
+        out.append(primary)
+        for rw in group[1:]:
+            suffix = _SURFACE_DESIGNATOR_SUFFIX.get(rw["surface"], "X")
+            rw = {**rw,
+                  "designator_le": f"{rw['designator_le']}{suffix}",
+                  "designator_he": f"{rw['designator_he']}{suffix}"}
+            out.append(rw)
+    return out
 
 
 def _agreed_frequencies_on_chart(a: dict, b: dict) -> list[dict]:
@@ -687,6 +856,7 @@ def _apply_geo_dict(aerodrome: Aerodrome, geo: dict[str, Any]) -> int:
 def _write_runways(session: Session, aerodrome: Aerodrome, rows: list[dict]) -> int:
     if not rows:
         return 0
+    rows = _disambiguate_designators(rows)
     session.execute(delete(Runway).where(Runway.aerodrome_icao == aerodrome.icao))
     session.flush()
     airac = aerodrome.source_airac_cycle

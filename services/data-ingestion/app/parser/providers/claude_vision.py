@@ -60,10 +60,20 @@ class ClaudeVisionProvider(ExtractionProvider):
         start = time.monotonic()
         request_id: str | None = None
         try:
+            # Prompt caching: the system prompt is identical across every
+            # aerodrome for a given field group. Marking it `ephemeral`
+            # lets Anthropic charge 10 % of the base rate on cache hits
+            # (5 min TTL) — massively reduces cost of a batch run.
             response = client.messages.create(
                 model=self.MODEL_ID,
                 max_tokens=4096,
-                system=prompt_text,
+                system=[
+                    {
+                        "type": "text",
+                        "text": prompt_text,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
                 messages=[
                     {
                         "role": "user",

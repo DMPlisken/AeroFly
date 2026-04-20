@@ -42,6 +42,7 @@ else:
 
 from app.core.config import settings  # noqa: E402
 from app.db import get_session_factory  # noqa: E402
+from app.parser.chart_selector import pick_chart, rank_charts  # noqa: E402
 from app.parser.grounding import tesseract_available  # noqa: E402
 from app.parser.providers.base import ProviderNotConfigured  # noqa: E402
 from app.parser.providers.claude_vision import ClaudeVisionProvider  # noqa: E402
@@ -49,13 +50,18 @@ from app.parser.providers.openai_vision import OpenAIVisionProvider  # noqa: E40
 from app.parser.usage_tracker import UsageTracker  # noqa: E402
 
 
-def find_ad2_chart(icao: str) -> Path | None:
-    """Locate the AD 2-X print PNG for an aerodrome (page with structured text)."""
+def smart_chart_for(icao: str, field_group: str) -> tuple[Path | None, list[str]]:
+    """Tesseract-prefilter: pick the best PNG for the requested field group.
+
+    Returns (path, debug_hits_of_best_candidate).
+    """
     aerodrome_dir = _DATA_ROOT / icao.upper()
     if not aerodrome_dir.exists():
-        return None
-    candidates = sorted(aerodrome_dir.glob("AD_2-*_print.png"))
-    return candidates[0] if candidates else None
+        return None, []
+    ranked = rank_charts(aerodrome_dir, field_group=field_group)  # type: ignore[arg-type]
+    if not ranked:
+        return None, []
+    return ranked[0].path, ranked[0].hits
 
 
 def main() -> int:
@@ -123,31 +129,41 @@ def main() -> int:
         )
 
     for icao in icaos:
-        image = find_ad2_chart(icao)
-        if image is None:
-            report["results"].append({"icao": icao, "error": "no AD 2-X PNG in data/"})
-            continue
+        icao_block: dict = {"icao": icao, "field_groups": {}}
 
-        icao_block: dict = {"icao": icao, "image": str(image), "providers": {}}
-        for p in configured:
-            try:
-                result = p.extract(
-                    image_path=image, field_group="geo", aerodrome_icao=icao,
-                )
-                icao_block["providers"][p.name] = {
-                    "model_version": result.model_version,
-                    "prompt_version": result.prompt_version,
-                    "input_image_sha256": result.input_image_sha256,
-                    "raw": result.raw_response,
-                }
-            except ProviderNotConfigured as exc:
-                icao_block["providers"][p.name] = {"error": f"not configured: {exc}"}
-            except NotImplementedError as exc:
-                icao_block["providers"][p.name] = {"deferred": str(exc)}
-            except Exception as exc:  # noqa: BLE001
-                icao_block["providers"][p.name] = {
-                    "error": f"{type(exc).__name__}: {exc}"
-                }
+        for field_group in ("geo", "runways", "frequencies"):
+            image, hits = smart_chart_for(icao, field_group)
+            group_block: dict = {
+                "selected_chart": image.name if image else None,
+                "selector_keywords_hit": hits,
+                "providers": {},
+            }
+            if image is None:
+                group_block["error"] = "no chart page matched the keyword prefilter"
+                icao_block["field_groups"][field_group] = group_block
+                continue
+
+            for p in configured:
+                try:
+                    result = p.extract(
+                        image_path=image, field_group=field_group, aerodrome_icao=icao,
+                    )
+                    group_block["providers"][p.name] = {
+                        "model_version": result.model_version,
+                        "prompt_version": result.prompt_version,
+                        "input_image_sha256": result.input_image_sha256,
+                        "raw": result.raw_response,
+                    }
+                except ProviderNotConfigured as exc:
+                    group_block["providers"][p.name] = {"error": f"not configured: {exc}"}
+                except NotImplementedError as exc:
+                    group_block["providers"][p.name] = {"deferred": str(exc)}
+                except Exception as exc:  # noqa: BLE001
+                    group_block["providers"][p.name] = {
+                        "error": f"{type(exc).__name__}: {str(exc)[:200]}"
+                    }
+            icao_block["field_groups"][field_group] = group_block
+
         report["results"].append(icao_block)
 
     _write_report(args.report_out, report)

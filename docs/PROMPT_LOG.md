@@ -143,3 +143,19 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-20 21:35 — Approve VFR rewrite scope: drop IFR fields, add VFR fields, use ALL necessary charts, one PR (`develop`)
 
 > 1 yes ok;2 all; 3 we use all which are neccesary not just some random; 4 all
+
+### 2026-04-20 21:50 — Frontend broken + run live API spike (`develop`)
+
+> I don't get the frontend anymore at all right now, but yes, I want you to use the API live in the container and to test and to see if it's working.
+
+### 2026-04-20 22:05 — Frontend white blank page; before: no airports + no usage (`develop`)
+
+> i dont get the front-end anymore. I just see a white blank page. And before I got the frontend, but no AirPods were shown anymore. And also the API overview usage was not shown anymore.
+
+### 2026-04-20 22:20 — EDDM detail page empty; wie Aktualisierung triggern? (`develop`)
+
+> Alle Daten sind leer. Wie benutze ich jetzt die Aktualisierung der Informationen?
+
+### 2026-04-20 22:30 — Build async extraction trigger with progress indicator (`develop`)
+
+> ja mache das - aber bitte asynchron mit einer fortschrittsanzeige

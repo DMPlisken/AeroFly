@@ -17,7 +17,7 @@ class ProviderNotConfigured(RuntimeError):
     """
 
 
-FieldGroup = Literal["geo", "runways", "frequencies"]
+FieldGroup = Literal["geo", "runways", "frequencies", "obstacles", "reporting_points"]
 
 
 @dataclass

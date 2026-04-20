@@ -135,3 +135,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-20 21:05 — Start image-size guard #28 (`develop`)
 
 > start #28
+
+### 2026-04-20 21:25 — Continue to VFR prompt rewrite (`develop`)
+
+> yes - continue
+
+### 2026-04-20 21:35 — Approve VFR rewrite scope: drop IFR fields, add VFR fields, use ALL necessary charts, one PR (`develop`)
+
+> 1 yes ok;2 all; 3 we use all which are neccesary not just some random; 4 all

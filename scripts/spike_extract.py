@@ -1,16 +1,20 @@
-"""Phase 0 Spike — Claude + OpenAI vision consensus, grounded with Tesseract.
+"""Phase 0 Spike — Claude + OpenAI vision consensus on VFR charts.
 
 Does NOT write to the database. Produces a standalone JSON report with:
  - Provider status (configured / missing keys)
- - Per-aerodrome: each provider's raw response + extracted fields
- - Consensus decision per field
- - Grounding result (Tesseract) per accepted value
+ - Per-aerodrome × field_group: ranked candidate charts, per-provider output
+ - First-candidate-that-produced-data, cascading through candidates
  - Summary stats
+
+Chart selection is manifest-driven (#30 tags) — Tesseract keyword
+scoring is gone. For each field_group the selector returns all
+acceptable charts in ranked order; this script iterates them until one
+produces at least one non-null field from both providers (cascade).
 
 Run inside the data-ingestion container once `ANTHROPIC_API_KEY` and
 `OPENAI_API_KEY` are set in the environment:
 
-    python scripts/spike_extract.py --icaos EDDM,EDDF,EDDH,EDDB,EDDG
+    python scripts/spike_extract.py --icaos EDDM,EDDF,EDDH
 
 Exit codes:
     0  all providers configured and extraction completed
@@ -21,7 +25,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -42,26 +45,44 @@ else:
 
 from app.core.config import settings  # noqa: E402
 from app.db import get_session_factory  # noqa: E402
-from app.parser.chart_selector import pick_chart, rank_charts  # noqa: E402
+from app.parser.chart_selector import rank_charts  # noqa: E402
 from app.parser.grounding import tesseract_available  # noqa: E402
-from app.parser.providers.base import ProviderNotConfigured  # noqa: E402
+from app.parser.providers.base import FieldGroup, ProviderNotConfigured  # noqa: E402
 from app.parser.providers.claude_vision import ClaudeVisionProvider  # noqa: E402
 from app.parser.providers.openai_vision import OpenAIVisionProvider  # noqa: E402
 from app.parser.usage_tracker import UsageTracker  # noqa: E402
 
+# Max candidates to try per field_group before giving up. Keeps the
+# cost bounded even on airports with many charts (EDDH has 8).
+MAX_CANDIDATES_PER_GROUP = 3
 
-def smart_chart_for(icao: str, field_group: str) -> tuple[Path | None, list[str]]:
-    """Tesseract-prefilter: pick the best PNG for the requested field group.
+# Field groups this spike covers. Matches the expanded VFR scope (#32).
+FIELD_GROUPS: tuple[FieldGroup, ...] = (
+    "geo",
+    "runways",
+    "frequencies",
+    "obstacles",
+    "reporting_points",
+)
 
-    Returns (path, debug_hits_of_best_candidate).
+
+def _has_any_signal(parsed) -> bool:
+    """Cheap check: did the provider extract anything non-null?
+
+    Recurses shallowly. A response with all-null fields is fail-closed
+    behaviour (the LLM couldn't read anything) and we should try the
+    next candidate in the cascade.
     """
-    aerodrome_dir = _DATA_ROOT / icao.upper()
-    if not aerodrome_dir.exists():
-        return None, []
-    ranked = rank_charts(aerodrome_dir, field_group=field_group)  # type: ignore[arg-type]
-    if not ranked:
-        return None, []
-    return ranked[0].path, ranked[0].hits
+    if parsed is None:
+        return False
+    if isinstance(parsed, dict):
+        for v in parsed.values():
+            if _has_any_signal(v):
+                return True
+        return False
+    if isinstance(parsed, list):
+        return any(_has_any_signal(item) for item in parsed)
+    return True
 
 
 def main() -> int:
@@ -124,44 +145,77 @@ def main() -> int:
     if not ground_available:
         report["limitations"].append(
             "Tesseract binary missing — grounding check skipped. Install via "
-            "the data-ingestion Dockerfile (tesseract-ocr + tesseract-ocr-deu "
-            "+ tesseract-ocr-eng) or `apt-get install` in the running container."
+            "the data-ingestion Dockerfile or `apt-get install` in the container."
         )
 
     for icao in icaos:
         icao_block: dict = {"icao": icao, "field_groups": {}}
+        aerodrome_dir = _DATA_ROOT / icao
 
-        for field_group in ("geo", "runways", "frequencies"):
-            image, hits = smart_chart_for(icao, field_group)
+        for field_group in FIELD_GROUPS:
+            candidates = rank_charts(aerodrome_dir, field_group=field_group)
             group_block: dict = {
-                "selected_chart": image.name if image else None,
-                "selector_keywords_hit": hits,
+                "candidates_considered": [
+                    {
+                        "name": c.path.name,
+                        "chart_type": c.chart_type,
+                        "chart_suffix": c.chart_suffix,
+                    }
+                    for c in candidates[:MAX_CANDIDATES_PER_GROUP]
+                ],
+                "accepted_chart": None,
                 "providers": {},
             }
-            if image is None:
-                group_block["error"] = "no chart page matched the keyword prefilter"
+            if not candidates:
+                group_block["error"] = "no chart matched the field group's accepted chart_types"
                 icao_block["field_groups"][field_group] = group_block
                 continue
 
-            for p in configured:
-                try:
-                    result = p.extract(
-                        image_path=image, field_group=field_group, aerodrome_icao=icao,
-                    )
-                    group_block["providers"][p.name] = {
-                        "model_version": result.model_version,
-                        "prompt_version": result.prompt_version,
-                        "input_image_sha256": result.input_image_sha256,
-                        "raw": result.raw_response,
-                    }
-                except ProviderNotConfigured as exc:
-                    group_block["providers"][p.name] = {"error": f"not configured: {exc}"}
-                except NotImplementedError as exc:
-                    group_block["providers"][p.name] = {"deferred": str(exc)}
-                except Exception as exc:  # noqa: BLE001
-                    group_block["providers"][p.name] = {
-                        "error": f"{type(exc).__name__}: {str(exc)[:200]}"
-                    }
+            # Cascade: try each candidate until one produces non-null output
+            # from ALL providers (we want both sources to have something
+            # before we consider the candidate "accepted"). Fallback: if
+            # exhausted without consensus, record the last attempt.
+            accepted = None
+            for candidate in candidates[:MAX_CANDIDATES_PER_GROUP]:
+                attempt: dict[str, dict] = {}
+                for p in configured:
+                    try:
+                        result = p.extract(
+                            image_path=candidate.path,
+                            field_group=field_group,
+                            aerodrome_icao=icao,
+                        )
+                        attempt[p.name] = {
+                            "model_version": result.model_version,
+                            "prompt_version": result.prompt_version,
+                            "input_image_sha256": result.input_image_sha256,
+                            "raw": result.raw_response,
+                            "has_signal": _has_any_signal(result.raw_response.get("parsed")),
+                        }
+                    except ProviderNotConfigured as exc:
+                        attempt[p.name] = {"error": f"not configured: {exc}"}
+                    except Exception as exc:  # noqa: BLE001
+                        attempt[p.name] = {
+                            "error": f"{type(exc).__name__}: {str(exc)[:200]}"
+                        }
+
+                all_have_signal = all(
+                    entry.get("has_signal") is True for entry in attempt.values()
+                )
+                if all_have_signal:
+                    accepted = candidate
+                    group_block["accepted_chart"] = candidate.path.name
+                    group_block["providers"] = attempt
+                    break
+                # Store last attempt for diagnosis even if we cascade further.
+                group_block["providers"] = attempt
+
+            if accepted is None:
+                group_block["error"] = (
+                    f"no candidate in top {MAX_CANDIDATES_PER_GROUP} produced "
+                    "non-null output from both providers"
+                )
+
             icao_block["field_groups"][field_group] = group_block
 
         report["results"].append(icao_block)

@@ -1,131 +1,134 @@
-"""Pick the best chart PNG for a requested field group.
+"""Pick candidate chart PNGs for a requested field group.
 
-The DFS scraper captured multiple PNGs per aerodrome and there is no
-deterministic naming convention telling us which page contains which
-AIP section. Calling two LLM providers on every page would be wasteful.
+Reads `manifest.json` written by the scraper (#29). Each document is
+tagged with `chart_type` and a `chart_suffix`. We filter candidates by
+chart_type acceptable for the field group, then rank within the bucket
+using a small structural heuristic — suffix "1" tends to be the VFR
+approach chart (VAC) where ARP coords / frequencies are printed; suffix
+"4" tends to be the aerodrome chart (ADC) where runway layout lives.
 
-Strategy
---------
-
-Tesseract-OCR the full image (cheap, free, local). Count occurrences of
-aviation keywords associated with each AIP sub-section. Score each
-candidate image and return them in ranked order.
-
-Keywords are deliberately over-specified; even if one keyword triggers
-false-positively on an unrelated page, the requirement for 3+ hits
-keeps noise down. The scoring is only a hint — the actual LLM
-extraction still has to produce a plausible value that survives 2-of-2
-consensus + grounding.
+Consumers iterate the ranked list in order (cascade). If consensus
+extraction on the first candidate produces no signal, the next one is
+tried. This replaces the older Tesseract keyword scorer which was
+unreliable because it depended on text density and could not tell a
+runway list on an ADC from a mention of "RWY" in a NOTAM.
 """
 
 from __future__ import annotations
 
+import json
 import logging
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 log = logging.getLogger(__name__)
 
-FieldGroup = Literal["geo", "runways", "frequencies"]
+FieldGroup = Literal["geo", "runways", "frequencies", "obstacles", "reporting_points"]
 
-
-# Weighted keywords per field group. Each tuple is (keyword, weight).
-# Strong anchors ("AD 2.2", TORA/TODA/ASDA/LDA, AD 2.18) score ≥ 3 on their own.
-# Regular keywords score 1. Upper-case so matching is trivial.
-KEYWORDS: dict[FieldGroup, tuple[tuple[str, int], ...]] = {
-    "geo": (
-        ("AD 2.2", 3),
-        ("ARP", 2), ("AERODROME REFERENCE POINT", 3),
-        ("ELEV", 1), ("ELEVATION", 1),
-        ("LATITUDE", 2), ("LONGITUDE", 2),
-        ("MAG VAR", 2), ("MAGNETIC VARIATION", 2), ("MISSWEISUNG", 2),
-        ("OPERATOR", 1), ("BETREIBER", 1),
-        ("REFERENCE TEMP", 2),
-    ),
-    "runways": (
-        ("AD 2.12", 3), ("AD 2.13", 3),
-        ("TORA", 3), ("TODA", 3), ("ASDA", 3), ("LDA", 2),
-        ("DESIGNATOR", 2), ("KENNUNG", 2),
-        ("RWY", 1), ("RUNWAY", 1), ("PISTE", 1),
-        ("SURFACE", 1), ("OBERFLÄCHE", 1), ("OBERFLACHE", 1),
-        ("ASPHALT", 1), ("CONCRETE", 1), ("BETON", 1), ("GRASS", 1), ("GRAS", 1),
-        ("ILS", 1),
-    ),
-    "frequencies": (
-        ("AD 2.18", 3),
-        ("ATS COMMUNICATION", 3),
-        ("TWR", 1), ("TOWER", 1), ("TURM", 1),
-        ("GND", 1), ("GROUND", 1), ("BODEN", 1),
-        ("ATIS", 1),
-        ("APP", 1), ("APPROACH", 1), ("ANFLUG", 1),
-        ("DEL", 1), ("DELIVERY", 1),
-        ("FREQ", 1), ("FREQUENCY", 1), ("FREQUENZ", 1),
-        ("MHZ", 1),
-    ),
+# Which chart_types may carry information for a given field group.
+# "supplement" (shared AD references) and "other" are never considered.
+_ACCEPTED_CHART_TYPES: dict[FieldGroup, tuple[str, ...]] = {
+    "geo": ("aerodrome", "terminal"),
+    "runways": ("aerodrome",),
+    "frequencies": ("aerodrome", "terminal"),
+    "obstacles": ("aerodrome",),
+    "reporting_points": ("aerodrome",),
 }
 
-# Minimum total weight for a page to be considered a plausible candidate.
-MIN_SCORE = 3
+# Rank hints per field group. Suffixes earlier in the tuple are tried first.
+# Anything not listed falls to the end, sorted by suffix.
+_SUFFIX_PRIORITY: dict[FieldGroup, tuple[str, ...]] = {
+    # VAC tends to carry ARP coords + frequency box + pattern altitudes.
+    "geo": ("1", "2", "4"),
+    "frequencies": ("1", "2", "4"),
+    "reporting_points": ("1", "2"),
+    # ADC tends to carry the physical runway layout.
+    "runways": ("4", "1", "2"),
+    # Obstacles printed on either chart; approach chart usually has more.
+    "obstacles": ("1", "2", "4"),
+}
 
 
 @dataclass
 class ChartCandidate:
+    """One chart selected as a candidate for LLM extraction."""
     path: Path
-    score: int
-    hits: list[str]
+    chart_type: str
+    chart_suffix: str | None
+    dfs_name: str
 
 
-def _ocr_full_image(image: Path, *, psm: int = 3, lang: str = "deu+eng", timeout: int = 30) -> str:
-    """Fast Tesseract pass for keyword scanning."""
+def _load_manifest(aerodrome_dir: Path) -> dict | None:
+    manifest_path = aerodrome_dir / "manifest.json"
+    if not manifest_path.exists():
+        return None
     try:
-        proc = subprocess.run(
-            ["tesseract", str(image), "stdout", "-l", lang, "--psm", str(psm)],
-            capture_output=True,
-            timeout=timeout,
-        )
-        if proc.returncode != 0:
-            log.warning("tesseract failed on %s: %s", image.name, proc.stderr.decode("utf-8", "replace"))
-            return ""
-        return proc.stdout.decode("utf-8", "replace").upper()
-    except subprocess.TimeoutExpired:
-        log.warning("tesseract timeout on %s", image.name)
-        return ""
+        return json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        log.warning("Failed to read %s: %s", manifest_path, exc)
+        return None
 
 
-def rank_charts(aerodrome_dir: Path, *, field_group: FieldGroup) -> list[ChartCandidate]:
-    """Return candidate charts ranked by keyword-hit score, best first.
+def _rank_key(doc: dict, priority: tuple[str, ...]) -> tuple[int, str]:
+    suffix = (doc.get("chart_suffix") or "").upper()
+    try:
+        idx = priority.index(suffix)
+    except ValueError:
+        idx = len(priority)
+    return (idx, suffix)
 
-    Only print-variant PNGs are considered (the print version has the
-    full-resolution text; previews are subscaled and OCR-unfriendly).
+
+def rank_charts(
+    aerodrome_dir: Path,
+    *,
+    field_group: FieldGroup,
+) -> list[ChartCandidate]:
+    """Return candidate charts for a field group, best first.
+
+    Empty list if the aerodrome directory lacks a manifest or if no
+    document in the manifest matches an accepted chart_type. Missing
+    print files are skipped (preview-only documents are ignored because
+    the print variant has the full-resolution text we want to send to
+    the LLM).
     """
     if not aerodrome_dir.is_dir():
         return []
+    manifest = _load_manifest(aerodrome_dir)
+    if not manifest:
+        return []
 
-    weighted_kws = KEYWORDS[field_group]
+    accepted = set(_ACCEPTED_CHART_TYPES.get(field_group, ()))
+    priority = _SUFFIX_PRIORITY.get(field_group, ())
     candidates: list[ChartCandidate] = []
 
-    for png in sorted(aerodrome_dir.glob("*_print.png")):
-        text = _ocr_full_image(png)
-        if not text:
+    for doc in manifest.get("documents", []):
+        if doc.get("chart_type") not in accepted:
             continue
-        hits: list[str] = []
-        score = 0
-        for kw, weight in weighted_kws:
-            if kw in text:
-                hits.append(kw)
-                score += weight
-        if score >= MIN_SCORE:
-            candidates.append(
-                ChartCandidate(path=png, score=score, hits=sorted(set(hits)))
+        print_file = doc.get("print_file")
+        if not print_file:
+            continue
+        path = aerodrome_dir / print_file
+        if not path.exists():
+            continue
+        candidates.append(
+            ChartCandidate(
+                path=path,
+                chart_type=doc["chart_type"],
+                chart_suffix=doc.get("chart_suffix"),
+                dfs_name=doc.get("dfs_name", path.stem),
             )
+        )
 
-    candidates.sort(key=lambda c: c.score, reverse=True)
+    candidates.sort(key=lambda c: _rank_key({"chart_suffix": c.chart_suffix}, priority))
     return candidates
 
 
-def pick_chart(aerodrome_dir: Path, *, field_group: FieldGroup) -> ChartCandidate | None:
-    """Return the single best candidate, or None if no page qualifies."""
+def pick_chart(
+    aerodrome_dir: Path,
+    *,
+    field_group: FieldGroup,
+) -> ChartCandidate | None:
+    """Return the single best candidate, or None. Use `rank_charts` for cascade."""
     ranked = rank_charts(aerodrome_dir, field_group=field_group)
     return ranked[0] if ranked else None

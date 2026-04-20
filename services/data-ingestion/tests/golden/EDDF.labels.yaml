@@ -1,6 +1,8 @@
 # DRAFT — requires pilot verification before F1-gate use.
+# VFR-scoped labels (issue #32). Fields not printed on VFR charts are
+# intentionally absent (reference_temp_c, true_heading_*, ils_*).
 icao: EDDF
-source_chart: AD_2-*_print.png
+source_chart: EDDF_Frankfurt_Main_*_print.png
 source_airac_cycle: 2026-04
 approved_by: null
 approved_at: null
@@ -10,7 +12,6 @@ geo:
   longitude_deg: 8.570556
   elevation_ft: 364
   magnetic_variation_deg: 2.0
-  reference_temp_c: unverified
   operator: "Fraport AG"
   operator_de: "Fraport AG"
   city: "Frankfurt"
@@ -19,40 +20,32 @@ geo:
 runways:
   - designator_le: "07C"
     designator_he: "25C"
-    true_heading_le_deg: unverified
-    true_heading_he_deg: unverified
     length_m: 4000
     width_m: 60
     surface: asphalt
-    ils_le: true
-    ils_he: true
+    traffic_pattern_altitude_ft: unverified
+    traffic_pattern_side: unverified
   - designator_le: "07R"
     designator_he: "25L"
-    true_heading_le_deg: unverified
-    true_heading_he_deg: unverified
     length_m: 4000
     width_m: 45
     surface: asphalt
-    ils_le: true
-    ils_he: true
+    traffic_pattern_altitude_ft: unverified
+    traffic_pattern_side: unverified
   - designator_le: "07L"
     designator_he: "25R"
-    true_heading_le_deg: unverified
-    true_heading_he_deg: unverified
     length_m: 2800
     width_m: 45
     surface: asphalt
-    ils_le: true
-    ils_he: false
+    traffic_pattern_altitude_ft: unverified
+    traffic_pattern_side: unverified
   - designator_le: "18"
     designator_he: "36"
-    true_heading_le_deg: unverified
-    true_heading_he_deg: unverified
     length_m: 4000
     width_m: 45
     surface: asphalt
-    ils_le: false
-    ils_he: false
+    traffic_pattern_altitude_ft: unverified
+    traffic_pattern_side: unverified
 
 frequencies:
   - type: twr
@@ -75,3 +68,6 @@ frequencies:
     callsign_de: "Langen Delivery"
     frequency_mhz: "121.900"
     operational_hours: unverified
+
+obstacles: []           # TODO: pilot verify from EDDF VAC
+reporting_points: []    # TODO: pilot verify from EDDF VAC

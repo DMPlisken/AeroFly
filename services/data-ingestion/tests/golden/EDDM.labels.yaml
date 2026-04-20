@@ -1,6 +1,8 @@
 # DRAFT — requires pilot verification before F1-gate use.
+# VFR-scoped labels (issue #32). Fields not printed on VFR charts are
+# intentionally absent (reference_temp_c, true_heading_*, ils_*).
 icao: EDDM
-source_chart: AD_2-*_print.png
+source_chart: EDDM_Muenchen_*_print.png
 source_airac_cycle: 2026-04
 approved_by: null       # TODO: pilot reviewer
 approved_at: null
@@ -10,7 +12,6 @@ geo:
   longitude_deg: 11.786111
   elevation_ft: 1487
   magnetic_variation_deg: 2.5     # approx IGRF, DE area; pilot verify
-  reference_temp_c: unverified
   operator: "Flughafen München GmbH"
   operator_de: "Flughafen München GmbH"
   city: "Munich"
@@ -19,22 +20,18 @@ geo:
 runways:
   - designator_le: "08L"
     designator_he: "26R"
-    true_heading_le_deg: unverified
-    true_heading_he_deg: unverified
     length_m: 4000
     width_m: 60
     surface: asphalt
-    ils_le: true
-    ils_he: true
+    traffic_pattern_altitude_ft: unverified
+    traffic_pattern_side: unverified
   - designator_le: "08R"
     designator_he: "26L"
-    true_heading_le_deg: unverified
-    true_heading_he_deg: unverified
     length_m: 4000
     width_m: 60
     surface: asphalt
-    ils_le: true
-    ils_he: true
+    traffic_pattern_altitude_ft: unverified
+    traffic_pattern_side: unverified
 
 frequencies:
   - type: twr
@@ -57,3 +54,6 @@ frequencies:
     callsign_de: "München Delivery"
     frequency_mhz: "121.825"
     operational_hours: unverified
+
+obstacles: []           # TODO: pilot verify from EDDM VAC
+reporting_points: []    # TODO: pilot verify from EDDM VAC

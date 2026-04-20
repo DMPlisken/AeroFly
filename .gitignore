@@ -65,6 +65,7 @@ test-results/
 data/
 scripts/dfs_*.html
 scripts/dfs_*.png
+scripts/explore_dfs*.py
 
 # Keep .env.example tracked even though .env is ignored
 !.env.example

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from uuid import UUID
 
@@ -135,7 +135,13 @@ def start_extraction(
     if aerodrome is None:
         raise HTTPException(status_code=404, detail=f"Aerodrome {icao} not found")
 
-    # If a job is currently queued or running for this ICAO, return it.
+    # Active-job dedup, with a staleness guard. BackgroundTasks can be
+    # killed by a container restart, leaving a 'running' ghost row that
+    # never advances — without this guard the user could never retry.
+    # Legit runs finish under 3 min; 10 min is safely past.
+    STALE_AFTER = timedelta(minutes=10)
+    now = datetime.now(timezone.utc)
+
     active = db.execute(
         select(ExtractionJob)
         .where(
@@ -145,8 +151,27 @@ def start_extraction(
         .order_by(ExtractionJob.created_at.desc())
         .limit(1)
     ).scalar_one_or_none()
+
     if active is not None:
-        return _job_to_dict(active)
+        last_activity = active.started_at or active.created_at
+        # Postgres returns tz-aware datetimes; normalise just in case.
+        if last_activity.tzinfo is None:
+            last_activity = last_activity.replace(tzinfo=timezone.utc)
+        if now - last_activity > STALE_AFTER:
+            log.warning(
+                "Promoting stale extraction job %s on %s to failed "
+                "(last activity %s ago); user-triggered retry will start a new job",
+                active.id, icao, now - last_activity,
+            )
+            active.status = "failed"
+            active.error = (
+                f"Stuck for {(now - last_activity).total_seconds():.0f}s without "
+                "progress — treated as abandoned, please retry."
+            )
+            active.completed_at = now
+            db.commit()
+        else:
+            return _job_to_dict(active)
 
     job = ExtractionJob(
         aerodrome_icao=icao,

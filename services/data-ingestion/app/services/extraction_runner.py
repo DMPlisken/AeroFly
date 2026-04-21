@@ -267,9 +267,24 @@ class ExtractionRunner:
     def _run_runways(
         self, session, job, providers, aerodrome, candidates, base_pct, icao,
     ):
-        # Merge across charts keyed by (designator_le, surface) so a paved
-        # 08/26 and a grass 08/26 parallel strip are kept distinct. The
-        # same keying rule as _agreed_runways_on_chart — see _runway_key.
+        """Merge runway entries across charts.
+
+        Key rule:
+          - A runway's natural identity across charts is ``(le, he)`` —
+            07R/25L is the same physical strip no matter which chart
+            reports it. If two charts disagree on surface (e.g. Claude
+            says asphalt, OpenAI says concrete), we still want ONE row.
+          - The exception is parallel strips with the same heading and
+            no L/R suffix (Egelsbach: paved 08/26 + grass 08/26). These
+            appear on the SAME chart, so a second ``(le, he)`` seen
+            within one chart's per-chart-consensus list is a real
+            parallel strip and gets differentiated by surface in the
+            merge key. Different charts reporting the same ``(le, he)``
+            are never treated as parallel strips.
+
+        First-seen-wins across charts: the earlier (higher-ranked) chart's
+        values are preserved when later charts disagree.
+        """
         merged: dict[tuple, dict] = {}
         charts_used: list[str] = []
         errors: list[str] = []
@@ -284,16 +299,20 @@ class ExtractionRunner:
                 continue
             entries = _agreed_runways_on_chart(a or {}, b or {})
             added_any = False
+            seen_this_chart: set[tuple[str, str]] = set()
             for entry in entries:
-                surface = entry.get("surface")
-                surface_tok = (
-                    surface.value if isinstance(surface, RunwaySurface) else str(surface or "")
-                ).lower()
-                if surface_tok and surface_tok != "other":
-                    key: tuple = (entry["designator_le"], surface_tok)
+                base = (entry["designator_le"], entry["designator_he"])
+                if base in seen_this_chart:
+                    # Parallel strip on the same chart — use surface in key.
+                    surface = entry.get("surface")
+                    surface_tok = (
+                        surface.value if isinstance(surface, RunwaySurface)
+                        else str(surface or "")
+                    ).lower()
+                    key: tuple = (*base, surface_tok or "_")
                 else:
-                    length = entry.get("length_m")
-                    key = (entry["designator_le"], "", (length or 0) // 100)
+                    seen_this_chart.add(base)
+                    key = base
                 if key not in merged:
                     merged[key] = entry
                     added_any = True
@@ -641,77 +660,72 @@ def _resolve_he(rw_a: dict, rw_b: dict, le: str) -> str | None:
     return computed
 
 
+def _by_le_groups(lst: list[dict]) -> dict[str, list[dict]]:
+    """Group a provider's runways by low-end designator, preserving order."""
+    out: dict[str, list[dict]] = {}
+    for rw in lst:
+        le = _unwrap(rw.get("designator_le"))
+        if le:
+            out.setdefault(str(le).upper(), []).append(rw)
+    return out
+
+
 def _agreed_runways_on_chart(a: dict, b: dict) -> list[dict]:
     """Return runway dicts both providers agreed on for ONE chart.
 
-    Relaxed rule for `designator_he`: the opposite-end designator is
-    mathematically determined by the low-end (always 180° apart), so if
-    both providers agree on LE we accept the runway and auto-derive HE
-    when providers disagree or one is null. This recovers cases where
-    OpenAI drops the HE (observed on EDDF chart 2 runway 18).
+    Matching strategy: group each provider's runways by low-end
+    designator, then pair up by position within each LE group. This is
+    robust to two realistic cases:
 
-    Parallel same-designator runways (observed on EDFE: paved 08/26 AND
-    grass 08/26 without L/R suffix) are kept distinct by keying on
-    ``(le, surface_token)``. Without surface info we fall back to keying
-    on ``(le, length_bucket)`` so length differences still separate
-    strips. Last resort: index by position if neither distinguishes.
+      1. Providers list runways in DIFFERENT ORDER (observed on EDDF
+         chart 3: Claude 07L/07R/07C/18, OpenAI 07L/07C/07R/18). A
+         naive array-index match would pair 07R with 07C → rejected.
+         LE-group matching pairs by logical identity.
+
+      2. Parallel strips with the SAME LE and no L/R suffix (Egelsbach:
+         08/26 paved + 08/26 grass both listed under LE=08). Both
+         providers list them in the same order within the LE group, so
+         position-within-group pairs the paved with paved and grass
+         with grass.
+
+    Relaxed designator_he rule: mathematically 180° from LE, so if
+    providers disagree on HE we auto-derive — see ``_resolve_he``.
+
+    Relaxed surface: ``_agree_surface`` accepts compound forms
+    (``"concrete"`` agrees with ``"concrete/asphalt"``) so a surface
+    mismatch doesn't drop the runway.
     """
-    rws_a = a.get("runways") or []
-    rws_b = b.get("runways") or []
-
-    def _runway_key(rw: dict) -> tuple | None:
-        le = _unwrap(rw.get("designator_le"))
-        if not le:
-            return None
-        surface_raw = _unwrap(rw.get("surface"))
-        surface_tok = str(surface_raw).strip().lower() if surface_raw else ""
-        if surface_tok:
-            return (str(le).upper(), surface_tok)
-        # Fall back: bucket by length (rounded to 100 m) so parallel
-        # strips with different lengths still separate when surface is null.
-        length_raw = _unwrap(rw.get("length_m"))
-        length_bucket = _parse_first_int(length_raw) if length_raw is not None else None
-        if length_bucket is not None:
-            return (str(le).upper(), "", length_bucket // 100)
-        return (str(le).upper(), "")
-
-    def keyed(lst):
-        out: dict[tuple, dict] = {}
-        for rw in lst:
-            k = _runway_key(rw)
-            if k is not None and k not in out:  # first-seen wins on collision
-                out[k] = rw
-        return out
-
-    keyed_a = keyed(rws_a)
-    keyed_b = keyed(rws_b)
+    groups_a = _by_le_groups(a.get("runways") or [])
+    groups_b = _by_le_groups(b.get("runways") or [])
 
     agreed: list[dict] = []
-    for key, rw_a in keyed_a.items():
-        rw_b = keyed_b.get(key)
-        if rw_b is None:
+    for le, list_a in groups_a.items():
+        list_b = groups_b.get(le)
+        if not list_b:
             continue
-        le_agreed = _agree(rw_a.get("designator_le"), rw_b.get("designator_le"))
-        if not le_agreed:
-            continue
-        he_agreed = _resolve_he(rw_a, rw_b, str(le_agreed).upper())
-        if not he_agreed:
-            continue
-        length_m = _agree_int_with_unit(
-            rw_a.get("length_m"), rw_b.get("length_m"), rel_tol=0.02,
-        )
-        width_m = _agree_int_with_unit(
-            rw_a.get("width_m"), rw_b.get("width_m"), rel_tol=0.10,
-        )
-        surface_raw = _agree_surface(rw_a.get("surface"), rw_b.get("surface"))
-        surface = _map_surface(surface_raw) if surface_raw else RunwaySurface.OTHER
-        agreed.append({
-            "designator_le": str(le_agreed).upper(),
-            "designator_he": he_agreed,
-            "length_m": length_m,
-            "width_m": width_m,
-            "surface": surface,
-        })
+        # Pair by position within the LE group.
+        for rw_a, rw_b in zip(list_a, list_b):
+            le_agreed = _agree(rw_a.get("designator_le"), rw_b.get("designator_le"))
+            if not le_agreed:
+                continue
+            he_agreed = _resolve_he(rw_a, rw_b, str(le_agreed).upper())
+            if not he_agreed:
+                continue
+            length_m = _agree_int_with_unit(
+                rw_a.get("length_m"), rw_b.get("length_m"), rel_tol=0.02,
+            )
+            width_m = _agree_int_with_unit(
+                rw_a.get("width_m"), rw_b.get("width_m"), rel_tol=0.10,
+            )
+            surface_raw = _agree_surface(rw_a.get("surface"), rw_b.get("surface"))
+            surface = _map_surface(surface_raw) if surface_raw else RunwaySurface.OTHER
+            agreed.append({
+                "designator_le": str(le_agreed).upper(),
+                "designator_he": he_agreed,
+                "length_m": length_m,
+                "width_m": width_m,
+                "surface": surface,
+            })
     return agreed
 
 

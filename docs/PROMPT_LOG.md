@@ -183,3 +183,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-21 — EDDF ungenau: Piste 18 length null, surface other — Toleranz zu strikt (`feat/38-parallel-runways`)
 
 > warum ist frankfurt so ungenau? Die startbahn 18 geht ganz klar (auch die länge) aus der karte - eddf frankfurt main 2 - hervor.
+
+### 2026-04-21 — Elevation wichtig — "AD ELEV <zahl>" als Format lehren (`develop`)
+
+> die elevation/höhe ist wichtig. versuche den prompt so zu machen dass das möglichst zuverlässig ausgelesen werden kann. meistens - bestimmt zu 90% findest du auf einer der karten die angabe ad (airdrome) elev (elevation) und eine zahl dahinter. dass ist die höhe.
+
+### 2026-04-21 — Hängengebliebenes EDFE-Update — Abbruch+Fehleranzeige für stuck jobs (`feat/40-elevation-prompt`)
+
+> ich habe das gefühl, dass frankfurt-egelsbach update hängen geblieben ist. der ist schon ewig bei 76%. wir brauchen eine überprüfung, dass hängengebliebene updates abgebrochen werden oder neugestartet werden und die fehlermeldung muss angezeigt und geloggt werden dazu, damit wir das dann beheben können für die zukunft.

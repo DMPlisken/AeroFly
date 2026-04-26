@@ -1,4 +1,4 @@
-import { apiGetJson, apiListJson, type ApiListResponse } from "./client";
+import { apiGetJson, apiListJson, apiPatchJson, type ApiListResponse } from "./client";
 
 export type AerodromeType =
   | "international"
@@ -78,7 +78,10 @@ export interface Chart {
   title_de: string | null;
   source_url: string;
   preview_url: string | null;
+  rotation_degrees: 0 | 90 | 180 | 270;
 }
+
+export type RotationDegrees = 0 | 90 | 180 | 270;
 
 export interface Notam {
   id: number;
@@ -113,4 +116,12 @@ export function listAerodromes(
 
 export function getAerodrome(icao: string): Promise<AerodromeDetail> {
   return apiGetJson<AerodromeDetail>(`/aerodromes/${icao}`);
+}
+
+export function setChartRotation(
+  icao: string,
+  chartId: number,
+  degrees: RotationDegrees,
+): Promise<{ id: number; rotation_degrees: RotationDegrees }> {
+  return apiPatchJson(`/aerodromes/${icao}/charts/${chartId}/rotation`, { degrees });
 }

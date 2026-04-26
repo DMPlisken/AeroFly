@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from shared.models.base import AiracCycleMixin, TimestampMixin
 from shared.schemas.enums import ChartType
-from sqlalchemy import BigInteger, CHAR, Enum, ForeignKey, Index, Integer, String
+from sqlalchemy import BigInteger, CHAR, CheckConstraint, Enum, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import Base
@@ -19,6 +19,10 @@ class Chart(Base, TimestampMixin, AiracCycleMixin):
         Index("ix_charts_aerodrome_icao", "aerodrome_icao"),
         Index("ix_charts_chart_type", "chart_type"),
         Index("ix_charts_source_url", "source_url", unique=True),
+        CheckConstraint(
+            "rotation_degrees IN (0, 90, 180, 270)",
+            name="ck_charts_rotation_degrees",
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -44,5 +48,6 @@ class Chart(Base, TimestampMixin, AiracCycleMixin):
     file_size_bytes: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     language: Mapped[str] = mapped_column(CHAR(2), nullable=False, default="de")
+    rotation_degrees: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
 
     aerodrome: Mapped["Aerodrome"] = relationship(back_populates="charts")

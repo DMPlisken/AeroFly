@@ -1,15 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
   type ReactZoomPanPinchContentRef,
 } from "react-zoom-pan-pinch";
 
+import { setChartRotation, type RotationDegrees } from "@/api/aerodromes";
+
 interface Props {
   title: string;
   previewUrl: string;
   /** Optional higher-res URL; defaults to swapping _preview -> _print. */
   printUrl?: string;
+  /** Chart identity for persisting rotation. */
+  chartId?: number;
+  aerodromeIcao?: string;
+  initialRotation?: RotationDegrees;
+  /** Notify parent of new persisted rotation, so the cached chart stays in sync. */
+  onRotationChange?: (degrees: RotationDegrees) => void;
   onClose: () => void;
 }
 
@@ -17,16 +25,53 @@ function derivePrintUrl(previewUrl: string): string {
   return previewUrl.replace(/_preview(\.(png|jpg|jpeg))$/i, "_print$1");
 }
 
-export function ChartViewer({ title, previewUrl, printUrl, onClose }: Props) {
+function nextRotation(current: RotationDegrees, delta: 90 | -90): RotationDegrees {
+  const result = (current + delta + 360) % 360;
+  return result as RotationDegrees;
+}
+
+export function ChartViewer({
+  title,
+  previewUrl,
+  printUrl,
+  chartId,
+  aerodromeIcao,
+  initialRotation = 0,
+  onRotationChange,
+  onClose,
+}: Props) {
   const hiRes = printUrl ?? derivePrintUrl(previewUrl);
   const [src, setSrc] = useState(hiRes);
+  const [rotation, setRotation] = useState<RotationDegrees>(initialRotation);
+  const [stageSize, setStageSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // If print version 404s, fall back to the preview.
+  const isQuarterRotated = rotation === 90 || rotation === 270;
+  const canPersist = chartId !== undefined && aerodromeIcao !== undefined;
+
   function handleError() {
     if (src !== previewUrl) setSrc(previewUrl);
   }
 
-  // Esc key closes.
+  function persistRotation(degrees: RotationDegrees) {
+    setRotation(degrees);
+    onRotationChange?.(degrees);
+    if (!canPersist) return;
+    setChartRotation(aerodromeIcao!, chartId!, degrees).catch((err) => {
+      console.error("Failed to persist chart rotation", err);
+    });
+  }
+
+  function rotateLeft() {
+    persistRotation(nextRotation(rotation, -90));
+  }
+  function rotateRight() {
+    persistRotation(nextRotation(rotation, 90));
+  }
+  function resetRotation() {
+    persistRotation(0);
+  }
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -35,7 +80,6 @@ export function ChartViewer({ title, previewUrl, printUrl, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Lock body scroll while viewer is open.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -43,6 +87,43 @@ export function ChartViewer({ title, previewUrl, printUrl, onClose }: Props) {
       document.body.style.overflow = prev;
     };
   }, []);
+
+  // Measure the visible stage (RZPP wrapper) so we can keep the rotated image
+  // fit-to-screen at 90°/270°. We re-measure only on rotation change and on
+  // window resize — never via ResizeObserver on the stage itself, because the
+  // image's bounds we set in turn affect layout and would cause a feedback loop.
+  useLayoutEffect(() => {
+    const root = containerRef.current;
+    if (!root) return;
+    const stage = root.querySelector(".chart-viewer-stage") as HTMLElement | null;
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    setStageSize({ w: rect.width, h: rect.height });
+  }, [rotation]);
+
+  useEffect(() => {
+    function onResize() {
+      const root = containerRef.current;
+      if (!root) return;
+      const stage = root.querySelector(".chart-viewer-stage") as HTMLElement | null;
+      if (!stage) return;
+      const rect = stage.getBoundingClientRect();
+      setStageSize({ w: rect.width, h: rect.height });
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const imgStyle: React.CSSProperties = {
+    transform: `rotate(${rotation}deg)`,
+    transition: "transform 200ms ease",
+  };
+  if (isQuarterRotated && stageSize.w && stageSize.h) {
+    // After a 90/270 rotation the visual width = CSS height and vice versa.
+    // Cap the image's CSS box so the rotated visual fits the un-rotated stage.
+    imgStyle.maxWidth = `${stageSize.h}px`;
+    imgStyle.maxHeight = `${stageSize.w}px`;
+  }
 
   return (
     <div
@@ -52,7 +133,7 @@ export function ChartViewer({ title, previewUrl, printUrl, onClose }: Props) {
       aria-modal="true"
       aria-label={title}
     >
-      <div className="chart-viewer" onClick={(e) => e.stopPropagation()}>
+      <div className="chart-viewer" ref={containerRef} onClick={(e) => e.stopPropagation()}>
         <header className="chart-viewer-head">
           <span className="chart-viewer-title">{title}</span>
           <button
@@ -100,7 +181,33 @@ export function ChartViewer({ title, previewUrl, printUrl, onClose }: Props) {
                   aria-label="Reset zoom"
                   onClick={() => utils.resetTransform()}
                 >
+                  <i className="fa-solid fa-magnifying-glass" />
+                </button>
+                <span className="chart-viewer-controls-divider" aria-hidden="true" />
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label="Rotate 90° left"
+                  onClick={rotateLeft}
+                >
                   <i className="fa-solid fa-rotate-left" />
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label="Rotate 90° right"
+                  onClick={rotateRight}
+                >
+                  <i className="fa-solid fa-rotate-right" />
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label="Reset rotation"
+                  onClick={resetRotation}
+                  disabled={rotation === 0}
+                >
+                  <i className="fa-solid fa-arrows-up-down-left-right" />
                 </button>
               </div>
               <TransformComponent
@@ -113,6 +220,7 @@ export function ChartViewer({ title, previewUrl, printUrl, onClose }: Props) {
                   onError={handleError}
                   draggable={false}
                   className="chart-viewer-image"
+                  style={imgStyle}
                 />
               </TransformComponent>
             </>

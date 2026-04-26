@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
-import type { Chart } from "@/api/aerodromes";
+import type { Chart, RotationDegrees } from "@/api/aerodromes";
 import { useI18n } from "@/i18n";
 import type { TranslationKey } from "@/i18n/en";
 import { groupChartsByType } from "@/utils/groupChartsByType";
@@ -12,6 +12,8 @@ import { ChartViewer } from "./ChartViewer";
 interface Props {
   charts: Chart[];
   airac: string | null;
+  /** ICAO of the parent aerodrome — used to persist per-chart rotation. */
+  aerodromeIcao?: string;
 }
 
 /**
@@ -20,9 +22,16 @@ interface Props {
  * arrow keys navigate spatially within the flat sequence of cards; focus
  * returns to the opened card when the viewer closes.
  */
-export function ChartGrid({ charts, airac }: Props) {
+export function ChartGrid({ charts, airac, aerodromeIcao }: Props) {
   const { t } = useI18n();
-  const groups = useMemo(() => groupChartsByType(charts), [charts]);
+  // Local mirror so a rotation persisted in the viewer is reflected on
+  // re-opening the same chart, without waiting for a parent refetch.
+  const [chartState, setChartState] = useState<Chart[]>(charts);
+  useEffect(() => {
+    setChartState(charts);
+  }, [charts]);
+
+  const groups = useMemo(() => groupChartsByType(chartState), [chartState]);
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [viewerChart, setViewerChart] = useState<Chart | null>(null);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
@@ -48,6 +57,12 @@ export function ChartGrid({ charts, airac }: Props) {
   function handleOpen(index: number) {
     setOpenedIndex(index);
     setViewerChart(flat[index].chart);
+  }
+
+  function handleRotationChange(chartId: number, degrees: RotationDegrees) {
+    setChartState((prev) =>
+      prev.map((c) => (c.id === chartId ? { ...c, rotation_degrees: degrees } : c)),
+    );
   }
 
   function handleClose() {
@@ -124,6 +139,10 @@ export function ChartGrid({ charts, airac }: Props) {
         <ChartViewer
           title={viewerChart.title}
           previewUrl={viewerChart.preview_url}
+          chartId={viewerChart.id}
+          aerodromeIcao={aerodromeIcao}
+          initialRotation={viewerChart.rotation_degrees ?? 0}
+          onRotationChange={(deg) => handleRotationChange(viewerChart.id, deg)}
           onClose={handleClose}
         />
       )}

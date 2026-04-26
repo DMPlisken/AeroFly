@@ -191,3 +191,35 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-21 — Hängengebliebenes EDFE-Update — Abbruch+Fehleranzeige für stuck jobs (`feat/40-elevation-prompt`)
 
 > ich habe das gefühl, dass frankfurt-egelsbach update hängen geblieben ist. der ist schon ewig bei 76%. wir brauchen eine überprüfung, dass hängengebliebene updates abgebrochen werden oder neugestartet werden und die fehlermeldung muss angezeigt und geloggt werden dazu, damit wir das dann beheben können für die zukunft.
+
+### 2026-04-26 — Was steht als nächstes auf der Liste? (`develop`)
+
+> was hast du als nächstes auf der liste als task?
+
+### 2026-04-26 — Karten im großen Viewer drehen können (Hochkant↔Querformat) (`develop`)
+
+> Ich habe folgendes Problem, was ich eigentlich lösen würde. Wenn ich eine Map aufmache, zum Beispiel bei Nuernberg, dann ist die Karte hochkant ich muss die aber im Querformat sehen können das heißt es muss möglich sein diese Karte dann wenn ich die in der große Ansicht habe zu drehen. Wenn das nicht klar ist, dann frage bitte nach. Natürlich will ich das nicht nur für diese spezielle Karte, sondern grundsätzlich, dass ich die Karten drehen kann. Wahrscheinlich gibt es noch bei anderen Karten das gleiche Problem.
+
+### 2026-04-26 — Antworten auf Rotations-Feature Fragen (`develop`)
+
+> 1a; 2b; 3c; 4a; 5a; 6a; 7b
+
+### 2026-04-26 — Auto-Orientation: Variante D (weglassen) (`feat/44-chart-rotation`)
+
+> Variante D
+
+### 2026-04-26 — Pinch-Rotate weglassen (`feat/44-chart-rotation`)
+
+> lass pinch rotate weg
+
+### 2026-04-26 — Implementation starten (`feat/44-chart-rotation`)
+
+> leg los
+
+### 2026-04-26 — Bug: Modal flackert + kollabiert nach Rotation (`feat/44-chart-rotation`)
+
+> keln bonn 3 z.B. habe ich gedreht, und seit dem öffnet und schließt sich der view permanent ganz schnell. ist so nicht nutzbar dann. ansonsten funktioniert das drehen eigentlich ganz gut. [Image #1]
+
+### 2026-04-26 — Commit + Housekeeping ausführen (`feat/44-chart-rotation`)
+
+> go - commit and do housekeeping

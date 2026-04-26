@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
-  listAerodromes,
-  type Aerodrome,
+  searchAerodromes,
+  type AerodromeSearchHit,
   type AerodromeType,
 } from "@/api/aerodromes";
 import { AerodromeCard } from "@/components/AerodromeCard";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useI18n } from "@/i18n";
 
 const LIMIT = 24;
+const SEARCH_DEBOUNCE_MS = 250;
 
 function paginationWindow(current: number, total: number): (number | "ellipsis")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i);
@@ -36,11 +38,34 @@ export function SearchPage() {
   const { t } = useI18n();
   const [params, setParams] = useSearchParams();
 
-  const q = params.get("q") ?? "";
+  const urlQ = params.get("q") ?? "";
   const type = (params.get("type") ?? "") as AerodromeType | "";
   const offset = Number(params.get("offset") ?? 0);
 
-  const [items, setItems] = useState<Aerodrome[]>([]);
+  // Local input state — typed character-by-character. Debounced version drives
+  // the actual API call and syncs back into the URL once stable.
+  const [inputQ, setInputQ] = useState(urlQ);
+  const debouncedQ = useDebounce(inputQ, SEARCH_DEBOUNCE_MS);
+
+  // If the URL is changed externally (back/forward, deep link, clear), reflect
+  // that in the input.
+  useEffect(() => {
+    setInputQ(urlQ);
+  }, [urlQ]);
+
+  // Push debounced search term back into the URL — but only if it differs.
+  useEffect(() => {
+    if (debouncedQ === urlQ) return;
+    const p = new URLSearchParams(params);
+    if (debouncedQ) p.set("q", debouncedQ);
+    else p.delete("q");
+    p.delete("offset");
+    setParams(p, { replace: true });
+    // setParams is stable, params is captured at call time intentionally
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ]);
+
+  const [items, setItems] = useState<AerodromeSearchHit[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +73,8 @@ export function SearchPage() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    listAerodromes({
-      q: q || undefined,
+    searchAerodromes({
+      q: debouncedQ || undefined,
       type: type || undefined,
       limit: LIMIT,
       offset,
@@ -60,19 +85,15 @@ export function SearchPage() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [q, type, offset]);
+  }, [debouncedQ, type, offset]);
 
   const from = total === 0 ? 0 : offset + 1;
   const to = Math.min(offset + items.length, total);
   const page = Math.floor(offset / LIMIT);
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
-  function update(next: Partial<{ q: string; type: string; offset: number }>) {
+  function update(next: Partial<{ type: string; offset: number }>) {
     const p = new URLSearchParams(params);
-    if (next.q !== undefined) {
-      if (next.q) p.set("q", next.q);
-      else p.delete("q");
-    }
     if (next.type !== undefined) {
       if (next.type) p.set("type", next.type);
       else p.delete("type");
@@ -101,8 +122,8 @@ export function SearchPage() {
           className="input"
           style={{ maxWidth: 420 }}
           placeholder={t("search.input.placeholder")}
-          value={q}
-          onChange={(e) => update({ q: e.target.value, offset: 0 })}
+          value={inputQ}
+          onChange={(e) => setInputQ(e.target.value)}
         />
         <select
           className="input"
@@ -141,7 +162,7 @@ export function SearchPage() {
         <>
           <div className="results-grid">
             {items.map((ad) => (
-              <AerodromeCard key={ad.icao} aerodrome={ad} />
+              <AerodromeCard key={ad.icao} aerodrome={ad} matchType={ad.match_type} />
             ))}
           </div>
 

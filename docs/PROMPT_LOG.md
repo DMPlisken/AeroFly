@@ -223,3 +223,15 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-26 — Commit + Housekeeping ausführen (`feat/44-chart-rotation`)
 
 > go - commit and do housekeeping
+
+### 2026-04-26 — Smarte Suche: Teil-ICAO, City-Match, Typo-Toleranz (`develop`)
+
+> ich möchte bei der suche eine smarte suche haben, sodass ich "EDDK / Koeln/Bonn"  auch mit "Köln" der "Bonn" oder vielleicht sogar "DDK" finden kann. Vielleicht geht es auch so smart dass ich beim vertippen sogar Koeln/Bonn finden könnte. z.B. "Boon"
+
+### 2026-04-26 — Antworten Search-Feature (`develop`)
+
+> 1b; 2a; 3b; 4b; 5a; 6a; 7b
+
+### 2026-04-26 — Aufgabe komplett fertig machen (`feat/11-meilisearch-search`)
+
+> ja - mache die aufgabe bis zum ende fertig

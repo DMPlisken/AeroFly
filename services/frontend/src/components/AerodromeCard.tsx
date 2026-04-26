@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import type { Aerodrome } from "@/api/aerodromes";
+import type { Aerodrome, SearchMatchType } from "@/api/aerodromes";
 import { FrequencyBadge } from "@/components/FrequencyBadge";
 import { useI18n } from "@/i18n";
 
@@ -8,9 +8,11 @@ interface Props {
   aerodrome: Aerodrome;
   runwayCount?: number;
   twrFrequency?: { type: "twr"; value: string | number } | null;
+  /** When provided and equals "fuzzy", show a subtle "similar match" badge. */
+  matchType?: SearchMatchType;
 }
 
-export function AerodromeCard({ aerodrome, runwayCount, twrFrequency }: Props) {
+export function AerodromeCard({ aerodrome, runwayCount, twrFrequency, matchType }: Props) {
   const { t, locale } = useI18n();
   const name = locale === "de" && aerodrome.name_de ? aerodrome.name_de : aerodrome.name;
   const region =
@@ -23,6 +25,12 @@ export function AerodromeCard({ aerodrome, runwayCount, twrFrequency }: Props) {
           <div className="ad-icao">{aerodrome.icao}</div>
           <div className="ad-name">{name}</div>
         </div>
+        {matchType === "fuzzy" && (
+          <span className="match-hint" title={t("search.match.fuzzy.tooltip")}>
+            <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />
+            {t("search.match.fuzzy")}
+          </span>
+        )}
       </div>
       <div className="ad-meta">
         <i className="fa-solid fa-location-dot" aria-hidden="true" />

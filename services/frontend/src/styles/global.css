@@ -413,6 +413,21 @@ a:hover {
   gap: var(--space-2);
 }
 
+.aerodrome-card .match-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--color-accent, var(--color-primary));
+  background: color-mix(in oklab, var(--color-accent, var(--color-primary)) 15%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-accent, var(--color-primary)) 35%, transparent);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .aerodrome-card .ad-freqs {
   display: flex;
   flex-wrap: wrap;

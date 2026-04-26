@@ -103,3 +103,24 @@ async def latest_extraction(icao: str, request: Request):
     if upstream.status_code >= 400:
         raise HTTPException(status_code=upstream.status_code, detail=upstream.text)
     return upstream.json()
+
+
+@router.patch(
+    "/{icao}/charts/{chart_id}/rotation",
+    summary="Persist user's preferred rotation (0/90/180/270) for a chart",
+)
+async def update_chart_rotation(icao: str, chart_id: int, request: Request):
+    body = await request.body()
+    async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
+        try:
+            upstream = await client.patch(
+                f"{settings.data_ingestion_url}/aerodromes/{icao}/charts/{chart_id}/rotation",
+                content=body,
+                headers={"content-type": request.headers.get("content-type", "application/json")},
+            )
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f"Upstream unreachable: {exc}") from exc
+
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=upstream.status_code, detail=upstream.text)
+    return upstream.json()

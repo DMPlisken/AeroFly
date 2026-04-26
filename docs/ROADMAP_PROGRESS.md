@@ -31,6 +31,7 @@
 - [x] Aerodrome search page — issue #8, paginated, filterable, Vite proxy to gateway
 - [x] Aerodrome detail view — issue #8 + #13 + #17 + #19 (thumbnail grid grouped by chart type, click opens pan/zoom viewer, AIRAC visible per card)
 - [x] Bilingual UI (DE/EN) — issue #8, custom I18nProvider, every string translated, persisted via localStorage
+- [x] Chart rotation in viewer — issue #44 (90°-Schritte L/R/Reset, persistiert pro Chart in `ingest.charts.rotation_degrees`, fit-to-screen via ResizeObserver, Design Kit §23). Pinch-Rotate + Auto-Orientation explizit als Folge-Issues.
 - [ ] Responsive layout — issue #15 (pending go/no-go decision)
 
 ## Phase 2: Enhanced Data & Tools (Planned)

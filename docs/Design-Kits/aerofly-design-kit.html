@@ -1280,6 +1280,7 @@
         <li><a href="#sec-20">20. Mockup: Search</a></li>
         <li><a href="#sec-21">21. Mockup: Aerodrome Detail</a></li>
         <li><a href="#sec-22">22. Mockup: Dashboard</a></li>
+        <li><a href="#sec-23">23. Chart Viewer Toolbar (Rotation)</a></li>
       </ul>
     </aside>
 
@@ -2598,6 +2599,42 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 23. Chart Viewer Toolbar (Rotation)                               -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-23">
+        <h2><span class="sec-num">23</span>Chart Viewer Toolbar (Rotation)</h2>
+        <p class="sec-desc">
+          Toolbar im Großansicht-Viewer. Kombiniert Zoom-Controls (links) und Rotations-Controls (rechts) als ein zusammenhängendes
+          Glassmorphism-Cluster. Rotation ist pro Chart in der DB persistiert (<code>ingest.charts.rotation_degrees</code>, 0/90/180/270).
+          Reset-Rotation setzt auf 0° und schreibt 0 in die DB. Die <code>data-rotation</code>-Attribute zeigen den aktuell gespeicherten Wert.
+        </p>
+        <div class="kit-preview block">
+          <div class="chart-viewer-controls" style="position: static; display: inline-flex; gap: var(--space-1); padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface-elev); border: 1px solid var(--color-border);">
+            <button type="button" class="icon-button" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>
+            <button type="button" class="icon-button" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>
+            <button type="button" class="icon-button" aria-label="Reset zoom"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <span style="width:1px;background:var(--color-border);margin:var(--space-1) var(--space-1);" aria-hidden="true"></span>
+            <button type="button" class="icon-button" aria-label="Rotate 90° left" data-rotation="action-left"><i class="fa-solid fa-rotate-left"></i></button>
+            <button type="button" class="icon-button" aria-label="Rotate 90° right" data-rotation="action-right"><i class="fa-solid fa-rotate-right"></i></button>
+            <button type="button" class="icon-button" aria-label="Reset rotation" data-rotation="action-reset"><i class="fa-solid fa-arrows-up-down-left-right"></i></button>
+          </div>
+        </div>
+        <p class="sec-desc" style="margin-top:var(--space-3);">
+          <strong>Verhalten:</strong>
+        </p>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:0;">
+          <li>Klick auf <code>Rotate left</code> / <code>Rotate right</code> → Karte dreht 90° in die jeweilige Richtung. Persistierung erfolgt sofort via PATCH.</li>
+          <li>Klick auf <code>Reset rotation</code> → Karte auf 0° zurücksetzen, DB-Wert auf 0 setzen.</li>
+          <li>Beim Öffnen einer Karte wird der gespeicherte <code>rotation_degrees</code>-Wert automatisch angewandt.</li>
+          <li>Pan und Zoom bleiben nach Rotation funktionsfähig; Fit-to-Screen wird neu berechnet (Container-<code>width</code>↔<code>height</code> tauschen bei 90°/270°).</li>
+          <li>Trennlinie zwischen Zoom- und Rotations-Block visuell und semantisch (Gruppe).</li>
+        </ul>
+        <p class="sec-desc" style="margin-top:var(--space-3);">
+          <strong>Out of scope dieser Toolbar:</strong> Pinch-Rotate-Geste, Hotkeys, freie (nicht-90°) Rotation, Auto-Orientation-Hint — alles als Folge-Issues.
+        </p>
       </section>
 
       <footer style="margin-top:var(--space-16); padding-top:var(--space-8); border-top:1px solid var(--color-border-strong); color:var(--color-text-muted); font-size:var(--fs-sm);">

@@ -184,7 +184,11 @@ export function AerodromeDetailPage() {
             <div className="card-header">
               <span className="card-title">{t("detail.section.charts")}</span>
             </div>
-            <ChartGrid charts={data.charts} airac={data.source_airac_cycle ?? null} />
+            <ChartGrid
+              charts={data.charts}
+              airac={data.source_airac_cycle ?? null}
+              aerodromeIcao={data.icao}
+            />
           </div>
 
           <div className="card">

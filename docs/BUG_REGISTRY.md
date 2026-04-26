@@ -43,3 +43,10 @@ Each entry:
 - **Fix**: One-off backfill — iterate `data/aerodromes/*/manifest.json`, apply `classify_chart_type()` + `extract_chart_suffix()` to each document missing the fields, write back. Ran against 433 manifests / 1363 documents. Fresh scrapes already produce tagged manifests.
 - **Affected files**: `data/aerodromes/*/manifest.json`.
 - **Commit/PR**: discovered during #32 spike validation.
+
+### [BUG-005] Chart viewer modal collapses + flickers after rotation
+- **Symptom**: After clicking a rotation button in the chart viewer, the modal body shrinks to a thin horizontal strip (~200 px tall) and the viewer flickers open/closed rapidly, making the UI unusable.
+- **Root cause**: Two compounding issues. (1) An inner `<div class="chart-viewer-rotation-host">` wrapper was added inside `react-zoom-pan-pinch`'s `TransformComponent`. RZPP measures its content's intrinsic size to compute fit; the percentage-sized wrapper had no intrinsic size of its own, so RZPP collapsed the stage to ~0 height. (2) A `ResizeObserver` was attached to that same wrapper to drive the rotated image's `max-width`/`max-height`. Updating those styles changed the wrapper's box, the observer fired again, and so on — a classic feedback loop.
+- **Fix**: Remove the inner wrapper, render `<img>` directly inside `TransformComponent` (pre-rotation layout). Replace `ResizeObserver` with a one-shot `useLayoutEffect` keyed on `rotation` plus a `window` resize listener; re-measure only when the user actually rotates or resizes the viewport.
+- **Affected files**: `services/frontend/src/components/ChartViewer.tsx`, `services/frontend/src/styles/global.css`
+- **Commit/PR**: #44 (caught during initial UI test on EDDK Koeln Bonn 3 — fixed before merge).

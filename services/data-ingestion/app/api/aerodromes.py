@@ -14,7 +14,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import get_session_factory
-from app.db.models import Aerodrome
+from app.db.models import Aerodrome, Chart
 from app.core.config import settings
 from shared.schemas import (
     Aerodrome as AerodromeSchema,
@@ -46,6 +46,7 @@ def get_db():
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 
@@ -81,6 +82,7 @@ class ChartRead(BaseModel):
     title_de: str | None
     source_url: str
     preview_url: str | None = None  # computed below
+    rotation_degrees: int = 0
 
     @classmethod
     def from_orm_with_url(cls, chart) -> "ChartRead":
@@ -99,6 +101,7 @@ class ChartRead(BaseModel):
             title_de=chart.title_de,
             source_url=chart.source_url,
             preview_url=preview_url,
+            rotation_degrees=chart.rotation_degrees,
         )
 
 
@@ -201,3 +204,46 @@ def get_aerodrome(
     if row is None:
         raise HTTPException(status_code=404, detail=f"Aerodrome {icao_upper} not found")
     return AerodromeDetail.from_orm_with_urls(row)
+
+
+# --- Chart rotation persistence --- #
+
+
+class ChartRotationUpdate(BaseModel):
+    degrees: Literal[0, 90, 180, 270]
+
+
+class ChartRotationResponse(BaseModel):
+    id: int
+    rotation_degrees: int
+
+
+@router.patch(
+    "/{icao}/charts/{chart_id}/rotation",
+    response_model=ChartRotationResponse,
+    summary="Persist user's preferred rotation for a chart",
+)
+def update_chart_rotation(
+    icao: str,
+    chart_id: int,
+    payload: ChartRotationUpdate,
+    db: Annotated[Session, Depends(get_db)],
+) -> ChartRotationResponse:
+    """Set `rotation_degrees` (0/90/180/270) for a single chart of an aerodrome."""
+    icao_upper = icao.upper()
+    if len(icao_upper) != 4 or not icao_upper.isalpha():
+        raise HTTPException(status_code=400, detail="ICAO must be four letters")
+
+    chart = db.execute(
+        select(Chart).where(Chart.id == chart_id, Chart.aerodrome_icao == icao_upper)
+    ).scalar_one_or_none()
+    if chart is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Chart {chart_id} not found for aerodrome {icao_upper}",
+        )
+
+    chart.rotation_degrees = payload.degrees
+    db.commit()
+    db.refresh(chart)
+    return ChartRotationResponse(id=chart.id, rotation_degrees=chart.rotation_degrees)

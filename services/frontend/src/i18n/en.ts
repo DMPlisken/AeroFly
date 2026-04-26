@@ -106,6 +106,8 @@ export const en = {
   "search.pagination.next": "Next",
   "search.loading": "Loading…",
   "search.error": "Could not load aerodromes: {message}",
+  "search.match.fuzzy": "Similar",
+  "search.match.fuzzy.tooltip": "Similar to your query (typo-tolerant match)",
 
   // Aerodrome card
   "card.elevation": "Elev",

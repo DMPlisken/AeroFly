@@ -18,7 +18,7 @@
 - [ ] Scheduled re-sync jobs — for future AIRAC-cycle updates via the existing scraper
 
 ### Search & API
-- [ ] Meilisearch index configuration (aerodromes, frequencies, charts) — issue #11 (pending go/no-go decision)
+- [x] Meilisearch full-text aerodrome search — issue #11 (typo-tolerant, multi-field, partial-ICAO via icao_search suffix field, German umlaut synonyms, live-search debounced 250ms, fuzzy-match hint in UI). Subscribers receive `aerodrome.upsert`/`.delete` via Redis pub/sub. Frequency/chart/NOTAM index → eigenes Folge-Issue.
 - [x] Gateway REST API — aerodrome listing + detail endpoints — issue #8
 - [x] Full-text prefix search endpoint (ICAO, name) — issue #8 (ILIKE against Postgres)
 - [x] Swagger/OpenAPI documentation — gateway at `/api/docs`, data-ingestion at `/docs`

@@ -103,6 +103,8 @@ export const de: Record<TranslationKey, string> = {
   "search.pagination.next": "Weiter",
   "search.loading": "Lädt…",
   "search.error": "Flugplätze konnten nicht geladen werden: {message}",
+  "search.match.fuzzy": "Ähnlich",
+  "search.match.fuzzy.tooltip": "Ähnlich zu deiner Eingabe (Tippfehler-tolerant)",
 
   "card.elevation": "Höhe",
   "card.runways": "RWY",

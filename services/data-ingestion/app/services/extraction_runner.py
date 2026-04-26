@@ -146,6 +146,14 @@ class ExtractionRunner:
             job.current_step = "Fertig"
             job.completed_at = datetime.now(timezone.utc)
             session.commit()
+            # Notify search (and any future subscribers) that this aerodrome
+            # has new data. Best-effort — search's startup bulk-load is the
+            # safety net if Redis is briefly unavailable.
+            try:
+                from app.services.events import publish_aerodrome_upsert
+                publish_aerodrome_upsert(icao)
+            except Exception:
+                log.exception("Failed to publish aerodrome.upsert for %s", icao)
         except Exception as exc:
             log.exception("Extraction job %s failed", job_id)
             session.rollback()

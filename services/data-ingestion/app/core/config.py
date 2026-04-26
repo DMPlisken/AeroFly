@@ -23,6 +23,12 @@ class Settings(BaseSettings):
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
+    @property
+    def redis_url(self) -> str:
+        if self.redis_password:
+            return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/0"
+        return f"redis://{self.redis_host}:{self.redis_port}/0"
+
     class Config:
         env_file = ".env"
 

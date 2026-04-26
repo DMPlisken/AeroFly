@@ -118,6 +118,28 @@ export function getAerodrome(icao: string): Promise<AerodromeDetail> {
   return apiGetJson<AerodromeDetail>(`/aerodromes/${icao}`);
 }
 
+// Meilisearch-backed search hits carry a match_type hint so the UI can flag
+// fuzzy/typo-corrected results.
+export type SearchMatchType = "exact" | "prefix" | "fuzzy";
+
+export interface AerodromeSearchHit extends Aerodrome {
+  match_type: SearchMatchType;
+}
+
+export interface SearchParams {
+  q?: string;
+  type?: AerodromeType;
+  region?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export function searchAerodromes(
+  params: SearchParams,
+): Promise<ApiListResponse<AerodromeSearchHit>> {
+  return apiListJson<AerodromeSearchHit>("/search/aerodromes", { ...params });
+}
+
 export function setChartRotation(
   icao: string,
   chartId: number,

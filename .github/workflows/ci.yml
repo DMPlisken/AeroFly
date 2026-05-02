@@ -11,6 +11,7 @@ jobs:
   python-services:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         service: [gateway, data-ingestion, search]
     services:
@@ -61,7 +62,17 @@ jobs:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: aerofly_test
           REDIS_HOST: localhost
-        run: pytest tests/ -v
+        # Exit code 5 = "no tests collected" — treat as success so services
+        # without tests yet don't break CI.
+        run: |
+          set +e
+          pytest tests/ -v
+          code=$?
+          if [ $code -eq 5 ]; then
+            echo "::notice::No tests collected for ${{ matrix.service }} — treating as success."
+            exit 0
+          fi
+          exit $code
 
   # --- Frontend ---
   frontend:
@@ -71,9 +82,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Install dependencies
+      # Workaround for npm/cli#4828: package-lock.json generated on Windows
+      # omits Linux-specific rollup binaries. Drop the lockfile + node_modules
+      # and run a fresh install so npm resolves the correct platform binary
+      # (backed up by optionalDependencies in package.json).
+      - name: Install dependencies (platform-safe)
         working-directory: services/frontend
-        run: npm ci
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --no-audit --no-fund
       - name: Type check
         working-directory: services/frontend
         run: npx tsc --noEmit

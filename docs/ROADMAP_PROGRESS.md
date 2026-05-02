@@ -32,6 +32,7 @@
 - [x] Aerodrome detail view — issue #8 + #13 + #17 + #19 (thumbnail grid grouped by chart type, click opens pan/zoom viewer, AIRAC visible per card)
 - [x] Bilingual UI (DE/EN) — issue #8, custom I18nProvider, every string translated, persisted via localStorage
 - [x] Chart rotation in viewer — issue #44 (90°-Schritte L/R/Reset, persistiert pro Chart in `ingest.charts.rotation_degrees`, fit-to-screen via ResizeObserver, Design Kit §23). Pinch-Rotate + Auto-Orientation explizit als Folge-Issues.
+- [x] Document print workflows — issues #47 + #48, PR #49 (single per ChartCard / ChartViewer, multi-select „Auswahl drucken (n)", „Alle drucken", visible-area canvas snapshot via fa-crop button). Browser-only (`window.print()` + `@media print`), per-page named `@page portrait/landscape` rules for mixed orientations, hi-res `_print` URL for snapshot bitmaps. Design Kit §24. BUG-006 + BUG-007 fixed during the same iteration.
 - [ ] Responsive layout — issue #15 (pending go/no-go decision)
 
 ## Phase 2: Enhanced Data & Tools (Planned)

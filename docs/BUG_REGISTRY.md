@@ -30,12 +30,13 @@ Each entry:
 - **Affected files**: `services/data-ingestion/alembic/env.py`, `services/search/alembic/env.py`, `services/gateway/alembic/env.py`
 - **Commit/PR**: #4
 
-### [BUG-003] nginx returns 502 for /api/* after rebuilding gateway/data-ingestion
+### [BUG-003] nginx returns 502 for /api/* after rebuilding gateway/data-ingestion — **FIXED #51 / PR pending**
 - **Symptom**: Frontend looks broken after `docker compose up --build -d` touches a backend service. Static assets load (React app renders), but every `/api/*` call returns 502. `docker compose ps` shows all services healthy.
 - **Root cause**: nginx resolves upstream hostnames once at startup and caches the IPs. When a backend container is recreated, it gets a new internal IP on the compose network; nginx keeps trying the old IP and the kernel returns `connect() failed (111: Connection refused)` to nginx, which replies 502 to the client.
-- **Fix**: `docker compose restart nginx` after any rebuild that recreated a backend container. Long-term fix: either (a) add a `resolver` directive in the nginx config with a short TTL + use variables in `proxy_pass`, or (b) always `up --build` nginx alongside the backends so it restarts too.
-- **Affected files**: `deploy/nginx/*.conf`, runbook step 9.
-- **Commit/PR**: discovered during #32 spike validation.
+- **Workaround (pre-fix)**: `docker compose restart nginx` after any rebuild that recreated a backend container.
+- **Permanent fix (issue #51)**: `infrastructure/nginx/nginx.conf` now uses Docker's embedded DNS (`resolver 127.0.0.11 valid=10s ipv6=off;`) plus variable-based `proxy_pass` (e.g. `set $upstream_gateway "gateway:8000"; proxy_pass http://$upstream_gateway$request_uri;`). Variable-form `proxy_pass` forces nginx to re-resolve the hostname at request time (cached for 10 s) rather than once at startup. Backends can now be rebuilt without a nginx restart — the new IP is picked up automatically within ~10 s.
+- **Affected files**: `infrastructure/nginx/nginx.conf`.
+- **Commit/PR**: discovered during #32 spike validation, recurred during #47 housekeeping, fixed via #51.
 
 ### [BUG-004] Manifest-driven chart_selector returns empty on pre-#30 manifests
 - **Symptom**: After merging #32, running the extraction spike reports `"no chart matched the field group's accepted chart_types"` for every aerodrome — even though `data/aerodromes/<ICAO>/manifest.json` exists.

@@ -275,3 +275,11 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-05-02 13:25 — Housekeeping ausführen (`feat/47-print-documents`)
 
 > perfekt - do housekeeping
+
+### 2026-05-02 14:00 — Bug: Suche liefert keine Flugplätze nach Rebuild (`develop`)
+
+> Ich bekomme überhaupt keine Flugplätze mehr, egal ob ich Frankfurt oder Hamburg eingebe, ich bekomme nichts mehr angezeigt.
+
+### 2026-05-02 14:10 — Permanenter Fix für BUG-003 (nginx DNS-Cache) (`develop`)
+
+> a

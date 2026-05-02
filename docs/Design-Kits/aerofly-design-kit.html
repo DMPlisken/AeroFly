@@ -1281,6 +1281,7 @@
         <li><a href="#sec-21">21. Mockup: Aerodrome Detail</a></li>
         <li><a href="#sec-22">22. Mockup: Dashboard</a></li>
         <li><a href="#sec-23">23. Chart Viewer Toolbar (Rotation)</a></li>
+        <li><a href="#sec-24">24. Document Print Controls</a></li>
       </ul>
     </aside>
 
@@ -2635,6 +2636,117 @@
         <p class="sec-desc" style="margin-top:var(--space-3);">
           <strong>Out of scope dieser Toolbar:</strong> Pinch-Rotate-Geste, Hotkeys, freie (nicht-90°) Rotation, Auto-Orientation-Hint — alles als Folge-Issues.
         </p>
+      </section>
+
+      <section class="kit-section" id="sec-24">
+        <h2><span class="sec-num">24</span>Document Print Controls</h2>
+        <p class="sec-desc">
+          Druck-Steuerung für die heruntergeladenen Dokumente eines Aerodroms. Drei Einstiegspunkte: (1) Print-Icon im
+          <code>ChartViewer</code>, (2) Print-Icon-Overlay direkt auf jeder <code>ChartCard</code> (Einzeldruck ohne Öffnen),
+          (3) Toolbar oberhalb des Grids für „Alle drucken" + Multi-Select („Auswahl drucken"). Druck nutzt den Browser-Druckdialog
+          (<code>window.print()</code>) mit dediziertem <code>@media print</code>-Stylesheet — eine Karte pro A4-Seite, Orientierung
+          automatisch (Hoch/Quer) basierend auf dem Aspect-Ratio des Bildes nach Anwendung der gespeicherten Rotation.
+        </p>
+
+        <h3>24.1 Print-Icon-Buttons</h3>
+        <p class="sec-desc">
+          Zwei Varianten der <code>icon-button</code>-Komponente, beide im <code>ChartViewer</code>-Toolbar-Cluster
+          (rechts der Rotations-Controls). Variante <strong>Vollkarte</strong> (<code>fa-print</code>) druckt die ganze Karte
+          (eine A4-Seite, Orientierung auto). Variante <strong>Sichtbarer Ausschnitt</strong> (<code>fa-crop</code>) druckt
+          nur das, was aktuell im Viewer-Stage sichtbar ist (aktueller Zoom + Pan + Rotation), als hi-res Bitmap-Snapshot.
+          Der Crop-Button ist <strong>disabled</strong>, solange <code>scale === 1 && positionX === 0 && positionY === 0</code>
+          (also kein Detailausschnitt vorhanden ist).
+        </p>
+        <div class="kit-preview block">
+          <div style="display:inline-flex; gap: var(--space-2); align-items:center;">
+            <button type="button" class="icon-button" aria-label="Vollkarte drucken"><i class="fa-solid fa-print"></i></button>
+            <button type="button" class="icon-button" aria-label="Sichtbaren Ausschnitt drucken"><i class="fa-solid fa-crop"></i></button>
+            <button type="button" class="icon-button" aria-label="Sichtbaren Ausschnitt drucken (disabled)" disabled><i class="fa-solid fa-crop"></i></button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">full · visible-area · visible-area (disabled)</code>
+          </div>
+        </div>
+        <p class="sec-desc" style="margin-top:var(--space-2); font-size:var(--fs-xs);">
+          Der <code>fa-crop</code>-Button ist deaktiviert, bis der Nutzer hineinzoomt oder verschiebt. Damit ist der Druck
+          immer sinnvoll: nur erreichbar, wenn der Ausschnitt sich vom Default unterscheidet.
+        </p>
+
+        <h3 style="margin-top:var(--space-5);">24.2 ChartCard Overlay (Print + Select)</h3>
+        <p class="sec-desc">
+          Auf jeder ChartCard liegen zwei kleine Overlays über dem Thumbnail. Die Checkbox links oben ist nur sichtbar wenn der
+          Multi-Select-Modus aktiv ist; das Print-Icon rechts oben ist immer sichtbar. Beide stoppen die Click-Propagation, damit
+          ein Klick darauf nicht den Viewer öffnet.
+        </p>
+        <div class="kit-preview block" style="display:flex; gap:var(--space-4); flex-wrap:wrap;">
+          <div style="position:relative; width:200px; height:140px; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface-elev); overflow:hidden;">
+            <span style="position:absolute; top:var(--space-2); left:var(--space-2); width:22px; height:22px; border:2px solid var(--color-border-strong); border-radius:var(--radius-sm); background:var(--color-bg); display:inline-flex; align-items:center; justify-content:center;" aria-label="Auswählen"></span>
+            <button type="button" class="icon-button" aria-label="Drucken" style="position:absolute; top:var(--space-2); right:var(--space-2); background:rgba(0,0,0,0.55); color:#fff; border-color:transparent;"><i class="fa-solid fa-print"></i></button>
+            <span style="position:absolute; bottom:var(--space-2); left:var(--space-2); padding:2px 8px; border-radius:999px; background:var(--color-primary); color:#fff; font-size:var(--fs-xs);">ANFLUG</span>
+          </div>
+          <div style="position:relative; width:200px; height:140px; border:2px solid var(--color-primary); border-radius:var(--radius-md); background:var(--color-surface-elev); overflow:hidden;">
+            <span style="position:absolute; top:var(--space-2); left:var(--space-2); width:22px; height:22px; border:2px solid var(--color-primary); border-radius:var(--radius-sm); background:var(--color-primary); color:#fff; display:inline-flex; align-items:center; justify-content:center;" aria-label="Ausgewählt">
+              <i class="fa-solid fa-check" style="font-size:12px;"></i>
+            </span>
+            <button type="button" class="icon-button" aria-label="Drucken" style="position:absolute; top:var(--space-2); right:var(--space-2); background:rgba(0,0,0,0.55); color:#fff; border-color:transparent;"><i class="fa-solid fa-print"></i></button>
+            <span style="position:absolute; bottom:var(--space-2); left:var(--space-2); padding:2px 8px; border-radius:999px; background:var(--color-primary); color:#fff; font-size:var(--fs-xs);">ANFLUG</span>
+          </div>
+        </div>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:var(--space-3);">
+          <li>Linke Karte: Default-Zustand mit aktivem Multi-Select (leere Checkbox sichtbar, Print-Icon rechts oben).</li>
+          <li>Rechte Karte: Ausgewählter Zustand — Card-Border in <code>--color-primary</code>, Checkbox gefüllt mit Check-Icon.</li>
+          <li>Print-Icon-Overlay verwendet halbtransparenten dunklen Hintergrund, damit es auf jedem Thumbnail lesbar bleibt.</li>
+        </ul>
+
+        <h3 style="margin-top:var(--space-5);">24.3 Print Toolbar (Grid-Header)</h3>
+        <p class="sec-desc">
+          Toolbar oberhalb des Chart-Grids. Im Default-Modus nur ein Sekundär-Button „Auswählen" + Primär-Button „Alle drucken".
+          Im Auswahl-Modus erscheinen zusätzlich „Alle / Keine" und „Auswahl drucken (n)".
+        </p>
+        <div class="kit-preview block" style="display:flex; flex-direction:column; gap:var(--space-3);">
+          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn btn-secondary"><i class="fa-solid fa-square-check"></i> Auswählen</button>
+            <button type="button" class="btn btn-primary"><i class="fa-solid fa-print"></i> Alle drucken</button>
+          </div>
+          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Auswahl beenden</button>
+            <button type="button" class="btn btn-ghost">Alle</button>
+            <button type="button" class="btn btn-ghost">Keine</button>
+            <button type="button" class="btn btn-primary"><i class="fa-solid fa-print"></i> Auswahl drucken (3)</button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">24.4 Print Page Layout (A4)</h3>
+        <p class="sec-desc">
+          So sieht eine einzelne Druckseite aus. Header oben mit ICAO + Aerodromname + Doktyp + Druckdatum, danach das Bild
+          maximal an die A4-Seite angepasst (Hoch- oder Querformat je nach Aspect-Ratio des Bildes). Footer mit AIRAC-Cycle.
+        </p>
+        <div class="kit-preview block" style="background:#f5f5f5; padding:var(--space-4); border-radius:var(--radius-md);">
+          <div style="background:#fff; color:#111; aspect-ratio: 1/1.414; max-width:340px; margin:0 auto; padding:14px 18px; box-shadow:0 4px 18px rgba(0,0,0,0.18); display:flex; flex-direction:column;">
+            <header style="display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:8px; border-bottom:1.5px solid #111; font-family: var(--font-sans);">
+              <div>
+                <div style="font-size:11px; font-weight:700; letter-spacing:1px;">EDDK · Köln/Bonn</div>
+                <div style="font-size:9px; color:#555; margin-top:2px;">ANFLUG · ILS RWY 14L</div>
+              </div>
+              <div style="font-size:9px; color:#555; text-align:right;">Gedruckt 02.05.2026<br/>AIRAC 2604</div>
+            </header>
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:14px 0;">
+              <div style="width:80%; height:80%; background:repeating-linear-gradient(45deg,#eee,#eee 6px,#f9f9f9 6px,#f9f9f9 12px); border:1px solid #ddd; display:flex; align-items:center; justify-content:center; font-size:10px; color:#888;">
+                Karten-Bild (max-fit A4)
+              </div>
+            </div>
+            <footer style="font-size:8px; color:#666; padding-top:6px; border-top:1px solid #ddd; display:flex; justify-content:space-between;">
+              <span>AeroFly · DFS AIP</span><span>Seite 1 / 7</span>
+            </footer>
+          </div>
+        </div>
+
+        <p class="sec-desc" style="margin-top:var(--space-3);"><strong>Verhalten:</strong></p>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:0;">
+          <li>Druck nutzt die <code>_print</code>-Variante des Bildes (höhere Auflösung als die Preview).</li>
+          <li>Gespeicherte Rotation pro Karte wird angewandt, <em>danach</em> wird das Aspect-Ratio gemessen und Hoch/Quer entschieden.</li>
+          <li>Jede Seite erhält <strong>ihre eigene</strong> Orientierung über zwei benannte CSS-Regeln <code>@page portrait { size: A4 portrait }</code> und <code>@page landscape { size: A4 landscape }</code>, gebunden via <code>page: portrait | landscape</code> auf <code>.print-page--portrait</code> / <code>.print-page--landscape</code>. Gemischte Orientierungen in einem Druckauftrag werden so seitenweise korrekt gerendert.</li>
+          <li>Sammeldruck (Mehrere Karten): jede Karte auf eine eigene A4-Seite (<code>page-break-after: always</code>).</li>
+          <li>Im Druck werden Sidebar, TopBar und alle Toolbar-Controls ausgeblendet.</li>
+        </ul>
       </section>
 
       <footer style="margin-top:var(--space-16); padding-top:var(--space-8); border-top:1px solid var(--color-border-strong); color:var(--color-text-muted); font-size:var(--fs-sm);">

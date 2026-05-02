@@ -188,6 +188,7 @@ export function AerodromeDetailPage() {
               charts={data.charts}
               airac={data.source_airac_cycle ?? null}
               aerodromeIcao={data.icao}
+              aerodromeName={name}
             />
           </div>
 

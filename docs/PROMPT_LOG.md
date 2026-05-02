@@ -287,3 +287,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-05-02 14:30 — Mergen + Housekeeping (`fix/51-nginx-dynamic-dns`)
 
 > ja - mergen und houskeeping
+
+### 2026-05-03 01:25 — Fix wiederkehrende GitHub-CI-Fehler (`develop`)
+
+> Ich bekomme immer diese Fehlermeldung von GitHub. Fixe das bitte, damit es in Zukunft nicht mehr passiert.
+

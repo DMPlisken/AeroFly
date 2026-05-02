@@ -292,3 +292,12 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > Ich bekomme immer diese Fehlermeldung von GitHub. Fixe das bitte, damit es in Zukunft nicht mehr passiert.
 
+### 2026-05-03 01:25 — Intake-Antworten zur CI-Stabilisierung (`develop`)
+
+> 1 c; 2a; 3 issue
+
+### 2026-05-03 01:35 — Housekeeping ausführen (`fix/53-ci-workflow-stability`)
+
+> do housekeeping
+
+

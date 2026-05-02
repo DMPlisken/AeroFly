@@ -283,3 +283,7 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-05-02 14:10 — Permanenter Fix für BUG-003 (nginx DNS-Cache) (`develop`)
 
 > a
+
+### 2026-05-02 14:30 — Mergen + Housekeeping (`fix/51-nginx-dynamic-dns`)
+
+> ja - mergen und houskeeping

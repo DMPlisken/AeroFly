@@ -235,3 +235,43 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 ### 2026-04-26 — Aufgabe komplett fertig machen (`feat/11-meilisearch-search`)
 
 > ja - mache die aufgabe bis zum ende fertig
+
+### 2026-05-02 10:58 — Druck-Funktion für Karten und Schriftdokumente (`develop`)
+
+> Ich brauche noch die Möglichkeit, die Dokumente, also die Karten und die Schriftdokumente auszudrucken. Am besten jedes Einzelnen oder alle auf einmal.
+
+### 2026-05-02 11:05 — Antworten Druck-Feature (`develop`)
+
+> 1b - also alle heruntergeladenen dokumente zu dem jeweiligen flughafen; 2a; 3d; Am besten jedes Einzelnen oder alle auf einmal. 4c; 5 best passend auf druck A4 (Hochkant oder Quer); 6a; 7a
+
+### 2026-05-02 11:20 — Klarstellung: Schriftdokumente = bereits heruntergeladene Nicht-Karten-Dokumente (`feat/47-print-documents`)
+
+> Mit Schriftdokumenten meinte ich einfach die bereits heruntergeladenen, auch Bilder, aber eben da, wo statt Karten eben Schrift ist, also eben Erklärungen und so weiter. Ich erwarte keine anderen Downloads von anderen Dokumenten, sondern ich meinte die, die jetzt sowieso schon downgeloadet sind, aber eben alle, also nicht nur die, die Karten beinhalten. Also sollten wir jetzt einfach nur die Druckfunktion für alles, das was downgeloadet ist, umsetzen. Also Einzeldruck, Auswahldruck, alle Drucken. Ist das jetzt klar genug oder sonst fragt mich nochmal.
+
+### 2026-05-02 12:10 — Bug: Sammeldruck zwingt alle Seiten in eine Orientierung (`feat/47-print-documents`)
+
+> Wir haben noch ein Ausrichtungsproblem bei EDDV, also Hannover wird Dokument oder Bild AD 2-4-3 und Dokument EDDV Hannover 2 im Querformat gedruckt und die müssten, so wie im Einzeldruck, im Hochformat gedruckt werden. Im Einzeldruck machst du das bei allen richtig.
+
+### 2026-05-02 12:13 — Direkt fixen, kein eigenes Issue (`feat/47-print-documents`)
+
+> a
+
+### 2026-05-02 12:25 — Container restart Frage (`feat/47-print-documents`)
+
+> noch nicht geändert, musst du den docker vielleicht neu bauen?
+
+### 2026-05-02 12:35 — Bug: Sammeldruck-Seiten überlaufen (3 Seiten pro Karte, rechts versetzt) (`feat/47-print-documents`)
+
+> Jetzt stimmen aber die Seiten nicht mehr, das heißt EDDV Hannover 1 druckt erstmal eine leere Seite, dann kommt das Bild und das ist auch noch auf die nächste Seite, also das heißt wir haben drei Seiten für EDDV Hannover 1, dann kommt das nächste rechts versetzt, also nicht mittig und dadurch kommt noch eine Seite für EDDV Hannover 2, EDDV Hannover 3 stimmt auch nicht, haben wir auch drei Seiten plötzlich und das nächste auch drei Seiten, also die sind jetzt nicht mehr auf einer Seite, die nächsten Bilder.
+
+### 2026-05-02 12:50 — Feature: Zoom-Ausschnitt aus Viewer drucken (`feat/47-print-documents`)
+
+> Ich bräuchte noch eine weitere Druckfunktion, nämlich wenn ich im Einzelbild reingezoomt habe und einen bestimmten Ausschnitt sehe, dass ich den auch genau so diesen Ausschnitt drucken kann.
+
+### 2026-05-02 12:55 — Antworten Detail-Druck-Feature (`feat/47-print-documents`)
+
+> 1a; 2a; 3a; 4c; 5b
+
+### 2026-05-02 13:25 — Housekeeping ausführen (`feat/47-print-documents`)
+
+> perfekt - do housekeeping

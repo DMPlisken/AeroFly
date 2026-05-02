@@ -1054,3 +1054,210 @@ a:hover {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 24. Document Print Controls (Design Kit §24)                              */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.chart-grid-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+/* Card overlays — print icon (always visible) + select checkbox (visible in select mode) */
+.chart-card-overlay-print,
+.chart-card-overlay-select {
+  position: absolute;
+  top: var(--space-2);
+  z-index: 2;
+  border: none;
+  cursor: pointer;
+}
+
+.chart-card-overlay-print {
+  right: var(--space-2);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+.chart-card:hover .chart-card-overlay-print,
+.chart-card:focus-within .chart-card-overlay-print,
+.chart-card-overlay-print:focus-visible {
+  opacity: 1;
+}
+.chart-card-overlay-print:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.chart-card-overlay-select {
+  left: var(--space-2);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 2px solid var(--color-border-strong);
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.chart-card.is-selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+.chart-card.is-selected .chart-card-overlay-select {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Hidden print container — only visible while printing */
+.print-root {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+@media print {
+  /* Hide everything that is NOT inside the print root */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  body > *:not(.print-root) {
+    display: none !important;
+  }
+
+  .print-root {
+    position: static !important;
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Two named page rules so each printed page can choose its own
+     orientation (mixed portrait/landscape charts in one print job). */
+  @page portrait {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  @page landscape {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  /* Fallback for any .print-page without an orientation modifier. */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  /* Explicit mm dimensions matching the printable area inside @page margins
+     (210x297 paper minus 10mm margins on all sides = 190x277 portrait,
+     277x190 landscape). `vh`/percentage heights are unreliable in print and
+     caused content to spill across multiple pages. */
+  .print-page {
+    box-sizing: border-box;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: #111;
+    background: #fff;
+    font-family: var(--font-sans);
+  }
+  .print-page--portrait {
+    page: portrait;
+    width: 190mm;
+    height: 277mm;
+  }
+  .print-page--landscape {
+    page: landscape;
+    width: 277mm;
+    height: 190mm;
+  }
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .print-page-header {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 3mm;
+    border-bottom: 1.5px solid #111;
+  }
+  .print-page-header .lhs-title {
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .print-page-header .lhs-sub {
+    font-size: 9pt;
+    color: #555;
+    margin-top: 1mm;
+  }
+  .print-page-header .rhs {
+    font-size: 8pt;
+    color: #555;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  .print-page-image-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 3mm 0;
+  }
+
+  /* Default: image fills the wrap, fit-contain. JS sets explicit width/height
+     in mm for rotated images (90/270) so the rotated visual stays inside
+     the wrap and stays centered. */
+  .print-page-image {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+  }
+
+  .print-page-footer {
+    flex: 0 0 auto;
+    font-size: 7pt;
+    color: #666;
+    padding-top: 2mm;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+  }
+}

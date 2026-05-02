@@ -6,6 +6,7 @@ import {
 } from "react-zoom-pan-pinch";
 
 import { setChartRotation, type RotationDegrees } from "@/api/aerodromes";
+import type { ChartViewSnapshot } from "@/utils/printDocuments";
 
 interface Props {
   title: string;
@@ -18,6 +19,10 @@ interface Props {
   initialRotation?: RotationDegrees;
   /** Notify parent of new persisted rotation, so the cached chart stays in sync. */
   onRotationChange?: (degrees: RotationDegrees) => void;
+  /** Print the currently-viewed chart via the parent (which owns context + labels). */
+  onPrint?: () => void;
+  /** Print only the visible viewport (requires the parent to handle the snapshot). */
+  onPrintView?: (snapshot: ChartViewSnapshot) => void;
   onClose: () => void;
 }
 
@@ -38,16 +43,26 @@ export function ChartViewer({
   aerodromeIcao,
   initialRotation = 0,
   onRotationChange,
+  onPrint,
+  onPrintView,
   onClose,
 }: Props) {
   const hiRes = printUrl ?? derivePrintUrl(previewUrl);
   const [src, setSrc] = useState(hiRes);
   const [rotation, setRotation] = useState<RotationDegrees>(initialRotation);
   const [stageSize, setStageSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [transform, setTransform] = useState<{ scale: number; positionX: number; positionY: number }>({
+    scale: 1,
+    positionX: 0,
+    positionY: 0,
+  });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   const isQuarterRotated = rotation === 90 || rotation === 270;
   const canPersist = chartId !== undefined && aerodromeIcao !== undefined;
+  const isViewModified =
+    transform.scale !== 1 || transform.positionX !== 0 || transform.positionY !== 0;
 
   function handleError() {
     if (src !== previewUrl) setSrc(previewUrl);
@@ -70,6 +85,24 @@ export function ChartViewer({
   }
   function resetRotation() {
     persistRotation(0);
+  }
+
+  function handlePrintView() {
+    if (!onPrintView) return;
+    const root = containerRef.current;
+    const stage = root?.querySelector(".chart-viewer-stage") as HTMLElement | null;
+    const img = imgRef.current;
+    if (!stage || !img) return;
+    onPrintView({
+      imgEl: img,
+      stageEl: stage,
+      highResUrl: hiRes,
+      fallbackUrl: previewUrl,
+      scale: transform.scale,
+      positionX: transform.positionX,
+      positionY: transform.positionY,
+      rotation,
+    });
   }
 
   useEffect(() => {
@@ -155,6 +188,13 @@ export function ChartViewer({
           pinch={{ step: 5 }}
           limitToBounds={false}
           centerOnInit
+          onTransformed={(_ref, state) =>
+            setTransform({
+              scale: state.scale,
+              positionX: state.positionX,
+              positionY: state.positionY,
+            })
+          }
         >
           {(utils: ReactZoomPanPinchContentRef) => (
             <>
@@ -209,12 +249,39 @@ export function ChartViewer({
                 >
                   <i className="fa-solid fa-arrows-up-down-left-right" />
                 </button>
+                {(onPrint || onPrintView) && (
+                  <span className="chart-viewer-controls-divider" aria-hidden="true" />
+                )}
+                {onPrint && (
+                  <button
+                    type="button"
+                    className="icon-button"
+                    aria-label="Print full chart"
+                    title="Print full chart"
+                    onClick={onPrint}
+                  >
+                    <i className="fa-solid fa-print" />
+                  </button>
+                )}
+                {onPrintView && (
+                  <button
+                    type="button"
+                    className="icon-button"
+                    aria-label="Print visible area"
+                    title="Print visible area"
+                    onClick={handlePrintView}
+                    disabled={!isViewModified}
+                  >
+                    <i className="fa-solid fa-crop" />
+                  </button>
+                )}
               </div>
               <TransformComponent
                 wrapperClass="chart-viewer-stage"
                 contentClass="chart-viewer-content"
               >
                 <img
+                  ref={imgRef}
                   src={src}
                   alt={title}
                   onError={handleError}

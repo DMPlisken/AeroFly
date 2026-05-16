@@ -2,16 +2,20 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
+  listAerodromes,
   searchAerodromes,
+  type Aerodrome,
   type AerodromeSearchHit,
   type AerodromeType,
 } from "@/api/aerodromes";
 import { AerodromeCard } from "@/components/AerodromeCard";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useI18n } from "@/i18n";
 
 const LIMIT = 24;
 const SEARCH_DEBOUNCE_MS = 250;
+type Tab = "all" | "favorites";
 
 function paginationWindow(current: number, total: number): (number | "ellipsis")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i);
@@ -34,10 +38,27 @@ const TYPES: (AerodromeType | "")[] = [
   "other",
 ];
 
+/** Fetch one aerodrome via the prefix-search list endpoint, picking the exact ICAO match. */
+async function fetchAerodromeByIcao(icao: string): Promise<Aerodrome | null> {
+  const code = icao.trim().toUpperCase();
+  try {
+    const res = await listAerodromes({ q: code, limit: 5 });
+    return res.items.find((a) => a.icao.toUpperCase() === code) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function SearchPage() {
   const { t } = useI18n();
   const [params, setParams] = useSearchParams();
+  const {
+    favorites,
+    loaded: favoritesLoaded,
+    count: favoritesCount,
+  } = useFavorites();
 
+  const tab: Tab = params.get("tab") === "favorites" ? "favorites" : "all";
   const urlQ = params.get("q") ?? "";
   const type = (params.get("type") ?? "") as AerodromeType | "";
   const offset = Number(params.get("offset") ?? 0);
@@ -65,12 +86,15 @@ export function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQ]);
 
-  const [items, setItems] = useState<AerodromeSearchHit[]>([]);
+  const [items, setItems] = useState<Aerodrome[]>([]);
   const [total, setTotal] = useState(0);
+  const [matchTypes, setMatchTypes] = useState<Map<string, "exact" | "prefix" | "fuzzy">>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Effect for "All" tab — Meilisearch-backed search via gateway.
   useEffect(() => {
+    if (tab !== "all") return;
     setLoading(true);
     setError(null);
     searchAerodromes({
@@ -82,10 +106,50 @@ export function SearchPage() {
       .then((res) => {
         setItems(res.items);
         setTotal(res.total);
+        setMatchTypes(new Map(res.items.map((it: AerodromeSearchHit) => [it.icao, it.match_type])));
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [debouncedQ, type, offset]);
+  }, [tab, debouncedQ, type, offset]);
+
+  // Effect for "Favorites" tab — fetches each favorite via the list endpoint,
+  // then filters/paginates client-side. Re-runs when the favorites set changes
+  // so newly added or removed favorites appear/disappear immediately.
+  useEffect(() => {
+    if (tab !== "favorites") return;
+    if (!favoritesLoaded) return;
+
+    setMatchTypes(new Map());
+
+    if (favoritesCount === 0) {
+      setItems([]);
+      setTotal(0);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    const icaos = Array.from(favorites).sort();
+    Promise.all(icaos.map(fetchAerodromeByIcao))
+      .then((results) => {
+        const resolved = results.filter((a): a is Aerodrome => a !== null);
+        const q = debouncedQ.trim().toLowerCase();
+        const filtered = resolved.filter((a) => {
+          if (type && a.type !== type) return false;
+          if (!q) return true;
+          const hay = [a.icao, a.name, a.name_de, a.city, a.city_de]
+            .filter((s): s is string => !!s)
+            .map((s) => s.toLowerCase());
+          return hay.some((s) => s.includes(q));
+        });
+        setTotal(filtered.length);
+        setItems(filtered.slice(offset, offset + LIMIT));
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .finally(() => setLoading(false));
+  }, [tab, favoritesLoaded, favorites, favoritesCount, debouncedQ, type, offset]);
 
   const from = total === 0 ? 0 : offset + 1;
   const to = Math.min(offset + items.length, total);
@@ -105,6 +169,18 @@ export function SearchPage() {
     setParams(p);
   }
 
+  function switchTab(nextTab: Tab) {
+    if (nextTab === tab) return;
+    const p = new URLSearchParams(params);
+    if (nextTab === "favorites") p.set("tab", "favorites");
+    else p.delete("tab");
+    p.delete("offset");
+    setParams(p);
+  }
+
+  const showFavoritesEmptyState =
+    tab === "favorites" && favoritesLoaded && favoritesCount === 0;
+
   return (
     <>
       <div className="page-hero">
@@ -115,6 +191,24 @@ export function SearchPage() {
             {t("search.subtitle", { total, from, to })}
           </p>
         </div>
+      </div>
+
+      <div className="tabs">
+        <button
+          type="button"
+          className={`tab ${tab === "all" ? "is-active" : ""}`}
+          onClick={() => switchTab("all")}
+        >
+          {t("favorites.tab.all")}
+        </button>
+        <button
+          type="button"
+          className={`tab ${tab === "favorites" ? "is-active" : ""}`}
+          onClick={() => switchTab("favorites")}
+        >
+          {t("favorites.tab.favorites")}
+          <span className="tab-count">{favoritesCount}</span>
+        </button>
       </div>
 
       <div style={{ display: "flex", gap: "var(--space-3)", marginBottom: "var(--space-6)", flexWrap: "wrap" }}>
@@ -142,7 +236,20 @@ export function SearchPage() {
         </select>
       </div>
 
-      {loading ? (
+      {showFavoritesEmptyState ? (
+        <div className="empty-state">
+          <i className="fa-regular fa-star" />
+          <h4>{t("favorites.empty.title")}</h4>
+          <p>{t("favorites.empty.body")}</p>
+          <button
+            type="button"
+            className="btn btn-primary empty-cta"
+            onClick={() => switchTab("all")}
+          >
+            {t("favorites.empty.cta")}
+          </button>
+        </div>
+      ) : loading ? (
         <p style={{ color: "var(--color-text-muted)" }}>{t("search.loading")}</p>
       ) : error ? (
         <div className="empty-state">
@@ -154,7 +261,14 @@ export function SearchPage() {
           <i className="fa-solid fa-plane-slash" />
           <h4>{t("search.empty.title")}</h4>
           <p>{t("search.empty.body")}</p>
-          <button className="btn btn-secondary" onClick={() => setParams(new URLSearchParams())}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              const p = new URLSearchParams();
+              if (tab === "favorites") p.set("tab", "favorites");
+              setParams(p);
+            }}
+          >
             {t("search.empty.clear")}
           </button>
         </div>
@@ -162,7 +276,11 @@ export function SearchPage() {
         <>
           <div className="results-grid">
             {items.map((ad) => (
-              <AerodromeCard key={ad.icao} aerodrome={ad} matchType={ad.match_type} />
+              <AerodromeCard
+                key={ad.icao}
+                aerodrome={ad}
+                matchType={matchTypes.get(ad.icao)}
+              />
             ))}
           </div>
 

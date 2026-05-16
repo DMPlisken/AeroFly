@@ -8,6 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.aerodromes import router as aerodromes_router
 from app.api.extraction import router as extraction_router
+from app.api.favorites import router as favorites_router
 from app.api.search import router as search_router
 from app.api.usage import router as usage_router
 from app.core.config import settings
@@ -50,6 +51,7 @@ app.include_router(aerodromes_router)
 app.include_router(usage_router)
 app.include_router(extraction_router)
 app.include_router(search_router)
+app.include_router(favorites_router)
 
 
 @app.get("/api/health", tags=["health"])

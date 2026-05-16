@@ -6,6 +6,7 @@ import {
 } from "react-zoom-pan-pinch";
 
 import { setChartRotation, type RotationDegrees } from "@/api/aerodromes";
+import { FavoriteToggle } from "@/components/FavoriteToggle";
 import type { ChartViewSnapshot } from "@/utils/printDocuments";
 
 interface Props {
@@ -274,6 +275,12 @@ export function ChartViewer({
                   >
                     <i className="fa-solid fa-crop" />
                   </button>
+                )}
+                {aerodromeIcao && (
+                  <>
+                    <span className="chart-viewer-controls-divider" aria-hidden="true" />
+                    <FavoriteToggle icao={aerodromeIcao} size="md" stopPropagation={false} />
+                  </>
                 )}
               </div>
               <TransformComponent

@@ -210,6 +210,17 @@ export const de: Record<TranslationKey, string> = {
   "action.retry": "Erneut versuchen",
   "action.backToSearch": "Zurück zur Suche",
 
+  // Favorites (#55)
+  "favorites.toggle.add": "Zu Favoriten hinzufügen",
+  "favorites.toggle.remove": "Aus Favoriten entfernen",
+  "favorites.tab.all": "Alle",
+  "favorites.tab.favorites": "Favoriten",
+  "favorites.empty.title": "Noch keine Favoriten",
+  "favorites.empty.body":
+    "Markiere Flugplätze mit dem Stern in der Suche oder Detailansicht, um sie hier schnell wiederzufinden.",
+  "favorites.empty.cta": "Zur Flugplatzsuche",
+  "favorites.error": "Favoriten konnten nicht geladen werden: {message}",
+
   // Extraction panel (#34)
   "extraction.trigger": "Daten aktualisieren",
   "extraction.running": "Wird ausgeführt…",

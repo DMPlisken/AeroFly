@@ -219,6 +219,17 @@ export const en = {
   "action.retry": "Retry",
   "action.backToSearch": "Back to search",
 
+  // Favorites (#55)
+  "favorites.toggle.add": "Add to favorites",
+  "favorites.toggle.remove": "Remove from favorites",
+  "favorites.tab.all": "All",
+  "favorites.tab.favorites": "Favorites",
+  "favorites.empty.title": "No favorites yet",
+  "favorites.empty.body":
+    "Mark aerodromes with the star in the search or detail view to find them quickly here.",
+  "favorites.empty.cta": "Browse aerodromes",
+  "favorites.error": "Could not load favorites: {message}",
+
   // Extraction panel (#34)
   "extraction.trigger": "Refresh data",
   "extraction.running": "Running…",

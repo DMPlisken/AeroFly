@@ -324,4 +324,12 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > ja
 
+### 2026-05-16 — Frage: Issue 1 und 2 gefixt? (`develop`)
+
+> Hast du Issue 1 und 2 gefixt?
+
+### 2026-05-16 — Issue + Fix für Frontend-Dockerfile npm ci Problem (`develop`)
+
+> ja, mach Issue und Fix
+
 

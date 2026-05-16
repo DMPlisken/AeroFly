@@ -300,4 +300,28 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > do housekeeping
 
+### 2026-05-16 — Feature request: Flughäfen als Favoriten markieren + Übersicht (`develop`)
+
+> Ich hätte gern die Möglichkeit, Flughäfen zu Favoriten hinzuzufügen und die natürlich dann auch in der Übersicht sehen zu können.
+
+### 2026-05-16 — Reihenfolge: Design Kit zuerst (`develop`)
+
+> Variante 1, Design Kit zuerst
+
+### 2026-05-16 — Frage zum lokalen Docker-Deploy (`feat/55-aerodrome-favorites`)
+
+> Hast du das jetzt schon deployed lokal auf dem Docker?
+
+### 2026-05-16 — Freigabe für Backend-Implementierung (`feat/55-aerodrome-favorites`)
+
+> ja - ist gut - go
+
+### 2026-05-16 — Freigabe für Frontend-Implementierung (`feat/55-aerodrome-favorites`)
+
+> continue
+
+### 2026-05-16 — Housekeeping ausführen (`feat/55-aerodrome-favorites`)
+
+> ja
+
 

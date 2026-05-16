@@ -7,6 +7,7 @@ import {
 } from "@/api/aerodromes";
 import { ChartGrid } from "@/components/ChartGrid";
 import { ExtractionPanel } from "@/components/ExtractionPanel";
+import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { FrequencyBadge } from "@/components/FrequencyBadge";
 import { useExtractionJob } from "@/hooks/useExtractionJob";
 import { useI18n, type Locale } from "@/i18n";
@@ -111,6 +112,7 @@ export function AerodromeDetailPage() {
             {[city, region, "Germany"].filter(Boolean).join(" · ")}
           </p>
         </div>
+        <FavoriteToggle icao={data.icao} size="lg" />
       </div>
 
       <ExtractionPanel

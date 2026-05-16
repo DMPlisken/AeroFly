@@ -823,6 +823,85 @@
     }
     .icon-button:hover { background: var(--color-surface); color: var(--color-text); }
 
+    /* --- Favorite Toggle (Star)
+       Used on Aerodrome Card (corner overlay), Detail Header (inline), ChartViewer toolbar (inline).
+       --color-warning is the AeroFly accent for "starred". */
+    .fav-toggle {
+      width: 36px; height: 36px; border-radius: var(--radius-lg);
+      display: inline-grid; place-items: center;
+      background: transparent; color: var(--color-text-muted);
+      border: 1px solid transparent; cursor: pointer;
+      transition: background var(--duration-fast), color var(--duration-fast), transform var(--duration-fast);
+      font-size: var(--fs-lg);
+    }
+    .fav-toggle:hover { background: var(--color-surface); color: var(--color-warning); transform: scale(1.06); }
+    .fav-toggle:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--color-primary-ring);
+    }
+    .fav-toggle.is-active { color: var(--color-warning); }
+    .fav-toggle.is-active:hover { color: var(--color-warning); background: var(--color-warning-soft); }
+    .fav-toggle[disabled] { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .fav-toggle--sm { width: 28px; height: 28px; font-size: var(--fs-sm); }
+    .fav-toggle--lg { width: 44px; height: 44px; font-size: var(--fs-xl); }
+    /* Variant used as an overlay on top of a card thumbnail / image. */
+    .fav-toggle--overlay {
+      background: rgba(0,0,0,0.45); color: #fff;
+    }
+    .fav-toggle--overlay:hover { background: rgba(0,0,0,0.65); color: var(--color-warning); }
+    .fav-toggle--overlay.is-active { color: var(--color-warning); background: rgba(0,0,0,0.55); }
+
+    /* Subtle pulse when newly added (one-shot animation, triggered by adding .just-added) */
+    @keyframes fav-pulse {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+    .fav-toggle.just-added { animation: fav-pulse var(--duration-base) ease-out; }
+
+    /* --- Tab Switch Count Badge (extends .tab) --- */
+    .tab .tab-count {
+      display: inline-block;
+      margin-left: var(--space-2);
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: var(--color-surface-2);
+      color: var(--color-text-secondary);
+      font-size: 11px;
+      font-weight: var(--fw-semibold);
+      font-family: var(--font-mono);
+      line-height: 1.4;
+    }
+    .tab.is-active .tab-count { background: var(--color-primary-soft); color: var(--color-primary); }
+
+    /* --- Empty State (used by Favorites tab, NOTAM list, search-no-results, …) --- */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-12) var(--space-6);
+      text-align: center;
+      color: var(--color-text-secondary);
+    }
+    .empty-state .empty-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      font-size: 28px;
+      margin-bottom: var(--space-2);
+    }
+    .empty-state .empty-title {
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-semibold);
+      color: var(--color-text);
+    }
+    .empty-state .empty-body {
+      font-size: var(--fs-sm);
+      max-width: 420px;
+      line-height: 1.5;
+    }
+    .empty-state .empty-cta { margin-top: var(--space-3); }
+
     /* --- Breadcrumbs --- */
     .breadcrumbs { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); color: var(--color-text-muted); }
     .breadcrumbs a { color: var(--color-text-secondary); text-decoration: none; }
@@ -1282,6 +1361,9 @@
         <li><a href="#sec-22">22. Mockup: Dashboard</a></li>
         <li><a href="#sec-23">23. Chart Viewer Toolbar (Rotation)</a></li>
         <li><a href="#sec-24">24. Document Print Controls</a></li>
+        <li><a href="#sec-25">25. Favorite Toggle</a></li>
+        <li><a href="#sec-26">26. Tab Switch</a></li>
+        <li><a href="#sec-27">27. Empty State</a></li>
       </ul>
     </aside>
 
@@ -1988,7 +2070,11 @@
       <!-- ================================================================ -->
       <section class="kit-section" id="sec-14">
         <h2><span class="sec-num">14</span>Aerodrome Card</h2>
-        <p class="sec-desc">Primary result unit in search and favorites. Click-through to the detail page.</p>
+        <p class="sec-desc">
+          Primary result unit in search and favorites. Click-through to the detail page.
+          The favorite toggle (<code>.fav-toggle</code>) lives in the card head, top-right, alongside the weather badge.
+          Toggling it must <code>event.stopPropagation()</code> so the card itself does not navigate.
+        </p>
         <div class="kit-preview grid-3">
           <div class="aerodrome-card">
             <div class="ad-head">
@@ -1996,7 +2082,12 @@
                 <div class="ad-icao">EDDF</div>
                 <div class="ad-name">Frankfurt am Main</div>
               </div>
-              <span class="wx-badge wx-vmc">VMC</span>
+              <div style="display:flex; align-items:center; gap:var(--space-2);">
+                <span class="wx-badge wx-vmc">VMC</span>
+                <button type="button" class="fav-toggle is-active" aria-label="Aus Favoriten entfernen" aria-pressed="true">
+                  <i class="fa-solid fa-star"></i>
+                </button>
+              </div>
             </div>
             <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Hessen · Germany</div>
             <div class="ad-freqs">
@@ -2015,7 +2106,12 @@
                 <div class="ad-icao">EDDM</div>
                 <div class="ad-name">München</div>
               </div>
-              <span class="wx-badge wx-vmc">VMC</span>
+              <div style="display:flex; align-items:center; gap:var(--space-2);">
+                <span class="wx-badge wx-vmc">VMC</span>
+                <button type="button" class="fav-toggle" aria-label="Zu Favoriten hinzufügen" aria-pressed="false">
+                  <i class="fa-regular fa-star"></i>
+                </button>
+              </div>
             </div>
             <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Bayern · Germany</div>
             <div class="ad-freqs">
@@ -2034,7 +2130,12 @@
                 <div class="ad-icao">EDDH</div>
                 <div class="ad-name">Hamburg</div>
               </div>
-              <span class="wx-badge wx-mvfr">MVFR</span>
+              <div style="display:flex; align-items:center; gap:var(--space-2);">
+                <span class="wx-badge wx-mvfr">MVFR</span>
+                <button type="button" class="fav-toggle" aria-label="Zu Favoriten hinzufügen" aria-pressed="false">
+                  <i class="fa-regular fa-star"></i>
+                </button>
+              </div>
             </div>
             <div class="ad-meta"><i class="fa-solid fa-location-dot"></i>Hamburg · Germany</div>
             <div class="ad-freqs">
@@ -2746,6 +2847,166 @@
           <li>Jede Seite erhält <strong>ihre eigene</strong> Orientierung über zwei benannte CSS-Regeln <code>@page portrait { size: A4 portrait }</code> und <code>@page landscape { size: A4 landscape }</code>, gebunden via <code>page: portrait | landscape</code> auf <code>.print-page--portrait</code> / <code>.print-page--landscape</code>. Gemischte Orientierungen in einem Druckauftrag werden so seitenweise korrekt gerendert.</li>
           <li>Sammeldruck (Mehrere Karten): jede Karte auf eine eigene A4-Seite (<code>page-break-after: always</code>).</li>
           <li>Im Druck werden Sidebar, TopBar und alle Toolbar-Controls ausgeblendet.</li>
+        </ul>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 25. Favorite Toggle                                               -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-25">
+        <h2><span class="sec-num">25</span>Favorite Toggle</h2>
+        <p class="sec-desc">
+          Stern-Toggle zum Markieren eines Flugplatzes als Favorit. Drei Einsatzorte: <strong>Aerodrome-Card</strong> (Suche/Favoriten,
+          Kopfzeile rechts), <strong>Detail-Header</strong> (neben Name/ICAO) und <strong>ChartViewer-Toolbar</strong>
+          (rechts neben Print-Controls). Persistenz erfolgt serverseitig per anonymer Device-ID (UUID v4, generiert
+          beim ersten App-Start, in <code>localStorage</code> unter <code>aerofly.deviceId</code> gespeichert, in jedem
+          Favorites-Request als <code>X-Device-Id</code>-Header mitgeschickt).
+        </p>
+
+        <h3>25.1 States &amp; Sizes</h3>
+        <div class="kit-preview block" style="display:flex; gap:var(--space-6); flex-wrap:wrap; align-items:center;">
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:var(--space-2);">
+            <button type="button" class="fav-toggle" aria-label="Zu Favoriten hinzufügen" aria-pressed="false">
+              <i class="fa-regular fa-star"></i>
+            </button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">inactive</code>
+          </div>
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:var(--space-2);">
+            <button type="button" class="fav-toggle is-active" aria-label="Aus Favoriten entfernen" aria-pressed="true">
+              <i class="fa-solid fa-star"></i>
+            </button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">active</code>
+          </div>
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:var(--space-2);">
+            <button type="button" class="fav-toggle" aria-label="Zu Favoriten hinzufügen (disabled)" aria-pressed="false" disabled>
+              <i class="fa-regular fa-star"></i>
+            </button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">disabled</code>
+          </div>
+          <span style="width:1px; align-self:stretch; background:var(--color-border);" aria-hidden="true"></span>
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:var(--space-2);">
+            <button type="button" class="fav-toggle fav-toggle--sm is-active" aria-pressed="true" aria-label="Favorit (klein)">
+              <i class="fa-solid fa-star"></i>
+            </button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">sm (28px)</code>
+          </div>
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:var(--space-2);">
+            <button type="button" class="fav-toggle is-active" aria-pressed="true" aria-label="Favorit (mittel)">
+              <i class="fa-solid fa-star"></i>
+            </button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">md (36px, default)</code>
+          </div>
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:var(--space-2);">
+            <button type="button" class="fav-toggle fav-toggle--lg is-active" aria-pressed="true" aria-label="Favorit (groß)">
+              <i class="fa-solid fa-star"></i>
+            </button>
+            <code style="font-size:var(--fs-xs); color:var(--color-text-muted);">lg (44px)</code>
+          </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">25.2 Overlay-Variante (auf dunklem Hintergrund)</h3>
+        <p class="sec-desc">
+          Wird der Stern direkt über einem Bild platziert (z.&nbsp;B. Detail-Hero, später ggf. Map-Pin), kommt die
+          <code>.fav-toggle--overlay</code>-Variante zum Einsatz: halbtransparenter dunkler Hintergrund + heller Icon, damit
+          die Lesbarkeit auf beliebigen Backdrops gewährleistet ist.
+        </p>
+        <div class="kit-preview block">
+          <div style="position:relative; width:260px; height:140px; border-radius:var(--radius-md); background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%); overflow:hidden;">
+            <button type="button" class="fav-toggle fav-toggle--overlay" aria-label="Zu Favoriten hinzufügen" aria-pressed="false" style="position:absolute; top:var(--space-2); right:var(--space-2);">
+              <i class="fa-regular fa-star"></i>
+            </button>
+            <span style="position:absolute; bottom:var(--space-2); left:var(--space-2); color:#fff; font-family:var(--font-mono); font-size:var(--fs-lg); font-weight:var(--fw-bold);">EDDF</span>
+          </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">25.3 Verhalten &amp; A11y</h3>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:0;">
+          <li>Stern-Icon: <code>fa-regular fa-star</code> (inaktiv) ↔ <code>fa-solid fa-star</code> (aktiv); Farbe aktiv = <code>--color-warning</code>.</li>
+          <li><code>aria-pressed</code> spiegelt den Status; <code>aria-label</code> lokalisiert (DE: „Zu Favoriten hinzufügen" / „Aus Favoriten entfernen", EN: „Add to favorites" / „Remove from favorites").</li>
+          <li>In klickbaren Containern (Card → Detail) muss der Toggle <code>event.stopPropagation()</code> aufrufen, damit der äußere Click-Handler nicht feuert.</li>
+          <li>Optimistic Update: UI schaltet sofort um; bei API-Fehler Rollback + Toast (siehe §12 Feedback). Während des Requests bleibt der Button responsive (kein Disable), damit schnelle Doppel-Toggles möglich sind — das Backend ist idempotent (POST/DELETE pro <code>(device_id, icao)</code>).</li>
+          <li>Hinzufügen löst optional die <code>.just-added</code>-Klasse (one-shot Pulse-Animation) aus.</li>
+          <li>Fokus-Ring nutzt <code>--color-primary-ring</code>, sichtbar nur per Keyboard (<code>:focus-visible</code>).</li>
+        </ul>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 26. Tab Switch                                                    -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-26">
+        <h2><span class="sec-num">26</span>Tab Switch</h2>
+        <p class="sec-desc">
+          Generisches Tab-Pattern oberhalb einer Liste/eines Grids zum Umschalten zwischen Filter-Modi. Basis ist die bestehende
+          <code>.tabs</code> / <code>.tab</code>-Komponente; neu ist das optionale <code>.tab-count</code>-Badge für die Anzahl
+          Einträge pro Tab. Konkreter Anwendungsfall in diesem Release: <strong>Suche-Seite</strong> — Umschaltung zwischen
+          „Alle" (alle indexierten Flugplätze) und „Favoriten" (nur markierte). Tab-Auswahl wird in der URL persistiert
+          (<code>?tab=favorites</code>), damit Deep-Links und Browser-Back funktionieren.
+        </p>
+        <div class="kit-preview block">
+          <div class="tabs">
+            <button type="button" class="tab is-active">Alle <span class="tab-count">1042</span></button>
+            <button type="button" class="tab">Favoriten <span class="tab-count">7</span></button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">26.1 Aktiver „Favoriten"-Tab</h3>
+        <div class="kit-preview block">
+          <div class="tabs">
+            <button type="button" class="tab">Alle <span class="tab-count">1042</span></button>
+            <button type="button" class="tab is-active">Favoriten <span class="tab-count">7</span></button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">26.2 Verhalten</h3>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:0;">
+          <li>Tab-Wechsel ändert die URL (<code>?tab=all</code> ↔ <code>?tab=favorites</code>) ohne Full-Reload.</li>
+          <li>Such-Input und Pagination bleiben aktiv und filtern <em>innerhalb</em> des gewählten Tabs.</li>
+          <li>Count-Badge zeigt die Anzahl der aktuell verfügbaren Treffer pro Tab. Bei <code>0</code> wird das Badge weiterhin angezeigt (keine Unterdrückung), damit der leere Zustand sichtbar bleibt.</li>
+          <li>Favoriten-Tab leer → Empty-State (§27) statt leere Ergebnisliste.</li>
+          <li>Bilingual: Tab-Labels sind übersetzbar (<code>tabs.all</code>, <code>tabs.favorites</code>).</li>
+        </ul>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 27. Empty State                                                   -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-27">
+        <h2><span class="sec-num">27</span>Empty State</h2>
+        <p class="sec-desc">
+          Wiederverwendbarer Leerzustand für Listen ohne Inhalte. Aufbau: rundes Icon, Headline, beschreibender Text, optionaler
+          primärer CTA. Erstes konkretes Vorkommen: der <strong>Favoriten-Tab</strong> auf der Suche-Seite, wenn der Nutzer noch
+          keinen Flugplatz markiert hat. Weitere künftige Einsatzorte: leere NOTAM-Listen, „Keine Suchergebnisse",
+          „Keine Karten verfügbar".
+        </p>
+
+        <h3>27.1 Favoriten — leer</h3>
+        <div class="kit-preview block">
+          <div class="empty-state">
+            <span class="empty-icon"><i class="fa-regular fa-star"></i></span>
+            <div class="empty-title">Noch keine Favoriten</div>
+            <div class="empty-body">
+              Markiere Flugplätze mit dem Stern in der Suche oder in der Detailansicht, um sie hier schnell wiederzufinden.
+            </div>
+            <button type="button" class="btn btn-primary empty-cta">
+              <i class="fa-solid fa-magnifying-glass"></i> Zur Suche
+            </button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">27.2 Generische Struktur</h3>
+        <pre style="background:var(--color-surface); padding:var(--space-4); border-radius:var(--radius-md); font-size:var(--fs-xs); color:var(--color-text-secondary); overflow-x:auto;"><code>&lt;div class="empty-state"&gt;
+  &lt;span class="empty-icon"&gt;&lt;i class="fa-… fa-…"&gt;&lt;/i&gt;&lt;/span&gt;
+  &lt;div class="empty-title"&gt;Headline&lt;/div&gt;
+  &lt;div class="empty-body"&gt;Beschreibender Text (max ~420px Breite).&lt;/div&gt;
+  &lt;button class="btn btn-primary empty-cta"&gt;CTA&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+
+        <h3 style="margin-top:var(--space-5);">27.3 Verhalten</h3>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:0;">
+          <li>Wird zentriert in seinem Container dargestellt; vertikales Padding ist großzügig (~96px), damit der Zustand nicht „verloren" wirkt.</li>
+          <li>Headline + Body sind übersetzbar; das Icon bleibt gleich (sprachneutral).</li>
+          <li>CTA ist optional — wenn keine sinnvolle nächste Aktion existiert, weglassen.</li>
+          <li>Bilingual-Keys für den Favoriten-Empty-State: <code>favorites.empty.title</code>, <code>favorites.empty.body</code>, <code>favorites.empty.cta</code>.</li>
         </ul>
       </section>
 

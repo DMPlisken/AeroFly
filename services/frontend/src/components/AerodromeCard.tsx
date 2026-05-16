@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import type { Aerodrome, SearchMatchType } from "@/api/aerodromes";
+import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { FrequencyBadge } from "@/components/FrequencyBadge";
 import { useI18n } from "@/i18n";
 
@@ -25,12 +26,15 @@ export function AerodromeCard({ aerodrome, runwayCount, twrFrequency, matchType 
           <div className="ad-icao">{aerodrome.icao}</div>
           <div className="ad-name">{name}</div>
         </div>
-        {matchType === "fuzzy" && (
-          <span className="match-hint" title={t("search.match.fuzzy.tooltip")}>
-            <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />
-            {t("search.match.fuzzy")}
-          </span>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+          {matchType === "fuzzy" && (
+            <span className="match-hint" title={t("search.match.fuzzy.tooltip")}>
+              <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />
+              {t("search.match.fuzzy")}
+            </span>
+          )}
+          <FavoriteToggle icao={aerodrome.icao} size="sm" />
+        </div>
       </div>
       <div className="ad-meta">
         <i className="fa-solid fa-location-dot" aria-hidden="true" />

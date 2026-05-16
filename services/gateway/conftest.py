@@ -40,7 +40,13 @@ _skip_if_no_db = pytest.mark.skipif(
 
 @pytest.fixture(scope="session", autouse=True)
 def _prepare_schema() -> Iterator[None]:
-    """Create the gateway schema + tables once for the test session."""
+    """Create the gateway schema + tables once for the test session.
+
+    We deliberately do NOT drop tables on teardown: the tests may share a DB
+    with a running dev stack (dev workflow runs pytest against the same
+    Postgres). Per-test `truncate` in `db_session` is enough for isolation;
+    dropping would wipe state the dev stack depends on between runs.
+    """
     if not _HAS_POSTGRES:
         yield
         return
@@ -48,7 +54,6 @@ def _prepare_schema() -> Iterator[None]:
         conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{GATEWAY_SCHEMA}"'))
     Base.metadata.create_all(bind=engine)
     yield
-    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture()

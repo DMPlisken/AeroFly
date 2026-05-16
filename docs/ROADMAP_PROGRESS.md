@@ -33,6 +33,7 @@
 - [x] Bilingual UI (DE/EN) — issue #8, custom I18nProvider, every string translated, persisted via localStorage
 - [x] Chart rotation in viewer — issue #44 (90°-Schritte L/R/Reset, persistiert pro Chart in `ingest.charts.rotation_degrees`, fit-to-screen via ResizeObserver, Design Kit §23). Pinch-Rotate + Auto-Orientation explizit als Folge-Issues.
 - [x] Document print workflows — issues #47 + #48, PR #49 (single per ChartCard / ChartViewer, multi-select „Auswahl drucken (n)", „Alle drucken", visible-area canvas snapshot via fa-crop button). Browser-only (`window.print()` + `@media print`), per-page named `@page portrait/landscape` rules for mixed orientations, hi-res `_print` URL for snapshot bitmaps. Design Kit §24. BUG-006 + BUG-007 fixed during the same iteration.
+- [x] Aerodrome favorites — issue #55, PR #56 (Stern-Toggle auf Card/Detail/ChartViewer, neuer „Favoriten"-Tab auf der Suche mit Counter, anonyme Persistenz per Device-ID UUID v4 in `localStorage`/`X-Device-Id` Header, gateway-eigene `gateway.favorites`-Tabelle, optimistic updates mit Rollback, 16 Backend- + 9 Frontend-Tests). Design Kit §14 (Update) + §25/§26/§27 (neu). Cross-device-Sync + Login explizit Out-of-Scope (Folge-Issues, weiterhin #14 „won't do").
 - [ ] Responsive layout — issue #15 (pending go/no-go decision)
 
 ## Phase 2: Enhanced Data & Tools (Planned)

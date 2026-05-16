@@ -66,6 +66,13 @@ Each entry:
 - **Affected files**: `services/frontend/src/styles/global.css`, `services/frontend/src/utils/printDocuments.ts`
 - **Commit/PR**: #47 (caught immediately after BUG-006 fix during EDDV multi-print re-test — fixed before merge).
 
+### [BUG-010] Frontend Docker image build fails on Linux/macOS — `npm ci` rejects Windows-locked package-lock.json
+- **Symptom**: `docker compose up --build -d` fails on Linux/macOS with `target frontend: failed to solve: process "/bin/sh -c npm ci --no-audit --no-fund" did not complete successfully: exit code: 1`. Running container keeps working because the source is volume-mounted and the previous image layer is cached, but any fresh clone or image push breaks.
+- **Root cause**: Same as BUG-008. `package-lock.json` is generated on Windows; npm only writes the `@rollup/rollup-win32-x64-msvc` binary into the lockfile's `optionalDependencies`. `npm ci` strictly follows the lockfile and never installs the Linux/macOS rollup binary, so Rollup crashes loading its native bindings during install — but only the CI workflow had the workaround; the Dockerfile still ran the bare `npm ci`.
+- **Fix**: Mirror the CI workaround into `services/frontend/Dockerfile`: replace `npm ci --no-audit --no-fund` with `rm -rf node_modules package-lock.json && npm install --no-audit --no-fund`. Cross-platform rollup binaries are already in `package.json` `optionalDependencies` (added by BUG-008 fix), so `npm install` resolves the right one on whichever host builds the image.
+- **Affected files**: `services/frontend/Dockerfile`
+- **Commit/PR**: #59 → fix branch `fix/59-frontend-dockerfile-npm-install` (caught during PR #56 housekeeping rebuild verification).
+
 ### [BUG-009] Gateway `/api/favorites` returns 500 after pytest run in shared Postgres
 - **Symptom**: After running `pytest services/gateway/tests/` against the dev compose stack, `GET /api/favorites` returns 500 with `relation "gateway.favorites" does not exist`, even though `alembic current` still reports `20260516_0002` (head). `\dt gateway.*` confirms the table is gone but `gateway.alembic_version` still says head.
 - **Root cause**: `services/gateway/conftest.py` had `Base.metadata.drop_all(bind=engine)` in its session-scoped teardown. The dev pytest run shares the Postgres instance with the running dev stack — when the test session ended, `drop_all` removed `gateway.favorites` from the live DB. Alembic's `alembic_version` is not in `Base.metadata`, so its row stayed at `20260516_0002` and reported a false "head" state. Subsequent gateway requests then hit the missing table.

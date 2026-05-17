@@ -340,4 +340,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > Ich habe die Daten aktualisiert für Hof Plauen, EDQM, und du hast nur die Frequenz für FIS gefunden, 125,800, obwohl auf der Sichtflugkarte eindeutig rechts oben die Frequenz auch für den Tower angegeben ist, mit 124,355. Das sollte natürlich für alle funktionieren.
 
+### 2026-05-17 — #65 schließen + BUG-012 OCR-Toleranz fixen (`develop`)
+
+> ja und mach den fix
+
 

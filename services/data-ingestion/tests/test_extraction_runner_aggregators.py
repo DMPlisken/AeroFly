@@ -334,13 +334,96 @@ def test_frequencies_matched_by_type_and_value():
 
 
 def test_frequencies_disagreeing_freq_dropped():
+    # Difference 0.010 MHz = 10 kHz, well beyond the ±0.005 MHz OCR tolerance.
     a = {"frequencies": [
         {"type": _ev("twr"), "frequency_mhz": _ev("118.700")},
     ]}
     b = {"frequencies": [
-        {"type": _ev("twr"), "frequency_mhz": _ev("118.705")},  # differs
+        {"type": _ev("twr"), "frequency_mhz": _ev("118.710")},
     ]}
     assert _agreed_frequencies_on_chart(a, b) == []
+
+
+def test_frequencies_tolerance_5_khz_merges(disable=False):
+    # Last-digit OCR misread within ±5 kHz → merge (BUG-012).
+    a = {"frequencies": [
+        {"type": _ev("radio"), "frequency_mhz": _ev("122.230")},
+    ]}
+    b = {"frequencies": [
+        {"type": _ev("radio"), "frequency_mhz": _ev("122.235")},
+    ]}
+    out = _agreed_frequencies_on_chart(a, b)
+    assert len(out) == 1
+    assert out[0]["type"] is FrequencyType.RADIO
+    # Higher-precision wins (both have 3 decimals here; a wins on tie).
+    assert out[0]["frequency_mhz"] == Decimal("122.230")
+
+
+def test_frequencies_trailing_zero_normalized():
+    # One provider drops the trailing zero, the other keeps it.
+    a = {"frequencies": [
+        {"type": _ev("twr"), "frequency_mhz": _ev("118.7")},
+    ]}
+    b = {"frequencies": [
+        {"type": _ev("twr"), "frequency_mhz": _ev("118.700")},
+    ]}
+    out = _agreed_frequencies_on_chart(a, b)
+    assert len(out) == 1
+    # Higher precision (118.700, exp=-3) preferred over 118.7 (exp=-1).
+    assert out[0]["frequency_mhz"] == Decimal("118.700")
+
+
+def test_frequencies_german_comma_decimal_normalized():
+    # One provider emits the German "122,235" decimal separator.
+    a = {"frequencies": [
+        {"type": _ev("radio"), "frequency_mhz": _ev("122,235")},
+    ]}
+    b = {"frequencies": [
+        {"type": _ev("radio"), "frequency_mhz": _ev("122.235")},
+    ]}
+    out = _agreed_frequencies_on_chart(a, b)
+    assert len(out) == 1
+    assert out[0]["frequency_mhz"] == Decimal("122.235")
+
+
+def test_frequencies_cross_language_type_match():
+    # One provider emits the German "turm", the other the English canonical
+    # "twr" — both map to FrequencyType.TWR and must agree (BUG-011 + -012).
+    a = {"frequencies": [
+        {"type": _ev("turm"), "frequency_mhz": _ev("124.355")},
+    ]}
+    b = {"frequencies": [
+        {"type": _ev("twr"), "frequency_mhz": _ev("124.355")},
+    ]}
+    out = _agreed_frequencies_on_chart(a, b)
+    assert len(out) == 1
+    assert out[0]["type"] is FrequencyType.TWR
+
+
+def test_frequencies_tolerance_does_not_merge_different_types():
+    # Same frequency, different types → no merge, both dropped.
+    a = {"frequencies": [
+        {"type": _ev("twr"), "frequency_mhz": _ev("124.355")},
+    ]}
+    b = {"frequencies": [
+        {"type": _ev("gnd"), "frequency_mhz": _ev("124.355")},
+    ]}
+    assert _agreed_frequencies_on_chart(a, b) == []
+
+
+def test_frequencies_b_entry_used_only_once():
+    # Two TWR readings within tolerance of one B entry must not both consume
+    # it (greedy first-match, B entry marked used after match).
+    a = {"frequencies": [
+        {"type": _ev("twr"), "frequency_mhz": _ev("124.355")},
+        {"type": _ev("twr"), "frequency_mhz": _ev("124.357")},  # within ±5 kHz of same B
+    ]}
+    b = {"frequencies": [
+        {"type": _ev("twr"), "frequency_mhz": _ev("124.355")},
+    ]}
+    out = _agreed_frequencies_on_chart(a, b)
+    assert len(out) == 1
+    assert out[0]["frequency_mhz"] == Decimal("124.355")
 
 
 def test_frequencies_unknown_type_dropped():

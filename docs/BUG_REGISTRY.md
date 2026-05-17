@@ -66,6 +66,21 @@ Each entry:
 - **Affected files**: `services/frontend/src/styles/global.css`, `services/frontend/src/utils/printDocuments.ts`
 - **Commit/PR**: #47 (caught immediately after BUG-006 fix during EDDV multi-print re-test — fixed before merge).
 
+### [BUG-012] Frequency consensus drops valid entries on sub-channel-spacing OCR noise
+- **Symptom**: After BUG-011 was fixed, a spot check across 5 random EDxx aerodromes still showed 3/5 with `frequencies: no_consensus`. The respective audit's `accepted_charts` was empty even though both providers had clearly responded.
+- **Root cause**: `_agreed_frequencies_on_chart()` keyed consensus on the EXACT `(type_lowercased, frequency_mhz_string)` tuple. That meant `"118.700"` vs `"118.7"` (trailing-zero variation between providers), `"122.230"` vs `"122.235"` (last-digit OCR misread on small/blurry chart frequency prints), and `"122,235"` vs `"122.235"` (German decimal-comma vs dot) all mismatched and dropped both providers' entries. Additionally, the keying used the raw type string, so `"twr"` vs `"tower"` would also have disagreed even though both map to `FrequencyType.TWR`.
+- **Fix**: Replaced strict string keying with a two-stage normalization. (1) Both providers' entries are first mapped through `_map_freq_type()` to the canonical `FrequencyType` enum and `_parse_freq_mhz()` (handles trailing zeros + decimal commas) to `Decimal`. (2) Matching is then type-aware with a ±0.005 MHz (= 5 kHz, half the 8.33 kHz channel grid) tolerance on the frequency, plus greedy first-match with consumed-B-entry tracking so two close A entries can't both grab the same B entry. When merging, the value with more fractional digits wins (`_prefer_higher_precision`).
+- **Verification**: Re-extraction of the three previously-failed places after the fix:
+
+  | ICAO | before | after |
+  |---|---|---|
+  | EDLJ | 0 / no_consensus | **2 / accepted** (RADIO + FIS) |
+  | EDWC | 0 / no_consensus | **2 / accepted** (RADIO + FIS) |
+  | EDQC | 0 / no_consensus | **3 / accepted** (ATIS + INFO + FIS) |
+
+- **Affected files**: `services/data-ingestion/app/services/extraction_runner.py`, `services/data-ingestion/tests/test_extraction_runner_aggregators.py`
+- **Commit/PR**: #67 → fix branch `fix/67-frequency-ocr-tolerance` (follow-up to BUG-011 / PR #66)
+
 ### [BUG-011] Frequency extraction silently drops German-labelled entries (TWR „TURM", GND „BODEN", …)
 - **Symptom**: Re-extraction at EDQM Hof-Plauen returned only `FIS 125.800` and missed `TWR 124.355`, even though the Sichtflugkarte clearly prints „HOF TOWER/TURM 124.355" in the upper-right corner. Affected potentially every DFS Sichtflugkarte that labels services in German.
 - **Root cause**: Two-step failure in `services/data-ingestion/app/services/extraction_runner.py:_map_freq_type()`. The alias dict held English service names only (`"tower" → TWR`, `"ground" → GND`, …); German DFS labels (`Turm`, `Boden`, `Anflug`, …) and compound bilingual forms (`Tower/Turm`) were absent. When either Claude or OpenAI extracted the German form, the resulting `(type, frequency_mhz)` consensus key didn't match — and even when both providers agreed on a German token, the enum mapping returned `None`, so the entry was silently dropped between providers + DB.

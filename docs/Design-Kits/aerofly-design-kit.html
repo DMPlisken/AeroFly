@@ -859,6 +859,111 @@
     }
     .fav-toggle.just-added { animation: fav-pulse var(--duration-base) ease-out; }
 
+    /* --- Aerodrome Card — Compact (Design Kit §28)
+       Modifier on .aerodrome-card. Single-row "flight strip" aesthetic with a
+       3px primary spine on the left edge. Re-uses .ad-icao / .ad-name / .ad-meta
+       names but the DOM is flatter (one grid row, no .ad-head wrapper). */
+    .aerodrome-card.aerodrome-card--compact {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4) var(--space-2) 0;
+      border-radius: var(--radius-md);
+      min-height: 56px;
+      position: relative;
+      overflow: hidden;
+      transition: background var(--duration-fast), border-color var(--duration-fast);
+    }
+    .aerodrome-card.aerodrome-card--compact:hover,
+    .aerodrome-card.aerodrome-card--compact:focus-visible {
+      transform: none;
+      background: var(--color-surface-2);
+      border-color: var(--color-border-strong);
+      box-shadow: none;
+      text-decoration: none;
+    }
+    .aerodrome-card.aerodrome-card--compact:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* Signature spine — saturates from primary-soft to primary on hover/focus. */
+    .aerodrome-card.aerodrome-card--compact::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--color-primary-soft);
+      transition: background var(--duration-fast);
+    }
+    .aerodrome-card.aerodrome-card--compact:hover::before,
+    .aerodrome-card.aerodrome-card--compact:focus-visible::before {
+      background: var(--color-primary);
+    }
+
+    /* ICAO — deliberately smaller than full card (fs-base vs fs-2xl) so 6 rows
+       don't shout. min-width keeps the name column aligned across rows. */
+    .aerodrome-card.aerodrome-card--compact .ad-icao {
+      font-family: var(--font-mono);
+      font-size: var(--fs-base);
+      font-weight: var(--fw-bold);
+      color: var(--color-primary);
+      letter-spacing: -0.02em;
+      padding-left: var(--space-4);
+      min-width: 76px;
+    }
+
+    .aerodrome-card.aerodrome-card--compact .ad-body {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .aerodrome-card.aerodrome-card--compact .ad-name {
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-semibold);
+      color: var(--color-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .aerodrome-card.aerodrome-card--compact .ad-meta {
+      font-size: var(--fs-xs);
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+      display: inline;
+    }
+    .aerodrome-card.aerodrome-card--compact .ad-meta::before {
+      content: "·";
+      margin-right: var(--space-2);
+      color: var(--color-border-strong);
+    }
+
+    .aerodrome-card.aerodrome-card--compact .ad-signals {
+      display: inline-flex;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      color: var(--color-text-secondary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .aerodrome-card.aerodrome-card--compact .ad-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .aerodrome-card.aerodrome-card--compact .ad-stat i {
+      color: var(--color-text-muted);
+      font-size: 10px;
+    }
+
+    @media (max-width: 540px) {
+      .aerodrome-card.aerodrome-card--compact .ad-signals { display: none; }
+    }
+
     /* --- Tab Switch Count Badge (extends .tab) --- */
     .tab .tab-count {
       display: inline-block;
@@ -1364,6 +1469,7 @@
         <li><a href="#sec-25">25. Favorite Toggle</a></li>
         <li><a href="#sec-26">26. Tab Switch</a></li>
         <li><a href="#sec-27">27. Empty State</a></li>
+        <li><a href="#sec-28">28. Aerodrome Card (Compact)</a></li>
       </ul>
     </aside>
 
@@ -3007,6 +3113,77 @@
           <li>Headline + Body sind übersetzbar; das Icon bleibt gleich (sprachneutral).</li>
           <li>CTA ist optional — wenn keine sinnvolle nächste Aktion existiert, weglassen.</li>
           <li>Bilingual-Keys für den Favoriten-Empty-State: <code>favorites.empty.title</code>, <code>favorites.empty.body</code>, <code>favorites.empty.cta</code>.</li>
+        </ul>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 28. Aerodrome Card (Compact)                                      -->
+      <!-- ================================================================ -->
+      <section class="kit-section" id="sec-28">
+        <h2><span class="sec-num">28</span>Aerodrome Card (Compact)</h2>
+        <p class="sec-desc">
+          Listenkompakte Variante der <code>.aerodrome-card</code> für Widgets, die mehrere Favoriten
+          untereinander stapeln (Übersicht-Favoriten-Panel, später ggf. Sidebar-Pinned-List, Mobile-Drawer).
+          Modifier-Klasse <code>.aerodrome-card--compact</code> auf <code>.aerodrome-card</code> —
+          teilt sich die semantischen Klassen <code>.ad-icao</code>, <code>.ad-name</code>,
+          <code>.ad-meta</code> mit der Voll-Variante, hat aber ein flacheres DOM (eine Grid-Zeile,
+          kein <code>.ad-head</code>-Wrapper, kein <code>.ad-stats</code>-Footer).
+          Signatur-Element: die 3&nbsp;px Akzent-Spine am linken Rand (<code>::before</code>) — sättigt
+          im Hover auf <code>--color-primary</code> und ist der visuelle Anker für „dies ist ein
+          Listen-Item, keine Ergebnis-Kachel". Zeilenhöhe ≥ 56&nbsp;px, single-row, ICAO + Name +
+          Region + zwei Sekundär-Signalen (TWR-Frequenz, RWY-Count) + Stern. Click triggert
+          Detail-Navigation; Stern stoppt Propagation.
+        </p>
+        <div class="kit-preview block" style="display:flex; flex-direction:column; gap:var(--space-2); max-width:640px;">
+          <a href="#sec-28" class="aerodrome-card aerodrome-card--compact" onclick="event.preventDefault()">
+            <div class="ad-icao">EDDF</div>
+            <div class="ad-body">
+              <span class="ad-name">Frankfurt am Main</span>
+              <span class="ad-meta">Hessen · International</span>
+            </div>
+            <div class="ad-signals">
+              <span class="ad-stat" title="Tower frequency"><i class="fa-solid fa-tower-broadcast"></i> 119.900</span>
+              <span class="ad-stat" title="Runways"><i class="fa-solid fa-road"></i> 4</span>
+            </div>
+            <button type="button" class="fav-toggle fav-toggle--sm is-active" aria-pressed="true" aria-label="Aus Favoriten entfernen">
+              <i class="fa-solid fa-star"></i>
+            </button>
+          </a>
+          <a href="#sec-28" class="aerodrome-card aerodrome-card--compact" onclick="event.preventDefault()">
+            <div class="ad-icao">EDDM</div>
+            <div class="ad-body">
+              <span class="ad-name">München</span>
+              <span class="ad-meta">Bayern · International</span>
+            </div>
+            <div class="ad-signals">
+              <span class="ad-stat"><i class="fa-solid fa-tower-broadcast"></i> 118.700</span>
+              <span class="ad-stat"><i class="fa-solid fa-road"></i> 2</span>
+            </div>
+            <button type="button" class="fav-toggle fav-toggle--sm is-active" aria-pressed="true" aria-label="Aus Favoriten entfernen">
+              <i class="fa-solid fa-star"></i>
+            </button>
+          </a>
+          <a href="#sec-28" class="aerodrome-card aerodrome-card--compact" onclick="event.preventDefault()">
+            <div class="ad-icao">EDDH</div>
+            <div class="ad-body">
+              <span class="ad-name">Hamburg</span>
+              <span class="ad-meta">Hamburg · International</span>
+            </div>
+            <div class="ad-signals">
+              <span class="ad-stat"><i class="fa-solid fa-tower-broadcast"></i> 126.900</span>
+              <span class="ad-stat"><i class="fa-solid fa-road"></i> 2</span>
+            </div>
+            <button type="button" class="fav-toggle fav-toggle--sm is-active" aria-pressed="true" aria-label="Aus Favoriten entfernen">
+              <i class="fa-solid fa-star"></i>
+            </button>
+          </a>
+        </div>
+        <ul style="font-size:var(--fs-sm); color:var(--color-text-muted); margin-top:var(--space-4);">
+          <li>Spine-Farbe spiegelt aktuell den Brand-Akzent (<code>--color-primary-soft</code> → hover <code>--color-primary</code>). In Phase 2 kann sie operativen Status tragen (z.&nbsp;B. <code>--color-wx-vmc / -mvfr / -ifr</code>).</li>
+          <li><code>.ad-name</code> ellipsiert; <code>.ad-meta</code>, Signals und Stern haben <code>flex-shrink: 0</code> — die Identitäts-Spalte gibt zuerst nach.</li>
+          <li>Unter 540&nbsp;px wird <code>.ad-signals</code> ausgeblendet (Mobile-Drawer-Use-Case).</li>
+          <li>Fokus-Outline 2&nbsp;px primary mit 2&nbsp;px Offset — klar erkennbar in beiden Themes ohne den Spine zu verdecken.</li>
+          <li>Keine Translate-Animation: Listen-Items, die im Hover springen, sind in einem Stack mit 6 Einträgen ermüdend. Nur Background + Spine wechseln.</li>
         </ul>
       </section>
 

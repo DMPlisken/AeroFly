@@ -1,19 +1,55 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { listAerodromes } from "@/api/aerodromes";
+import {
+  fetchAerodromeByIcao,
+  listAerodromes,
+  type Aerodrome,
+} from "@/api/aerodromes";
+import { AerodromeCardCompact } from "@/components/AerodromeCardCompact";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useI18n } from "@/i18n";
+
+const FAVORITES_VISIBLE = 6;
 
 export function Dashboard() {
   const { t } = useI18n();
   const [total, setTotal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const {
+    favorites,
+    count: favoritesCount,
+    loaded: favoritesLoaded,
+  } = useFavorites();
+  const [favoriteAerodromes, setFavoriteAerodromes] = useState<Aerodrome[]>([]);
+  const [favoritesError, setFavoritesError] = useState<string | null>(null);
 
   useEffect(() => {
     listAerodromes({ limit: 1 })
       .then((res) => setTotal(res.total))
       .catch((e) => setError(e.message));
   }, []);
+
+  useEffect(() => {
+    if (!favoritesLoaded) return;
+    if (favoritesCount === 0) {
+      setFavoriteAerodromes([]);
+      setFavoritesError(null);
+      return;
+    }
+    const icaos = Array.from(favorites).sort();
+    Promise.all(icaos.map(fetchAerodromeByIcao))
+      .then((results) => {
+        setFavoriteAerodromes(results.filter((a): a is Aerodrome => a !== null));
+        setFavoritesError(null);
+      })
+      .catch((e) =>
+        setFavoritesError(e instanceof Error ? e.message : String(e)),
+      );
+  }, [favoritesLoaded, favorites, favoritesCount]);
+
+  const visibleFavorites = favoriteAerodromes.slice(0, FAVORITES_VISIBLE);
+  const hiddenFavorites = favoriteAerodromes.length - visibleFavorites.length;
 
   return (
     <>
@@ -60,14 +96,65 @@ export function Dashboard() {
         <div className="col-span-8">
           <div className="card" style={{ marginBottom: "var(--space-4)" }}>
             <div className="card-header">
-              <span className="card-title">{t("dashboard.section.favorites")}</span>
-              <Link to="/search" className="btn btn-ghost btn-sm">
-                {t("nav.search")}
+              <span className="card-title">
+                {t("dashboard.section.favorites")}
+                {favoritesCount > 0 && (
+                  <span
+                    style={{
+                      marginLeft: "var(--space-2)",
+                      padding: "1px 8px",
+                      borderRadius: 999,
+                      background: "var(--color-primary-soft)",
+                      color: "var(--color-primary)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {favoritesCount}
+                  </span>
+                )}
+              </span>
+              <Link to="/search?tab=favorites" className="btn btn-ghost btn-sm">
+                {t("favorites.tab.favorites")}
               </Link>
             </div>
-            <p style={{ color: "var(--color-text-secondary)", fontSize: "var(--fs-sm)", margin: 0 }}>
-              {t("dashboard.favorites.empty")}
-            </p>
+
+            {!favoritesLoaded ? (
+              <p style={{ color: "var(--color-text-muted)", fontSize: "var(--fs-sm)", margin: 0 }}>
+                {t("search.loading")}
+              </p>
+            ) : favoritesError ? (
+              <p style={{ color: "var(--color-text-muted)", fontSize: "var(--fs-sm)", margin: 0 }}>
+                {t("favorites.error", { message: favoritesError })}
+              </p>
+            ) : favoritesCount === 0 ? (
+              <p
+                style={{
+                  color: "var(--color-text-secondary)",
+                  fontSize: "var(--fs-sm)",
+                  margin: 0,
+                }}
+              >
+                {t("dashboard.favorites.empty")}
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+                {visibleFavorites.map((ad) => (
+                  <AerodromeCardCompact key={ad.icao} aerodrome={ad} />
+                ))}
+                {hiddenFavorites > 0 && (
+                  <Link
+                    to="/search?tab=favorites"
+                    className="btn btn-ghost btn-sm"
+                    style={{ alignSelf: "flex-start", marginTop: "var(--space-2)" }}
+                  >
+                    {t("dashboard.favorites.more", { n: hiddenFavorites })}{" "}
+                    <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
           <div className="card">
             <div className="card-header">

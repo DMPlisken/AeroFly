@@ -332,4 +332,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > ja, mach Issue und Fix
 
+### 2026-05-17 — Warum keine Favoriten auf der Übersicht? (`develop`)
+
+> Warum sehe ich hier keine Favoriten? [Screenshot Dashboard mit "Noch keine Favoriten — öffne einen Flugplatz, um ihn zu merken."]
+
 

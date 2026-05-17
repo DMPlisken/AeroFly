@@ -210,6 +210,9 @@ export const de: Record<TranslationKey, string> = {
   "action.retry": "Erneut versuchen",
   "action.backToSearch": "Zurück zur Suche",
 
+  // Dashboard favorites widget (#61)
+  "dashboard.favorites.more": "+{n} weitere",
+
   // Favorites (#55)
   "favorites.toggle.add": "Zu Favoriten hinzufügen",
   "favorites.toggle.remove": "Aus Favoriten entfernen",

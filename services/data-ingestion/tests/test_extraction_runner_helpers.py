@@ -207,17 +207,50 @@ def test_map_surface(raw, expected):
 @pytest.mark.parametrize(
     "raw, expected",
     [
+        # Direct enum
         ("twr", FrequencyType.TWR),
         ("TWR", FrequencyType.TWR),
-        ("tower", FrequencyType.TWR),   # English alias
         ("gnd", FrequencyType.GND),
-        ("ground", FrequencyType.GND),  # English alias
         ("atis", FrequencyType.ATIS),
-        ("info", FrequencyType.INFO),
-        ("information", FrequencyType.INFO),
         ("del", FrequencyType.DEL),
+        # English aliases
+        ("tower", FrequencyType.TWR),
+        ("ground", FrequencyType.GND),
+        ("approach", FrequencyType.APP),
+        ("departure", FrequencyType.DEP),
         ("delivery", FrequencyType.DEL),
+        ("information", FrequencyType.INFO),
+        ("info", FrequencyType.INFO),
+        # German aliases (BUG-011 — DFS Sichtflugkarten print German labels;
+        # without these, both providers had to extract the English token
+        # exactly or the entry would be silently dropped during consensus).
+        ("turm", FrequencyType.TWR),
+        ("TURM", FrequencyType.TWR),
+        ("boden", FrequencyType.GND),
+        ("rollkontrolle", FrequencyType.GND),
+        ("anflug", FrequencyType.APP),
+        ("anflugkontrolle", FrequencyType.APP),
+        ("abflug", FrequencyType.DEP),
+        ("abflugkontrolle", FrequencyType.DEP),
+        ("freigabe", FrequencyType.DEL),
+        ("funk", FrequencyType.RADIO),
+        ("notfrequenz", FrequencyType.EMERGENCY),
+        ("notruf", FrequencyType.EMERGENCY),
+        # VDF shares a frequency with the tower — map to TWR.
+        ("vdf", FrequencyType.TWR),
+        # Compound bilingual labels (the exact form on EDQM's Sichtflugkarte:
+        # "TOWER/TURM"). Either side should resolve to twr.
+        ("tower/turm", FrequencyType.TWR),
+        ("TURM/TOWER", FrequencyType.TWR),
+        ("twr/turm", FrequencyType.TWR),
+        ("boden/ground", FrequencyType.GND),
+        # Whitespace around tokens in compound forms.
+        ("turm / tower", FrequencyType.TWR),
+        # Empty / whitespace-only / unknown
+        ("", None),
+        ("   ", None),
         ("unknown_type", None),
+        ("frequency", None),
     ],
 )
 def test_map_freq_type(raw, expected):

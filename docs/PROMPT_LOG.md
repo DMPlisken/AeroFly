@@ -336,4 +336,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > Warum sehe ich hier keine Favoriten? [Screenshot Dashboard mit "Noch keine Favoriten — öffne einen Flugplatz, um ihn zu merken."]
 
+### 2026-05-17 — Bug: Frequenz-Extraktion EDQM findet nur FIS, nicht Tower (`develop`)
+
+> Ich habe die Daten aktualisiert für Hof Plauen, EDQM, und du hast nur die Frequenz für FIS gefunden, 125,800, obwohl auf der Sichtflugkarte eindeutig rechts oben die Frequenz auch für den Tower angegeben ist, mit 124,355. Das sollte natürlich für alle funktionieren.
+
 

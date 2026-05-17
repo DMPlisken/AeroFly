@@ -928,17 +928,50 @@ def _map_surface(raw: str | None) -> RunwaySurface:
     return RunwaySurface.OTHER
 
 
+_FREQ_TYPE_ALIASES: dict[str, FrequencyType] = {
+    # English service names (as printed in English-language ATS columns)
+    "tower": FrequencyType.TWR,
+    "ground": FrequencyType.GND,
+    "approach": FrequencyType.APP,
+    "departure": FrequencyType.DEP,
+    "delivery": FrequencyType.DEL,
+    "information": FrequencyType.INFO,
+    # German service names (DFS Sichtflugkarten / AIP labels — BUG-011)
+    "turm": FrequencyType.TWR,
+    "boden": FrequencyType.GND,
+    "rollkontrolle": FrequencyType.GND,
+    "anflug": FrequencyType.APP,
+    "anflugkontrolle": FrequencyType.APP,
+    "abflug": FrequencyType.DEP,
+    "abflugkontrolle": FrequencyType.DEP,
+    "freigabe": FrequencyType.DEL,
+    "info": FrequencyType.INFO,
+    "funk": FrequencyType.RADIO,
+    "notfrequenz": FrequencyType.EMERGENCY,
+    "notruf": FrequencyType.EMERGENCY,
+    # VDF is a direction-finder service that shares a tower frequency; map it
+    # to TWR rather than dropping it. (At plain-FIS aerodromes without a TWR,
+    # VDF would be the only voice contact — handled as TWR is acceptable.)
+    "vdf": FrequencyType.TWR,
+}
+
+
 def _map_freq_type(token: str) -> FrequencyType | None:
     token = token.strip().lower()
+    if not token:
+        return None
+    # Direct enum match (twr, gnd, atis, …)
     for ft in FrequencyType:
         if ft.value == token:
             return ft
-    alias = {
-        "tower": FrequencyType.TWR,
-        "ground": FrequencyType.GND,
-        "approach": FrequencyType.APP,
-        "departure": FrequencyType.DEP,
-        "delivery": FrequencyType.DEL,
-        "information": FrequencyType.INFO,
-    }
-    return alias.get(token)
+    # Alias match (full English / German service name)
+    if token in _FREQ_TYPE_ALIASES:
+        return _FREQ_TYPE_ALIASES[token]
+    # Compound / bilingual labels like "tower/turm", "twr/turm",
+    # "turm/tower", "boden/ground" — recurse on each side, first match wins.
+    if "/" in token:
+        for part in token.split("/"):
+            mapped = _map_freq_type(part.strip())
+            if mapped is not None:
+                return mapped
+    return None

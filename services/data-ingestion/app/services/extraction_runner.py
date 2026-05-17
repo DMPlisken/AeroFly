@@ -800,46 +800,87 @@ def _disambiguate_designators(rows: list[dict]) -> list[dict]:
     return out
 
 
+# Tolerance for sub-channel-spacing OCR noise in frequency consensus.
+# 0.005 MHz = 5 kHz = half the 8.33 kHz channel grid. Inside this window
+# two providers' readings are treated as the same line; outside, they
+# disagree and the entry is dropped. See BUG-012.
+_FREQ_TOLERANCE_MHZ = Decimal("0.005")
+
+
+def _parse_freq_mhz(raw: Any) -> Decimal | None:
+    """Parse a frequency string into Decimal MHz, tolerating common variants.
+
+    Accepts comma-as-decimal-separator (German convention) and surrounding
+    whitespace. Returns None for unparseable input.
+    """
+    if raw is None:
+        return None
+    token = str(raw).strip().replace(",", ".")
+    if not token:
+        return None
+    try:
+        return Decimal(token)
+    except InvalidOperation:
+        return None
+
+
+def _prefer_higher_precision(a: Decimal, b: Decimal) -> Decimal:
+    """Pick the Decimal with more fractional digits (more reported precision)."""
+    return a if a.as_tuple().exponent <= b.as_tuple().exponent else b
+
+
 def _agreed_frequencies_on_chart(a: dict, b: dict) -> list[dict]:
-    """Return frequency dicts both providers agreed on for ONE chart."""
+    """Return frequency dicts both providers agreed on for ONE chart.
+
+    Matching is type-aware and uses a ±0.005 MHz tolerance on the
+    frequency value (half the 8.33 kHz channel grid — covers last-digit
+    OCR noise and trailing-zero variation without merging adjacent
+    channels). Type strings are mapped to the canonical FrequencyType
+    enum BEFORE matching, so providers may emit different surface
+    spellings ("twr" vs "tower" vs "turm") and still agree.
+    """
     a_list = a.get("frequencies") or []
     b_list = b.get("frequencies") or []
 
-    def keyed(lst):
-        out: dict[tuple[str, str], dict] = {}
+    def normalize(lst: list[dict]) -> list[tuple[FrequencyType, Decimal, dict]]:
+        out: list[tuple[FrequencyType, Decimal, dict]] = []
         for item in lst:
-            t = _unwrap(item.get("type"))
-            f = _unwrap(item.get("frequency_mhz"))
-            if t and f:
-                out[(str(t).strip().lower(), str(f).strip())] = item
+            t_raw = _unwrap(item.get("type"))
+            ft = _map_freq_type(str(t_raw)) if t_raw else None
+            freq = _parse_freq_mhz(_unwrap(item.get("frequency_mhz")))
+            if ft is None or freq is None:
+                continue
+            out.append((ft, freq, item))
         return out
 
-    keyed_a = keyed(a_list)
-    keyed_b = keyed(b_list)
+    a_norm = normalize(a_list)
+    b_norm = normalize(b_list)
 
     agreed: list[dict] = []
-    for key, item_a in keyed_a.items():
-        item_b = keyed_b.get(key)
-        if item_b is None:
-            continue
-        t_raw, f_raw = key
-        try:
-            freq = Decimal(f_raw)
-        except InvalidOperation:
-            continue
-        ft = _map_freq_type(t_raw)
-        if ft is None:
-            continue
-        callsign = _agree(item_a.get("callsign"), item_b.get("callsign"))
-        callsign_de = _agree(item_a.get("callsign_de"), item_b.get("callsign_de"))
-        hours = _agree(item_a.get("operational_hours"), item_b.get("operational_hours"))
-        agreed.append({
-            "type": ft,
-            "frequency_mhz": freq,
-            "callsign": callsign,
-            "callsign_de": callsign_de,
-            "operational_hours": hours,
-        })
+    used_b: set[int] = set()
+
+    for ft_a, freq_a, item_a in a_norm:
+        for idx_b, (ft_b, freq_b, item_b) in enumerate(b_norm):
+            if idx_b in used_b:
+                continue
+            if ft_a != ft_b:
+                continue
+            if abs(freq_a - freq_b) > _FREQ_TOLERANCE_MHZ:
+                continue
+            # Match.
+            best_freq = _prefer_higher_precision(freq_a, freq_b)
+            callsign = _agree(item_a.get("callsign"), item_b.get("callsign"))
+            callsign_de = _agree(item_a.get("callsign_de"), item_b.get("callsign_de"))
+            hours = _agree(item_a.get("operational_hours"), item_b.get("operational_hours"))
+            agreed.append({
+                "type": ft_a,
+                "frequency_mhz": best_freq,
+                "callsign": callsign,
+                "callsign_de": callsign_de,
+                "operational_hours": hours,
+            })
+            used_b.add(idx_b)
+            break
     return agreed
 
 

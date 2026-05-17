@@ -147,3 +147,19 @@ export function setChartRotation(
 ): Promise<{ id: number; rotation_degrees: RotationDegrees }> {
   return apiPatchJson(`/aerodromes/${icao}/charts/${chartId}/rotation`, { degrees });
 }
+
+/**
+ * Fetch a single aerodrome by ICAO via the prefix-search list endpoint and
+ * return the exact ICAO match. Used by every view that hydrates favorite
+ * ICAOs into full Aerodrome objects (favorites tab in Search, dashboard
+ * widget). Returns null on network/HTTP error or when no exact match exists.
+ */
+export async function fetchAerodromeByIcao(icao: string): Promise<Aerodrome | null> {
+  const code = icao.trim().toUpperCase();
+  try {
+    const res = await listAerodromes({ q: code, limit: 5 });
+    return res.items.find((a) => a.icao.toUpperCase() === code) ?? null;
+  } catch {
+    return null;
+  }
+}

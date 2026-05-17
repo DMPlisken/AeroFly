@@ -462,6 +462,118 @@ a:hover {
   font-weight: 700;
 }
 
+/* ------- Aerodrome Card — Compact (Design Kit §28) ------- */
+.aerodrome-card.aerodrome-card--compact {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-2) 0;
+  border-radius: var(--radius-md);
+  min-height: 56px;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+
+.aerodrome-card.aerodrome-card--compact:hover,
+.aerodrome-card.aerodrome-card--compact:focus-visible {
+  transform: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border-strong);
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.aerodrome-card.aerodrome-card--compact:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.aerodrome-card.aerodrome-card--compact::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-primary-soft);
+  transition: background var(--duration-fast);
+}
+
+.aerodrome-card.aerodrome-card--compact:hover::before,
+.aerodrome-card.aerodrome-card--compact:focus-visible::before {
+  background: var(--color-primary);
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-icao {
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  padding-left: var(--space-4);
+  min-width: 76px;
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-body {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Override the full card's flex+icon .ad-meta styling — inline-only here. */
+.aerodrome-card.aerodrome-card--compact .ad-meta {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  display: inline;
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-meta::before {
+  content: "·";
+  margin-right: var(--space-2);
+  color: var(--color-border-strong);
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-signals {
+  display: inline-flex;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aerodrome-card.aerodrome-card--compact .ad-stat i {
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+
+@media (max-width: 540px) {
+  .aerodrome-card.aerodrome-card--compact .ad-signals {
+    display: none;
+  }
+}
+
 /* ------- Frequency badge ------- */
 .freq-badge {
   display: inline-flex;

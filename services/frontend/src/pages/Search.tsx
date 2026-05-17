@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
-  listAerodromes,
+  fetchAerodromeByIcao,
   searchAerodromes,
   type Aerodrome,
   type AerodromeSearchHit,
@@ -37,17 +37,6 @@ const TYPES: (AerodromeType | "")[] = [
   "private",
   "other",
 ];
-
-/** Fetch one aerodrome via the prefix-search list endpoint, picking the exact ICAO match. */
-async function fetchAerodromeByIcao(icao: string): Promise<Aerodrome | null> {
-  const code = icao.trim().toUpperCase();
-  try {
-    const res = await listAerodromes({ q: code, limit: 5 });
-    return res.items.find((a) => a.icao.toUpperCase() === code) ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export function SearchPage() {
   const { t } = useI18n();

@@ -219,6 +219,9 @@ export const en = {
   "action.retry": "Retry",
   "action.backToSearch": "Back to search",
 
+  // Dashboard favorites widget (#61)
+  "dashboard.favorites.more": "+{n} more",
+
   // Favorites (#55)
   "favorites.toggle.add": "Add to favorites",
   "favorites.toggle.remove": "Remove from favorites",

@@ -90,9 +90,19 @@ def import_one_manifest(
 ) -> dict[str, Any]:
     """Import a single aerodrome's `manifest.json` into the DB.
 
-    Returns a small summary dict (`{"aerodromes_added": int, "charts_added": int,
-    "charts_skipped": int, "edition": str, "airac": str}`). Idempotent: aerodromes
-    and charts that already exist are left alone.
+    Idempotent semantics (BUG-013):
+
+    - Charts are matched by `(aerodrome_icao, title)`, NOT by `source_url`.
+      The `source_url` contains the AIRAC edition slug and therefore
+      changes every cycle — matching on it would create a parallel row
+      set instead of refreshing the existing one.
+    - On match: the row is updated in place (new `source_url`,
+      `local_path`, `source_airac_cycle`, `title_de`, classification),
+      preserving user-editable fields like `rotation_degrees`.
+    - Charts present in the DB but absent from the new manifest are
+      deleted — DFS dropped them, so should we.
+
+    Returns a summary dict with counts.
     """
     icao = icao.strip().upper()
     manifest_path = data_root / icao / "manifest.json"
@@ -114,7 +124,8 @@ def import_one_manifest(
     summary = {
         "aerodromes_added": 0,
         "charts_added": 0,
-        "charts_skipped": 0,
+        "charts_updated": 0,
+        "charts_deleted": 0,
         "edition": edition,
         "airac": airac,
     }
@@ -134,9 +145,20 @@ def import_one_manifest(
         session.flush()
         summary["aerodromes_added"] = 1
 
+    # Build a lookup of existing charts for this icao keyed by title so we
+    # can detect "still present", "newly added", "removed".
+    existing_by_title: dict[str, Chart] = {
+        c.title: c
+        for c in session.query(Chart).filter(Chart.aerodrome_icao == icao).all()
+    }
+    seen_titles: set[str] = set()
+
     for doc in manifest.get("documents", []):
         if doc.get("error"):
             continue
+
+        dfs_name = doc.get("dfs_name") or doc.get("normalized_name") or "Chart"
+        seen_titles.add(dfs_name)
 
         permalink = doc.get("permalink") or ""
         source_url = (
@@ -144,24 +166,29 @@ def import_one_manifest(
             if edition and permalink
             else f"local://{icao}/{doc.get('normalized_name', 'unknown')}"
         )
-
-        existing = (
-            session.query(Chart).filter(Chart.source_url == source_url).first()
-        )
-        if existing is not None:
-            summary["charts_skipped"] += 1
-            continue
-
-        dfs_name = doc.get("dfs_name") or doc.get("normalized_name") or "Chart"
         local_preview = doc.get("preview_file")
         local_path = (
             f"/app/data/aerodromes/{icao}/{local_preview}" if local_preview else None
         )
+        chart_type = classify_chart(dfs_name)
+
+        existing = existing_by_title.get(dfs_name)
+        if existing is not None:
+            # In-place update — DO NOT touch rotation_degrees (user-edited).
+            existing.chart_type = chart_type
+            existing.title_de = dfs_name
+            existing.source_url = source_url
+            existing.local_path = local_path
+            existing.language = "de"
+            if airac != "unknown":
+                existing.source_airac_cycle = airac
+            summary["charts_updated"] += 1
+            continue
 
         session.add(
             Chart(
                 aerodrome_icao=icao,
-                chart_type=classify_chart(dfs_name),
+                chart_type=chart_type,
                 title=dfs_name,
                 title_de=dfs_name,
                 source_url=source_url,
@@ -172,8 +199,13 @@ def import_one_manifest(
         )
         summary["charts_added"] += 1
 
-    # Refresh the aerodrome's source_airac_cycle so the detail header
-    # reflects the freshly-scraped edition even when no new charts landed.
+    # Anything left in the existing set but not in the manifest is gone
+    # from DFS — drop it.
+    for title, chart in existing_by_title.items():
+        if title not in seen_titles:
+            session.delete(chart)
+            summary["charts_deleted"] += 1
+
     if airac != "unknown" and aerodrome.source_airac_cycle != airac:
         aerodrome.source_airac_cycle = airac
 

@@ -376,4 +376,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > docs cleanup machen, hast du den docker rebuild gemacht? die updates will ich selber anstossen.
 
+### 2026-05-18 — Bug: EDDF-Sync hat Charts dupliziert (`develop`)
+
+> Ich habe EDDF aktualisiert und jetzt habe ich alles doppelt. Das macht so keinen Sinn. Du musst natürlich immer nur das Aktuellste beibehalten.
+
 

@@ -16,6 +16,11 @@ class Settings(BaseSettings):
 
     dfs_base_url: str = "https://aip.dfs.de"
 
+    # The sidecar scraper container. Overridable via SCRAPER_URL env (set in
+    # docker-compose.yml). Used by the sync pipeline to drive Playwright-
+    # driven DFS scrapes.
+    scraper_url: str = "http://scraper:8003"
+
     @property
     def database_url(self) -> str:
         return (

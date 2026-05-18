@@ -71,13 +71,32 @@ async def get_aerodrome(icao: str, request: Request):
 @router.post(
     "/{icao}/extract",
     status_code=202,
-    summary="Trigger async per-aerodrome LLM extraction",
+    summary="Trigger async per-aerodrome LLM extraction (legacy — re-extracts existing charts only)",
 )
 async def trigger_extraction(icao: str, request: Request):
     async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
         try:
             upstream = await client.post(
                 f"{settings.data_ingestion_url}/aerodromes/{icao}/extract"
+            )
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f"Upstream unreachable: {exc}") from exc
+
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=upstream.status_code, detail=upstream.text)
+    return upstream.json()
+
+
+@router.post(
+    "/{icao}/sync",
+    status_code=202,
+    summary="Refresh DFS charts then re-extract structured fields (full sync)",
+)
+async def trigger_sync(icao: str, request: Request):
+    async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
+        try:
+            upstream = await client.post(
+                f"{settings.data_ingestion_url}/aerodromes/{icao}/sync"
             )
         except httpx.HTTPError as exc:
             raise HTTPException(status_code=502, detail=f"Upstream unreachable: {exc}") from exc

@@ -81,11 +81,17 @@ services:
       - ./services/data-ingestion:/app
       - ./shared/python:/app/shared
       - ./scripts:/app/scripts:ro
-      - ./data:/app/data:ro
+      # Shared with the scraper container. Read-write here so the import
+      # path can read freshly scraped charts; the scraper writes them.
+      - ./data:/app/data
+    environment:
+      SCRAPER_URL: http://scraper:8003
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      scraper:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
@@ -93,6 +99,23 @@ services:
       timeout: 5s
       retries: 6
       start_period: 15s
+
+  scraper:
+    build:
+      context: ./services/scraper
+      dockerfile: Dockerfile
+    ports:
+      - "${SCRAPER_PORT_HOST:-18003}:8003"
+    volumes:
+      - ./services/scraper:/app
+      # Writes scraped PNGs + manifests; data-ingestion reads them.
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
 
   search:
     build:

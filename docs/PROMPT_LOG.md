@@ -344,4 +344,24 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > ja und mach den fix
 
+### 2026-05-17 — Frage: ist deployed + Docker rebuild? (`develop`)
+
+> ist das deployed und der docker neu gebaut? ich werde den re-extract selbst auslösen
+
+### 2026-05-17 — Empfehlungen für nächste Funktionen (`develop`)
+
+> Welche weiteren Funktionen würdest du empfehlen weiter einzubauen? Was siehst du noch an Möglichkeiten?
+
+### 2026-05-18 — Wie DFS-Material aktualisieren? (`develop`)
+
+> wie aktualisiere ich das material von der dsf? haben wir dafür eine funktion eingebaut? also ich meine das Kartenmaterial und die notes.
+
+### 2026-05-18 — Issue #69 Phase 1 starten (`develop`)
+
+> ja [Start Phase 1: Per-Platz Sync-Button]
+
+### 2026-05-18 — Option C: Sidecar-Scraper-Container (`feat/69-sync-per-aerodrome`)
+
+> c
+
 

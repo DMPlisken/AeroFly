@@ -372,4 +372,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > ja, mach weiter mit Part B - ich brauche das update aber über das frontend komplett nutzbar. das ist schon klar, oder?
 
+### 2026-05-18 — Docs cleanup + Docker-Rebuild-Check (`develop`)
+
+> docs cleanup machen, hast du den docker rebuild gemacht? die updates will ich selber anstossen.
+
 

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getExtractionJob,
   getLatestExtraction,
-  startExtraction,
+  startSync,
   type ExtractionJob,
 } from "@/api/extraction";
 
@@ -93,7 +93,12 @@ export function useExtractionJob(
     setError(null);
     stopPolling();
     try {
-      const fresh = await startExtraction(icao);
+      // Full sync: scrape DFS → import manifest → extract structured fields.
+      // The legacy /extract endpoint (charts-only re-extract) is still
+      // available via startExtraction but the UI button now always goes
+      // through the full pipeline so the user gets fresh chart material
+      // automatically.
+      const fresh = await startSync(icao);
       setJob(fresh);
       timerRef.current = window.setTimeout(() => pollOnce(fresh.id), POLL_INTERVAL_MS);
     } catch (e) {

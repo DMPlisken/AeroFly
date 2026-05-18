@@ -11,6 +11,7 @@ from app.api.aerodromes import router as aerodromes_router
 from app.api.charts import router as charts_router
 from app.api.extraction import router as extraction_router
 from app.api.extraction import trigger_router as extraction_trigger_router
+from app.api.sync import router as sync_router
 from app.api.usage import router as usage_router
 from app.core.config import settings
 from app.db import get_session_factory
@@ -75,6 +76,7 @@ app.include_router(charts_router)
 app.include_router(usage_router)
 app.include_router(extraction_router)
 app.include_router(extraction_trigger_router)
+app.include_router(sync_router)
 
 
 @app.get("/health", tags=["health"])

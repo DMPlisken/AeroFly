@@ -233,11 +233,11 @@ export const en = {
   "favorites.empty.cta": "Browse aerodromes",
   "favorites.error": "Could not load favorites: {message}",
 
-  // Extraction panel (#34)
-  "extraction.trigger": "Refresh data",
-  "extraction.running": "Running…",
-  "extraction.working": "Extracting…",
-  "extraction.hint": "Runs a 2-of-2 LLM consensus extraction (Claude + OpenAI). Typically 30–120 s.",
+  // Extraction / sync panel (#34, #69 full sync)
+  "extraction.trigger": "Refresh from DFS",
+  "extraction.running": "Refreshing…",
+  "extraction.working": "Working…",
+  "extraction.hint": "Downloads fresh charts from DFS, then re-runs the 2-of-2 LLM consensus extraction (Claude + OpenAI). Typically 2–5 minutes.",
   "extraction.completed": "{fields} fields written · {at}",
   "extraction.failed": "Failed: {error}",
 } as const;

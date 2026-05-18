@@ -20,6 +20,14 @@ export function startExtraction(icao: string): Promise<ExtractionJob> {
   return apiPostJson<ExtractionJob>(`/aerodromes/${icao}/extract`);
 }
 
+/**
+ * Full per-aerodrome sync: scrape → import → extract. Returns the same
+ * ExtractionJob shape as `startExtraction`; the UI polls it identically.
+ */
+export function startSync(icao: string): Promise<ExtractionJob> {
+  return apiPostJson<ExtractionJob>(`/aerodromes/${icao}/sync`);
+}
+
 export function getExtractionJob(jobId: string): Promise<ExtractionJob> {
   return apiGetJson<ExtractionJob>(`/extraction/jobs/${jobId}`);
 }

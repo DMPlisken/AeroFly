@@ -224,11 +224,11 @@ export const de: Record<TranslationKey, string> = {
   "favorites.empty.cta": "Zur Flugplatzsuche",
   "favorites.error": "Favoriten konnten nicht geladen werden: {message}",
 
-  // Extraction panel (#34)
-  "extraction.trigger": "Daten aktualisieren",
-  "extraction.running": "Wird ausgeführt…",
-  "extraction.working": "Extraktion läuft…",
-  "extraction.hint": "Startet eine LLM-Extraktion (Claude + OpenAI) mit 2-von-2-Konsens. Dauert typisch 30–120 s.",
+  // Extraction / sync panel (#34, #69 full sync)
+  "extraction.trigger": "Daten von DFS aktualisieren",
+  "extraction.running": "Wird aktualisiert…",
+  "extraction.working": "Wird ausgeführt…",
+  "extraction.hint": "Lädt frische Karten von DFS und führt anschließend die LLM-Extraktion (Claude + OpenAI, 2-von-2-Konsens) erneut aus. Typisch 2–5 Minuten.",
   "extraction.completed": "{fields} Felder geschrieben · {at}",
   "extraction.failed": "Fehlgeschlagen: {error}",
 };

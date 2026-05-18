@@ -364,4 +364,12 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > c
 
+### 2026-05-18 — Bestätigung: /airac/current funktioniert (`develop`)
+
+> [Screenshot von localhost:18003/airac/current zeigt {"edition":"2026MAY05"}]
+
+### 2026-05-18 — Part B starten (Frontend komplett nutzbar) (`develop`)
+
+> ja, mach weiter mit Part B - ich brauche das update aber über das frontend komplett nutzbar. das ist schon klar, oder?
+
 

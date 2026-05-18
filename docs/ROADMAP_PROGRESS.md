@@ -14,8 +14,9 @@
 - [~] Runway data extraction (dimensions, surface, orientation) — **won't do** (part of #10). Pilot reads it from the chart.
 - [~] Frequency extraction (TWR, GND, ATIS, AFIS) — **won't do** (part of #10). Pilot reads it from the chart.
 - [x] Aerodrome chart/map PDF ingestion & indexing — feat/1 scraper (1042 PNGs) + issue #8 importer + issue #13 inline display
-- [ ] NOTAM feed integration — issue #12 (pending go/no-go decision)
-- [ ] Scheduled re-sync jobs — for future AIRAC-cycle updates via the existing scraper
+- [x] On-demand per-aerodrome sync (scrape + import + extract) — issue #69 Phase 1, PRs #70 + #71. Dedicated `scraper` sidecar container with Playwright + Chromium, dynamic AIRAC + letter-page discovery (fixes pre-existing bug of hardcoded edition-specific hashes in the legacy CLI script). New `POST /api/aerodromes/{icao}/sync` chains scrape → import → extract via gateway; detail-view button replaces the legacy „Daten aktualisieren". Live status per phase via existing `ExtractionJob.current_step`. Phases 2 (alle Favoriten) + 3 (Vollabgleich + Settings-Seite) bleiben offen unter #69.
+- [~] NOTAM feed integration — issue #12 (Nutzer-Entscheidung: nicht jetzt, kein Datenfluss-Connector implementiert).
+- [ ] Scheduled re-sync jobs — would build on the new `/sync` endpoint as a cron-driven AIRAC-cycle auto-trigger. Folge-Issue offen.
 
 ### Search & API
 - [x] Meilisearch full-text aerodrome search — issue #11 (typo-tolerant, multi-field, partial-ICAO via icao_search suffix field, German umlaut synonyms, live-search debounced 250ms, fuzzy-match hint in UI). Subscribers receive `aerodrome.upsert`/`.delete` via Redis pub/sub. Frequency/chart/NOTAM index → eigenes Folge-Issue.

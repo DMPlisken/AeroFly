@@ -388,4 +388,8 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > ja, leg los
 
+### 2026-05-19 — Docs cleanup für Phase 2 (`develop`)
+
+> [implicit: housekeeping pattern from prior phases]
+
 

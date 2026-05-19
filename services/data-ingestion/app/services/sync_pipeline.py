@@ -90,29 +90,58 @@ class SyncPipeline:
     # ------------------------------------------------------------------ #
 
     async def _scrape(self, icao: str) -> dict[str, Any]:
-        async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT, base_url=self._scraper_url) as client:
-            response = await client.post(f"/scrape/{icao}")
-            response.raise_for_status()
-            kickoff = response.json()
-            scrape_job_id = kickoff["id"]
+        # Per-request client (no kept-alive pool). Connection re-use across a
+        # 5 s `asyncio.sleep` runs straight into uvicorn's default 5 s
+        # keep-alive timeout on the scraper side — the pooled connection
+        # gets evicted exactly when we want to use it again, and httpx
+        # raises ReadError. Opening a fresh client per request avoids
+        # the race entirely; the overhead is trivial compared to the
+        # multi-minute scrape itself.
+        async def _post_start() -> dict:
+            async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT, base_url=self._scraper_url) as client:
+                response = await client.post(f"/scrape/{icao}")
+                response.raise_for_status()
+                return response.json()
 
-            deadline = asyncio.get_event_loop().time() + _SCRAPE_MAX_WAIT_SECONDS
-            while True:
-                if asyncio.get_event_loop().time() > deadline:
-                    raise TimeoutError(
-                        f"scrape job {scrape_job_id} did not finish within "
-                        f"{_SCRAPE_MAX_WAIT_SECONDS}s"
+        async def _poll(scrape_job_id: str) -> dict:
+            # Best-effort retry on transient connection errors (network blip,
+            # keep-alive race). Lets a single hiccup not abort a 2-minute scrape.
+            last_exc: Exception | None = None
+            for attempt in range(3):
+                try:
+                    async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT, base_url=self._scraper_url) as client:
+                        resp = await client.get(f"/scrape/jobs/{scrape_job_id}")
+                        resp.raise_for_status()
+                        return resp.json()
+                except (httpx.ReadError, httpx.RemoteProtocolError, httpx.ConnectError) as exc:
+                    last_exc = exc
+                    log.warning(
+                        "scrape poll attempt %d for %s failed (%s); retrying",
+                        attempt + 1, scrape_job_id, exc.__class__.__name__,
                     )
-                await asyncio.sleep(_SCRAPE_POLL_INTERVAL_SECONDS)
-                status_resp = await client.get(f"/scrape/jobs/{scrape_job_id}")
-                status_resp.raise_for_status()
-                state = status_resp.json()
-                if state["status"] == "completed":
-                    return state.get("result") or {}
-                if state["status"] == "failed":
-                    raise RuntimeError(
-                        f"scraper service reported failure: {state.get('error') or 'unknown'}"
-                    )
+                    await asyncio.sleep(2)
+            raise RuntimeError(
+                f"scrape poll failed 3× for {scrape_job_id}: {last_exc!r}"
+            )
+
+        kickoff = await _post_start()
+        scrape_job_id = kickoff["id"]
+
+        deadline = asyncio.get_event_loop().time() + _SCRAPE_MAX_WAIT_SECONDS
+        while True:
+            if asyncio.get_event_loop().time() > deadline:
+                raise TimeoutError(
+                    f"scrape job {scrape_job_id} did not finish within "
+                    f"{_SCRAPE_MAX_WAIT_SECONDS}s"
+                )
+            await asyncio.sleep(_SCRAPE_POLL_INTERVAL_SECONDS)
+            state = await _poll(scrape_job_id)
+            if state["status"] == "completed":
+                return state.get("result") or {}
+            if state["status"] == "failed":
+                raise RuntimeError(
+                    f"scraper service reported failure: {state.get('error') or 'unknown'}"
+                )
 
     def _import(self, icao: str) -> dict[str, Any]:
         session = self._session_factory()

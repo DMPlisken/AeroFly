@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -109,6 +109,40 @@ def get_latest_job(
         .limit(1)
     ).scalar_one_or_none()
     return _job_to_dict(job) if job else None
+
+
+@router.get(
+    "/aerodromes/latest-bulk",
+    summary="Latest extraction job for many aerodromes (one round trip)",
+    description=(
+        "Returns the most recent ExtractionJob per ICAO for up to 50 codes "
+        "in a single request. Used by the dashboard bulk-sync indicator so "
+        "the frontend doesn't need N separate polls."
+    ),
+)
+def get_latest_jobs_bulk(
+    icaos: Annotated[str, Query(description="Comma-separated ICAOs, e.g. 'EDDF,EDDM,EDDH'")],
+    db: Annotated[Session, Depends(get_db)],
+) -> dict[str, dict | None]:
+    requested = [code.strip().upper() for code in icaos.split(",") if code.strip()]
+    if not requested:
+        return {}
+    if len(requested) > 50:
+        raise HTTPException(status_code=400, detail="At most 50 ICAOs per request")
+
+    # Latest job per icao via window-function trick. Simpler in two passes:
+    # fetch all candidates ordered by created_at desc, then take the first
+    # we see per icao.
+    rows = db.execute(
+        select(ExtractionJob)
+        .where(ExtractionJob.aerodrome_icao.in_(requested))
+        .order_by(ExtractionJob.created_at.desc())
+    ).scalars().all()
+    latest: dict[str, dict | None] = {code: None for code in requested}
+    for row in rows:
+        if latest.get(row.aerodrome_icao) is None:
+            latest[row.aerodrome_icao] = _job_to_dict(row)
+    return latest
 
 
 # ---------------------------------------------------------------------------

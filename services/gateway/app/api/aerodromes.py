@@ -106,6 +106,47 @@ async def trigger_sync(icao: str, request: Request):
     return upstream.json()
 
 
+@router.post(
+    "/sync-bulk",
+    status_code=202,
+    summary="Sync many aerodromes in one request (sequential)",
+)
+async def trigger_sync_bulk(request: Request):
+    body = await request.body()
+    async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
+        try:
+            upstream = await client.post(
+                f"{settings.data_ingestion_url}/aerodromes/sync-bulk",
+                content=body,
+                headers={"content-type": request.headers.get("content-type", "application/json")},
+            )
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f"Upstream unreachable: {exc}") from exc
+
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=upstream.status_code, detail=upstream.text)
+    return upstream.json()
+
+
+@router.get(
+    "/extraction/latest-bulk",
+    summary="Latest extraction job for many aerodromes (one round trip)",
+)
+async def latest_extraction_bulk(request: Request, icaos: str):
+    async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
+        try:
+            upstream = await client.get(
+                f"{settings.data_ingestion_url}/extraction/aerodromes/latest-bulk",
+                params={"icaos": icaos},
+            )
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f"Upstream unreachable: {exc}") from exc
+
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=upstream.status_code, detail=upstream.text)
+    return upstream.json()
+
+
 @router.get(
     "/{icao}/extraction/latest",
     summary="Latest extraction job for an aerodrome",

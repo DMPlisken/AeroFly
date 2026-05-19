@@ -7,6 +7,7 @@ import {
   type Aerodrome,
 } from "@/api/aerodromes";
 import { AerodromeCardCompact } from "@/components/AerodromeCardCompact";
+import { BulkSyncButton } from "@/components/BulkSyncButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useI18n } from "@/i18n";
 
@@ -115,9 +116,12 @@ export function Dashboard() {
                   </span>
                 )}
               </span>
-              <Link to="/search?tab=favorites" className="btn btn-ghost btn-sm">
-                {t("favorites.tab.favorites")}
-              </Link>
+              <div style={{ display: "inline-flex", gap: "var(--space-2)", alignItems: "center" }}>
+                <BulkSyncButton icaos={Array.from(favorites).sort()} />
+                <Link to="/search?tab=favorites" className="btn btn-ghost btn-sm">
+                  {t("favorites.tab.favorites")}
+                </Link>
+              </div>
             </div>
 
             {!favoritesLoaded ? (

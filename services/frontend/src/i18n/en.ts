@@ -222,6 +222,13 @@ export const en = {
   // Dashboard favorites widget (#61)
   "dashboard.favorites.more": "+{n} more",
 
+  // Bulk-sync of favorites — #69 Phase 2
+  "favorites.bulkSync.trigger": "Refresh all",
+  "favorites.bulkSync.disabled": "No favorites to refresh",
+  "favorites.bulkSync.progress": "Refreshing {done}/{total}…",
+  "favorites.bulkSync.running": "Refreshing {done}/{total} · {icao} now",
+  "favorites.bulkSync.done": "Refreshed {done}/{total}",
+
   // Favorites (#55)
   "favorites.toggle.add": "Add to favorites",
   "favorites.toggle.remove": "Remove from favorites",

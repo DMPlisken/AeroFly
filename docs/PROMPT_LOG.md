@@ -380,4 +380,12 @@ Persistent audit trail of all user requests. Each entry documents a user prompt 
 
 > Ich habe EDDF aktualisiert und jetzt habe ich alles doppelt. Das macht so keinen Sinn. Du musst natürlich immer nur das Aktuellste beibehalten.
 
+### 2026-05-19 — Frage: Was ist Phase 2? (`develop`)
+
+> what is phase 2?
+
+### 2026-05-19 — Phase 2 starten (Alle Favoriten Sync) (`develop`)
+
+> ja, leg los
+
 

@@ -213,6 +213,13 @@ export const de: Record<TranslationKey, string> = {
   // Dashboard favorites widget (#61)
   "dashboard.favorites.more": "+{n} weitere",
 
+  // Bulk-sync of favorites — #69 Phase 2
+  "favorites.bulkSync.trigger": "Alle aktualisieren",
+  "favorites.bulkSync.disabled": "Keine Favoriten zum Aktualisieren",
+  "favorites.bulkSync.progress": "{done}/{total} aktualisiert…",
+  "favorites.bulkSync.running": "{done}/{total} aktualisiert · {icao} läuft",
+  "favorites.bulkSync.done": "{done}/{total} aktualisiert",
+
   // Favorites (#55)
   "favorites.toggle.add": "Zu Favoriten hinzufügen",
   "favorites.toggle.remove": "Aus Favoriten entfernen",
